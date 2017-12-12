@@ -1,0 +1,30 @@
+# depslib dependency file v1.0
+1513087678 source:/home/stephane/oxford/devel/oxford/pmidi.c
+	<stdio.h>
+	<stdarg.h>
+	<stdlib.h>
+	<unistd.h>
+	<getopt.h>
+	<string.h>
+	<errno.h>
+	<signal.h>
+	<alsa/asoundlib.h>
+	<sys/asoundlib.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+	"dmalloc.h"
+	<setjmp.h>
+	"libintl.h"
+
+1513122560 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<ctype.h>
+	<alsa/asoundlib.h>
+	<signal.h>
+	<pthread.h>
+	<linux/input.h>
+	<termios.h>
+	<math.h>
+

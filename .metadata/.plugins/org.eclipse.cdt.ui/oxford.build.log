@@ -1,0 +1,128 @@
+18:23:36 **** Build of configuration Debug for project oxford ****
+make all 
+Building file: ../oxford_main.cpp
+Invoking: GCC C++ Compiler
+g++ -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"oxford_main.d" -MT"oxford_main.d" -o "oxford_main.o" "../oxford_main.cpp"
+../oxford_main.cpp:66:0: warning: ignoring #pragma reentrant  [-Wunknown-pragmas]
+ #pragma reentrant
+ 
+../oxford_main.cpp:90:0: warning: ignoring #pragma reentrant  [-Wunknown-pragmas]
+ #pragma reentrant
+ 
+../oxford_main.cpp:101:0: warning: ignoring #pragma reentrant  [-Wunknown-pragmas]
+ #pragma reentrant
+ 
+../oxford_main.cpp:404:14: warning: multi-character character constant [-Wmultichar]
+         case 'é':
+              ^~~~
+../oxford_main.cpp:440:14: warning: multi-character character constant [-Wmultichar]
+         case 'è':
+              ^~~~
+../oxford_main.cpp:452:14: warning: multi-character character constant [-Wmultichar]
+         case 'ç':
+              ^~~~
+../oxford_main.cpp:460:14: warning: multi-character character constant [-Wmultichar]
+         case 'à':
+              ^~~~
+../oxford_main.cpp: In function ‘void* ExecuteAfterTimeout_Thread(void*)’:
+../oxford_main.cpp:98:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+../oxford_main.cpp: In function ‘void* JJDebout::CapitaineFlam::Laser_Cycle(void*)’:
+../oxford_main.cpp:561:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+Finished building: ../oxford_main.cpp
+ 
+Building file: ../pmidi.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"pmidi.d" -MT"pmidi.d" -o "pmidi.o" "../pmidi.c"
+Finished building: ../pmidi.c
+ 
+Building target: oxford
+Invoking: GCC C++ Linker
+g++  -o "oxford"  ./oxford_main.o ./pmidi.o   
+./oxford_main.o: In function `ExecuteAfterTimeout(void (*)(), unsigned long)':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:112: undefined reference to `pthread_create'
+./oxford_main.o: In function `midiPlay(int, unsigned char, int)':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:322: undefined reference to `pthread_create'
+./oxford_main.o: In function `JJDebout::CapitaineFlam::Laser_On()':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:574: undefined reference to `pthread_create'
+./oxford_main.o: In function `threadMidiAutomaton(void*)':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:645: undefined reference to `snd_rawmidi_open'
+makefile:44: recipe for target 'oxford' failed
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:655: undefined reference to `snd_rawmidi_open'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:685: undefined reference to `snd_rawmidi_read'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:691: undefined reference to `snd_rawmidi_read'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:707: undefined reference to `snd_rawmidi_read'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:802: undefined reference to `snd_rawmidi_drain'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:803: undefined reference to `snd_rawmidi_close'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:807: undefined reference to `snd_rawmidi_drain'
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:808: undefined reference to `snd_rawmidi_close'
+./oxford_main.o: In function `main':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:832: undefined reference to `pthread_create'
+./oxford_main.o: In function `TMidiNoteOnEvent::sendToMidi()':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:178: undefined reference to `snd_rawmidi_write'
+./oxford_main.o: In function `TMidiProgramChange::sendToMidi()':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:242: undefined reference to `snd_rawmidi_write'
+./oxford_main.o: In function `TMidiControlChange::sendToMidi()':
+/home/stephane/oxford/devel/oxford/Debug/../oxford_main.cpp:273: undefined reference to `snd_rawmidi_write'
+./pmidi.o: In function `main_TODO':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4060: undefined reference to `snd_lib_error_set_handler'
+./pmidi.o: In function `playfile':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4232: undefined reference to `snd_seq_drain_output'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4238: undefined reference to `snd_seq_event_input'
+./pmidi.o: In function `showlist':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4260: undefined reference to `snd_seq_open'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4262: undefined reference to `snd_strerror'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4279: undefined reference to `snd_seq_drop_output'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4282: undefined reference to `snd_seq_client_info_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4282: undefined reference to `snd_seq_client_info_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4283: undefined reference to `snd_seq_client_info_set_client'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4287: undefined reference to `snd_seq_client_info_get_client'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4288: undefined reference to `snd_seq_port_info_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4288: undefined reference to `snd_seq_port_info_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4289: undefined reference to `snd_seq_port_info_set_client'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4291: undefined reference to `snd_seq_port_info_set_port'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4296: undefined reference to `snd_seq_port_info_get_capability'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4297: undefined reference to `snd_seq_port_info_get_name'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4297: undefined reference to `snd_seq_client_info_get_name'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4297: undefined reference to `snd_seq_port_info_get_port'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4297: undefined reference to `snd_seq_port_info_get_client'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4292: undefined reference to `snd_seq_query_next_port'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4286: undefined reference to `snd_seq_query_next_client'
+./pmidi.o: In function `seq_create_context':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4474: undefined reference to `snd_seq_open'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4475: undefined reference to `snd_strerror'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4477: undefined reference to `snd_seq_alloc_queue'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4478: undefined reference to `snd_seq_client_id'
+./pmidi.o: In function `seq_free_context':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4521: undefined reference to `snd_seq_drop_output'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4527: undefined reference to `snd_seq_drain_output'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4529: undefined reference to `snd_seq_free_queue'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4530: undefined reference to `snd_seq_close'
+./pmidi.o: In function `seq_new_port':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4547: undefined reference to `snd_seq_create_simple_port'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4553: undefined reference to `snd_strerror'
+./pmidi.o: In function `seq_connect_add':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4588: undefined reference to `snd_seq_connect_to'
+./pmidi.o: In function `seq_init_tempo':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4613: undefined reference to `snd_seq_queue_tempo_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4613: undefined reference to `snd_seq_queue_tempo_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4614: undefined reference to `snd_seq_queue_tempo_sizeof'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4615: undefined reference to `snd_seq_queue_tempo_set_ppq'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4616: undefined reference to `snd_seq_queue_tempo_set_tempo'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4618: undefined reference to `snd_seq_set_queue_tempo'
+./pmidi.o: In function `seq_control_timer':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4742: undefined reference to `snd_seq_control_queue'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4744: undefined reference to `snd_seq_control_queue'
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4747: undefined reference to `snd_seq_drain_output'
+./pmidi.o: In function `seq_write':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4766: undefined reference to `snd_seq_event_output'
+./pmidi.o: In function `set_channel':
+/home/stephane/oxford/devel/oxford/Debug/../pmidi.c:4805: undefined reference to `snd_seq_event_types'
+collect2: error: ld returned 1 exit status
+make: *** [oxford] Error 1
+
+18:23:44 Build Finished (took 7s.474ms)
+
