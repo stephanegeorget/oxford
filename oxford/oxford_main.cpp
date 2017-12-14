@@ -767,6 +767,9 @@ void *threadMidiAutomaton(void * ptr)
                     if(rxNote == 5 && rxVolume > 0)
                     {
                          // Ave Maria
+        snd_rawmidi_drain(handle_out);
+        snd_rawmidi_close(handle_out);
+
                      	int argc = 4;
                      	char str0[] = "fakename";
                      	char str1[] = "-p";
