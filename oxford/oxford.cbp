@@ -32,7 +32,14 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="main.cpp" />
+		<Linker>
+			<Add library="pthread" />
+			<Add library="asound" />
+		</Linker>
+		<Unit filename="oxford_main.cpp" />
+		<Unit filename="pmidi.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />

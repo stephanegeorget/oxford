@@ -4018,7 +4018,7 @@ seq_context_t *g_ctxp;
 
 static seq_context_t *openports(char *portdesc);
 static void playfile(seq_context_t *ctxp, char *filename);
-static void showlist();
+void showlist();
 static void showusage();
 static void play(void *arg, struct element *el);
 static void no_errors_please(const char *file, int line, const char *function, int err, const char *fmt, ...);
@@ -4026,6 +4026,10 @@ static void set_signal_handler(seq_context_t *ctxp);
 static void signal_handler(int sig);
 static void showversion(void);
 
+
+
+
+seq_context_t * ctxp;
 /*
  * Play a midi file
  *   pmidi [-p client:port ...] [-l] [-d delay] file ...
@@ -4043,7 +4047,7 @@ main_TODO(int argc, char **argv) /* TODO */
 {
 	char opts[NELEM(long_opts) * 2 + 1];
 	char *portdesc;
-	seq_context_t *ctxp;
+	//seq_context_t *ctxp;
 	char *cp;
 	int  c;
 	struct option *op;
@@ -4113,6 +4117,7 @@ main_TODO(int argc, char **argv) /* TODO */
 		playfile(ctxp, argv[optind]);
 
 	seq_free_context(ctxp);
+	ctxp = 0;
 
 	/* Restore signal handler */
 	signal(SIGINT, SIG_DFL);
@@ -4219,6 +4224,9 @@ playfile(seq_context_t *ctxp, char *filename)
 	seq = md_sequence_init(root);
 	while ((el = md_sequence_next(seq)) != NULL) {
 		play(ctxp, el);
+
+	//snd_seq_event_input(seq_handle(ctxp), &ep);
+
 	}
 
 
@@ -4236,7 +4244,7 @@ playfile(seq_context_t *ctxp, char *filename)
 
 	/* Wait for all the events to be played */
 	snd_seq_event_input(seq_handle(ctxp), &ep);
-
+//}
 	/* Wait some extra time to allow for note to decay etc */
 	sleep(delay);
 	seq_stop_timer(ctxp);
@@ -4248,8 +4256,8 @@ playfile(seq_context_t *ctxp, char *filename)
  * Show a list of possible output ports that midi could be sent
  * to.
  */
-static void
-showlist()
+void
+showlist(void)
 {
 	snd_seq_client_info_t *cinfo;
 	snd_seq_port_info_t *pinfo;
@@ -5049,6 +5057,7 @@ seq_midi_pitchbend(seq_context_t *ctxp, snd_seq_event_t *ep, int devchan, int be
 void
 seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 {
+/*
 	ep->type = SND_SEQ_EVENT_TEMPO;
 
 	ep->data.queue.queue = ctxp->queue;
@@ -5056,6 +5065,7 @@ seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 	ep->dest.client = SND_SEQ_CLIENT_SYSTEM;
 	ep->dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
 	seq_write(ctxp, ep);
+*/
 }
 
 /*
@@ -5110,5 +5120,91 @@ seq_midi_echo(seq_context_t *ctxp, unsigned long time)
 }
 
 
+void
+seq_midi_tempo_direct(int tempo_skew)
+{
 
+/*
+	snd_seq_event_t ep;
+	ep.type = SND_SEQ_EVENT_TEMPO;
+
+	ep.data.queue.queue = ctxp->queue;
+	ep.data.queue.param.value = tempo;
+	ep.dest.client = SND_SEQ_CLIENT_SYSTEM;
+	ep.dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
+
+	snd_seq_ev_set_direct(&ep);
+	seq_write(ctxp, &ep);
+*/
+
+//int change_tempo(snd_seq_t *handle, int q, unsigned int tempo)
+//{
+
+/*
+        snd_seq_event_t ev;
+        snd_seq_ev_clear(&ev);
+        ev.dest.client = SND_SEQ_CLIENT_SYSTEM;
+        ev.dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
+        ev.source.client = ctxp->client; //my_client_id;
+        ev.source.port = ctxp->port_count; //my_port_id;
+        ev.queue = SND_SEQ_QUEUE_DIRECT; // no scheduling
+        ev.data.queue.queue = ctxp->queue; //q;        // affected queue id
+        ev.data.queue.param.value = tempo;    // new tempo in microsec.
+
+//snd_seq_change_queue_tempo(ctxp->handle, ctxp->queue, tempo, NULL);
+        int k = snd_seq_event_output(ctxp->handle, &ev);
+
+//}
+printf("K=%i", k);
+*/
+//seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
+//seq_control_timer(ctxp, 0);
+    // 500000 is 120BPM by default with the 96PPQ
+    long int micro_tempo = 500000 / 60 * tempo_skew; // assuming temposkew varies from 0 to 127
+    snd_seq_event_t epvar;
+
+    snd_seq_event_t * ep = &epvar;
+
+//  	seq_midi_event_init(ctxp, &ep, ep->element_time, ep->device_channel);
+	seq_midi_event_init(ctxp, ep, 0, 1);
+
+
+	ep->type = SND_SEQ_EVENT_TEMPO;
+	ep->data.queue.queue = ctxp->queue;
+	ep->data.queue.param.value = micro_tempo;
+	ep->dest.client = SND_SEQ_CLIENT_SYSTEM;
+	ep->dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
+
+snd_seq_ev_set_direct(ep);
+
+	seq_write(ctxp, ep);
+
+//	snd_seq_continue_queue(ctxp->handle, ctxp->queue, 0);
+
+	snd_seq_drain_output(ctxp->handle);
+
+
+
+//snd_seq_change_queue_tempo(ctxp->queue, )
+}
+
+
+
+/*
+void
+seq_control_timer(seq_context_t *ctxp, int onoff)
+{
+
+	if (onoff == SND_SEQ_EVENT_START)
+		snd_seq_start_queue(ctxp->handle, ctxp->queue, 0);
+	else
+		snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
+
+#ifdef USE_DRAIN
+	snd_seq_drain_output(ctxp->handle);
+#else
+	snd_seq_flush_output(ctxp->handle);
+#endif
+
+*/
 

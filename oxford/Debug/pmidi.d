@@ -1,1 +1,0 @@
-pmidi.d: ../pmidi.c
