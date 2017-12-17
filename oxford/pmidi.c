@@ -4052,6 +4052,8 @@ main_TODO(int argc, char **argv) /* TODO */
 	int  c;
 	struct option *op;
 
+	memset(opts, 0, sizeof(opts));
+
 	/* Build up the short option string */
 	cp = opts;
 	for (op = long_opts; op < &long_opts[NELEM(long_opts)]; op++) {
@@ -4064,6 +4066,9 @@ main_TODO(int argc, char **argv) /* TODO */
 	snd_lib_error_set_handler(no_errors_please);
 
 	portdesc = NULL;
+
+    // restart getopt_long scanner
+	optind = 1;
 
 	/* Deal with the options */
 	for (;;) {
@@ -5119,9 +5124,11 @@ seq_midi_echo(seq_context_t *ctxp, unsigned long time)
 	seq_write(ctxp, &ev);
 }
 
-
+// Set tempo.
+// 500000 = duration of one tick.
+// Assume 96 ticks per beat, 500000 => 120BPM
 void
-seq_midi_tempo_direct(int tempo_skew)
+seq_midi_tempo_direct(float skew, float bpm_min, float bpm_max)
 {
 
 /*
@@ -5160,7 +5167,8 @@ printf("K=%i", k);
 //seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 //seq_control_timer(ctxp, 0);
     // 500000 is 120BPM by default with the 96PPQ
-    long int micro_tempo = 500000 / 60 * tempo_skew; // assuming temposkew varies from 0 to 127
+    float bpm_average = (bpm_min + bpm_max)/2;
+    float micro_tempo = 500000.0 / 120.0 * (bpm_average + skew * (bpm_average - bpm_min));
     snd_seq_event_t epvar;
 
     snd_seq_event_t * ep = &epvar;
@@ -5188,7 +5196,11 @@ snd_seq_ev_set_direct(ep);
 //snd_seq_change_queue_tempo(ctxp->queue, )
 }
 
-
+void pmidiStop(void)
+{
+    seq_control_timer(ctxp, 0);
+    seq_free_context(ctxp);
+}
 
 /*
 void

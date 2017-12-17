@@ -14,6 +14,69 @@ namespace pmidi
 
 }
 
+
+
+int stop = 0;
+snd_rawmidi_t *handle_in = 0, *handle_out = 0;
+char device_in_str[] = "hw:1,0,0";
+char device_out_str[] = "hw:1,0,0";
+
+
+
+
+
+void StartRawMidiIn(void)
+{
+    if (handle_in == 0)
+    {
+        int err = snd_rawmidi_open(&handle_in, NULL, device_in_str, 0);
+        if (err)
+        {
+            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
+        }
+    }
+}
+
+
+void StartRawMidiOut(void)
+{
+    if (handle_out == 0)
+    {
+        int err = snd_rawmidi_open(NULL, &handle_out, device_out_str, 0);
+        if (err)
+        {
+            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_out_str,
+                    err);
+        }
+    }
+}
+
+
+void StopRawMidiIn(void)
+{
+    if (handle_in != 0)
+    {
+        snd_rawmidi_drain(handle_in);
+        snd_rawmidi_close(handle_in);
+        handle_in = 0;
+    }
+
+}
+
+void StopRawMidiOut(void)
+{
+    if(handle_out != 0)
+    {
+        snd_rawmidi_drain(handle_out);
+        snd_rawmidi_close(handle_out);
+        handle_out = 0;
+    }
+
+}
+
+
+
+
 #define EV_PRESSED 1
 #define EV_RELEASED 0
 #define EV_REPEAT 2
@@ -82,8 +145,7 @@ static void usage(void)
     fprintf(stderr, "usage: fix me\n");
 }
 
-int stop = 0;
-snd_rawmidi_t *handle_in = 0, *handle_out = 0;
+
 
 void sighandler(int dum)
 {
@@ -131,7 +193,10 @@ public:
     void sendToMidi(void)
     {
         printf("Note number: %i\n", (int) charArray[1]);
-        snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        if (handle_out != 0)
+        {
+            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        }
     }
     ;
 
@@ -192,7 +257,10 @@ private:
     void sendToMidi(void)
     {
         printf("Note number: %i\n", (int) charArray[1]);
-        snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        if(handle_out != 0)
+        {
+            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        }
     }
     ;
 
@@ -221,8 +289,12 @@ private:
 
     void sendToMidi(void)
     {
-        printf("Note number: %i\n", (int) charArray[1]);
-        snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        printf("Control Change - Controller Number: %i\n", (int) charArray[1]);
+        printf("Control Change - Controller Value: %i\n", (int) charArray[2]);
+        if (handle_out != 0)
+        {
+            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+        }
     }
     ;
 
@@ -527,10 +599,52 @@ void Laser_Off(void)
 
 }
 
+namespace Coolio
+{
+namespace Gansta_s_Paradise
+{
+    struct timeval tv1, tv2;
+
+    char Melody[] = {0, 0, 0, 0, -1, -1, 0, -5}; // do do do do si si do sol  (and loop)
+    void Note_ShortDuration(int NoteNumber)
+    {
+        TMidiNoteOnEvent no1(2,NoteNumber, 100);
+        ExecuteAfterTimeout(Chord1_Off_Thread, 200);
+        TMidiNoteOffEvent no2(2, NoteNumber, 0);
+    }
+
+    void Start_NoteOn(void)
+    {
+        gettimeofday(&tv1, NULL);
+        TMidiNoteOnEvent
+    ExecuteAfterTimeout(Chord1_Off_Thread, 600);
+
+    }
+
+
+    void Start_NoteOff(void)
+    {
+
+
+    }
+
+
+    void Stop(void)
+    {
+
+
+    }
+
+}
+
+
+}
+
 
 extern "C" void showlist(void);
 extern "C" int main_TODO(int argc, char **argv);
-extern "C" void seq_midi_tempo_direct(int tempo);
+extern "C" void seq_midi_tempo_direct(float skew, float bpm_min, float bpm_max);
+extern "C" void pmidiStop(void);
 
 unsigned int SequencerRunning = 0;
 
@@ -541,8 +655,25 @@ void StopSequencer(void)
 {
     if (thread_sequencer != NULL)
     {
+
+        pmidiStop();
+
         pthread_cancel(thread_sequencer);
         thread_sequencer = NULL;
+
+        sleep(1);
+
+        StartRawMidiOut();
+
+        // all sounds off for all channels
+        for (unsigned int i = 1; i<=16; i++)
+        {
+            TMidiControlChange cc(i, 0x78, 0);
+            TMidiControlChange cc2(i, 0x79, 0);
+            TMidiControlChange cc3(i, 0x7B, 0);
+            TMidiControlChange cc4(i, 0x7C, 0);
+        }
+
     }
 
 }
@@ -552,9 +683,7 @@ void * ThreadSequencerFunction (void * params)
 {
 
 
-
-    snd_rawmidi_drain(handle_out);
-    snd_rawmidi_close(handle_out);
+    StopRawMidiOut();
 
     SequencerRunning = 1;
     showlist();
@@ -567,8 +696,9 @@ void * ThreadSequencerFunction (void * params)
     char * (argv1[4]) =
     { str10, str11, str12, str13 };
     main_TODO(argc, argv1);
+    StartRawMidiOut();
 
-    StopSequencer();
+    thread_sequencer = NULL;
 
 }
 
@@ -621,44 +751,30 @@ void AveMaria_Stop(void)
 
 }
 
-
-
-
-
-
 void *threadMidiAutomaton(void * ptr)
 {
     int err;
     int thru = 0;
     int verbose = 1;
-    char *device_in = NULL;
-    char *device_out = NULL;
 
     int fd_in = -1, fd_out = -1;
-    char device_in_str[20];
-    char device_out_str[20];
-    strcpy(device_in_str, "hw:1,0,0");
-    strcpy(device_out_str, "hw:1,0,0");
-
-    device_in = device_in_str;
-    device_out = device_out_str;
 
     if (verbose)
     {
         fprintf(stderr, "Using: \n");
         fprintf(stderr, "Input: ");
-        if (device_in)
+        if (device_in_str)
         {
-            fprintf(stderr, "device %s\n", device_in);
+            fprintf(stderr, "device %s\n", device_in_str);
         }
         else
         {
             fprintf(stderr, "NONE\n");
         }
         fprintf(stderr, "Output: ");
-        if (device_out)
+        if (device_out_str)
         {
-            fprintf(stderr, "device %s\n", device_out);
+            fprintf(stderr, "device %s\n", device_out_str);
         }
         else
         {
@@ -666,25 +782,9 @@ void *threadMidiAutomaton(void * ptr)
         }
     }
 
-    if (device_in)
-    {
-        err = snd_rawmidi_open(&handle_in, NULL, device_in, 0);
-        if (err)
-        {
-            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_in, err);
-        }
-    }
-
+    StartRawMidiIn();
+    StartRawMidiOut();
 //    signal(SIGINT,sighandler);
-    if (device_out)
-    {
-        err = snd_rawmidi_open(NULL, &handle_out, device_out, 0);
-        if (err)
-        {
-            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_out,
-                    err);
-        }
-    }
     if (!thru)
     {
         if (handle_in)
@@ -729,7 +829,7 @@ void *threadMidiAutomaton(void * ptr)
 
                 case smWaitMidiNoteChar2:
                     snd_rawmidi_read(handle_in, &ch, 1);
-                    if (ch >= 1 && ch <= 5)
+                    if (ch >= 1 && ch <= 6)
                     {
                         stateMachine = smWaitMidiNoteChar3;
                         rxNote = ch;
@@ -830,6 +930,16 @@ void *threadMidiAutomaton(void * ptr)
 
                     }
 
+
+                    if (rxNote == 6 && rxVolume > 0)
+                    {
+                        // Ave Maria
+                        AveMaria::AveMaria_Stop();
+
+
+                    }
+
+
                     stateMachine = smWaitMidiChar1;
                     break;
 
@@ -838,7 +948,7 @@ void *threadMidiAutomaton(void * ptr)
                     {
                         if(SequencerRunning == 1)
                         {
-                            seq_midi_tempo_direct(128 - rxControllerValue);
+                            seq_midi_tempo_direct(((float)rxControllerValue- 60)/60, 100, 160);
                         }
                     }
 
@@ -853,16 +963,9 @@ void *threadMidiAutomaton(void * ptr)
 
     fprintf(stderr, "Closing\n");
 
-    if (handle_in)
-    {
-        snd_rawmidi_drain(handle_in);
-        snd_rawmidi_close(handle_in);
-    }
-    if (handle_out)
-    {
-        snd_rawmidi_drain(handle_out);
-        snd_rawmidi_close(handle_out);
-    }
+    StopRawMidiIn();
+    StopRawMidiOut();
+
     if (fd_in != -1)
     {
         close(fd_in);
