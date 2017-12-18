@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1513551638 source:/home/stephane/oxford/devel/oxford/pmidi.c
+1513551785 source:/home/stephane/oxford/devel/oxford/pmidi.c
 	<stdio.h>
 	<stdarg.h>
 	<stdlib.h>
@@ -17,7 +17,7 @@
 	<setjmp.h>
 	"libintl.h"
 
-1513550185 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+1513640800 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -27,4 +27,5 @@
 	<linux/input.h>
 	<termios.h>
 	<math.h>
+	<sys/time.h>
 

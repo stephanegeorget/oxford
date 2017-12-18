@@ -7,6 +7,7 @@
 #include <linux/input.h>
 #include <termios.h>
 #include <math.h>
+#include <sys/time.h>
 //#include <sstream>
 
 namespace pmidi
@@ -104,8 +105,9 @@ start_wait:
 
 typedef struct
 {
-    void (*pFunction)(void);
+    void (*pFunction)(void *);
     unsigned long int Delay_ms;
+    void * pFuncParam;
 } TExecuteAfterTimeoutStruct;
 
 #pragma reentrant
@@ -114,12 +116,13 @@ void * ExecuteAfterTimeout_Thread(void * pMessage)
     printf("ExecuteAfterTimeout_Thread called\n");
     waitMilliseconds(((TExecuteAfterTimeoutStruct*) pMessage)->Delay_ms);
 
-    (((TExecuteAfterTimeoutStruct *) pMessage)->pFunction)();
+    // call pFunction(pFuncParam)
+    (((TExecuteAfterTimeoutStruct *) pMessage)->pFunction)( ((TExecuteAfterTimeoutStruct *) pMessage)->pFuncParam );
     free(pMessage);
 }
 
 #pragma reentrant
-void ExecuteAfterTimeout(void (*pFunc)(void), unsigned long int Timeout_ms)
+void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
 {
     printf("ExecuteAfterTimeout called\n");
     pthread_t thread;
@@ -139,6 +142,13 @@ void ExecuteAfterTimeout(void (*pFunc)(void), unsigned long int Timeout_ms)
     }
     printf("ExecuteAfterTimeout exits\n");
 }
+
+#pragma reentrant
+void ExecuteAsynchronous(void (*pFunc)(void *), void * pFuncParam)
+{
+    ExecuteAfterTimeout(pFunc, 0, pFuncParam);
+}
+
 
 static void usage(void)
 {
@@ -178,9 +188,7 @@ typedef struct
     unsigned char Velocity;
     unsigned char Channel;
     unsigned int DurationMS;
-    unsigned int Program;
     pthread_t thread;
-
 } TPlayNoteMsg;
 
 class TMidiNoteOnEvent
@@ -319,9 +327,9 @@ public:
 
 void * playNoteThread(void * msg)
 {
-    TMidiProgramChange MidiProgramChange(2, ((TPlayNoteMsg*) msg)->Program);
+//    TMidiProgramChange MidiProgramChange(2, ((TPlayNoteMsg*) msg)->Program);
     TMidiNoteOnEvent MidiNoteOnEvent((TPlayNoteMsg *) msg);
-    sleep(1);
+    waitMilliseconds(((TPlayNoteMsg*) msg)->DurationMS);
     printf("blah");
     ((TPlayNoteMsg *) msg)->Velocity = 0;
     TMidiNoteOffEvent MidiNoteOffEvent((TPlayNoteMsg *) msg);
@@ -330,14 +338,14 @@ void * playNoteThread(void * msg)
     return 0;
 }
 
-void midiPlay(int octave, unsigned char noteInScale, int program)
+
+void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int DurationMS_param, int Velocity_param)
 {
     TPlayNoteMsg * PlayNoteMsg = new TPlayNoteMsg;
-    PlayNoteMsg->Channel = 2;
-    PlayNoteMsg->DurationMS = 1000;
-    PlayNoteMsg->NoteNumber = octave * 12 + noteInScale;
-    PlayNoteMsg->Velocity = 100;
-    PlayNoteMsg->Program = program;
+    PlayNoteMsg->Channel = Channel_param;
+    PlayNoteMsg->DurationMS = DurationMS_param;
+    PlayNoteMsg->NoteNumber = NoteNumber_param;
+    PlayNoteMsg->Velocity = Velocity_param;
 
     int iret;
     pthread_t thread;
@@ -351,6 +359,13 @@ void midiPlay(int octave, unsigned char noteInScale, int program)
     }
 
 }
+
+void midiPlay(int octave, unsigned char noteInScale)
+{
+    PlayNote(2, octave *12 + noteInScale, 1000, 100);
+}
+
+
 
 int getkey()
 {
@@ -409,79 +424,81 @@ void * threadKeyboard(void * ptr)
         case 195:
             program--;
             printf("Program %i\n", program);
+            {TMidiProgramChange PC1(2, program);}
             break;
         case '*':
             program++;
             printf("Program %i\n", program);
+            {TMidiProgramChange PC2(2, program);}
             break;
 
         case 'a':
             noteInScale = 0;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'é':
             noteInScale = 1;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'z':
             noteInScale = 2;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case '"':
             noteInScale = 3;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'e':
             noteInScale = 4;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'r':
             noteInScale = 5;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case '(':
             noteInScale = 6;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 't':
             noteInScale = 7;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case '-':
             noteInScale = 8;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'y':
             noteInScale = 9;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'è':
             noteInScale = 10;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'u':
             noteInScale = 11;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'i':
             noteInScale = 12;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'ç':
             noteInScale = 13;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'o':
             noteInScale = 14;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'à':
             noteInScale = 15;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         case 'p':
             noteInScale = 16;
-            midiPlay(octave, noteInScale, program);
+            midiPlay(octave, noteInScale);
             break;
         }
     }
@@ -500,7 +517,7 @@ void Chord1_On(void)
 
 }
 
-void Chord1_Off_Thread(void)
+void Chord1_Off_Thread(void * pGobble)
 {
     TMidiNoteOffEvent no(2, 53, 0);
     TMidiNoteOffEvent no1(2, 56, 0);
@@ -508,7 +525,7 @@ void Chord1_Off_Thread(void)
 
 void Chord1_Off(void)
 {
-    ExecuteAfterTimeout(Chord1_Off_Thread, 600);
+    ExecuteAfterTimeout(Chord1_Off_Thread, 600, NULL);
 }
 
 void Chord2_On(void)
@@ -517,7 +534,7 @@ void Chord2_On(void)
     TMidiNoteOnEvent no1(2, 63, 100);
 }
 
-void Chord2_Off_Thread(void)
+void Chord2_Off_Thread(void * pGobble)
 {
     TMidiNoteOffEvent no(2, 60, 0);
     TMidiNoteOffEvent no1(2, 63, 0);
@@ -525,7 +542,7 @@ void Chord2_Off_Thread(void)
 
 void Chord2_Off(void)
 {
-    ExecuteAfterTimeout(Chord2_Off_Thread, 600);
+    ExecuteAfterTimeout(Chord2_Off_Thread, 600, NULL);
 }
 
 void Chord3_On(void)
@@ -534,7 +551,7 @@ void Chord3_On(void)
     TMidiNoteOnEvent no1(2, 43, 100);
 }
 
-void Chord3_Off_Thread(void)
+void Chord3_Off_Thread(void * pGobble)
 {
     TMidiNoteOffEvent no(2, 50, 0);
     TMidiNoteOffEvent no1(2, 43, 0);
@@ -542,7 +559,7 @@ void Chord3_Off_Thread(void)
 
 void Chord3_Off(void)
 {
-    ExecuteAfterTimeout(Chord3_Off_Thread, 600);
+    ExecuteAfterTimeout(Chord3_Off_Thread, 600, NULL);
 }
 
 }
@@ -604,26 +621,64 @@ namespace Coolio
 namespace Gansta_s_Paradise
 {
     struct timeval tv1, tv2;
-
-    char Melody[] = {0, 0, 0, 0, -1, -1, 0, -5}; // do do do do si si do sol  (and loop)
-    void Note_ShortDuration(int NoteNumber)
+    pthread_t thread;
+    unsigned int const MelodySize = 8;
+    int Melody[MelodySize] = {0, 0, 0, 0, -1, -1, 0, -5}; // do do do do si si do sol  (and loop)
+    unsigned int waitTime_ms = 1000; // type must be atomic
+    unsigned int rootNote = 60;
+    unsigned int index = 0;
+    unsigned int mutex = 0;
+    void indexBumpUp(void)
     {
-        TMidiNoteOnEvent no1(2,NoteNumber, 100);
-        ExecuteAfterTimeout(Chord1_Off_Thread, 200);
-        TMidiNoteOffEvent no2(2, NoteNumber, 0);
+        index++;
+        index%=MelodySize;
+    }
+
+    void PlayChord(void)
+    {
+        PlayNote(2, Melody[index] + rootNote -12, waitTime_ms /5, 100);
+        waitMilliseconds(50);
+        PlayNote(2, Melody[index] + rootNote, waitTime_ms /4, 100);
+    }
+
+    void * RunSequence(void *)
+    {
+        mutex = 1;
+        while(1)
+        {
+            indexBumpUp();
+            PlayChord();
+            waitMilliseconds(waitTime_ms);
+
+        }
     }
 
     void Start_NoteOn(void)
     {
+        if(mutex == 0)
+        {
+        TMidiProgramChange pc(2, 49);
+        index = 0;
+        PlayChord();
         gettimeofday(&tv1, NULL);
-        TMidiNoteOnEvent
-    ExecuteAfterTimeout(Chord1_Off_Thread, 600);
-
+        }
     }
 
 
     void Start_NoteOff(void)
     {
+        gettimeofday(&tv2, NULL);
+        // Compute time lapse between key press and release
+        // that will be our initial tempo
+        waitTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
+
+        int iret1;
+        iret1 = pthread_create(&thread, NULL, RunSequence, NULL);
+        if (iret1)
+        {
+            fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+            exit(EXIT_FAILURE);
+        }
 
 
     }
@@ -631,8 +686,11 @@ namespace Gansta_s_Paradise
 
     void Stop(void)
     {
-
-
+        if(mutex == 1)
+        {
+        pthread_cancel(thread);
+        }
+        mutex = 0;
     }
 
 }
@@ -829,7 +887,7 @@ void *threadMidiAutomaton(void * ptr)
 
                 case smWaitMidiNoteChar2:
                     snd_rawmidi_read(handle_in, &ch, 1);
-                    if (ch >= 1 && ch <= 6)
+                    if (ch >= 1 && ch <= 8)
                     {
                         stateMachine = smWaitMidiNoteChar3;
                         rxNote = ch;
@@ -938,6 +996,27 @@ void *threadMidiAutomaton(void * ptr)
 
 
                     }
+
+
+                    if (rxNote == 7 && rxVolume > 0)
+                    {
+                        Coolio::Gansta_s_Paradise::Start_NoteOn();
+
+                    }
+
+                    if (rxNote == 7 && rxVolume == 0)
+                    {
+                        Coolio::Gansta_s_Paradise::Start_NoteOff();
+
+                    }
+
+
+                    if (rxNote == 8 && rxVolume > 0)
+                    {
+                        Coolio::Gansta_s_Paradise::Stop();
+
+                    }
+
 
 
                     stateMachine = smWaitMidiChar1;
