@@ -8,19 +8,194 @@
 #include <termios.h>
 #include <math.h>
 #include <sys/time.h>
+#include <ncurses.h>
+#include <list>
+#include <string>
 //#include <sstream>
-
-namespace pmidi
-{
-
-}
-
 
 
 int stop = 0;
 snd_rawmidi_t *handle_in = 0, *handle_out = 0;
 char device_in_str[] = "hw:1,0,0";
 char device_out_str[] = "hw:1,0,0";
+
+WINDOW * win_midi_messages;
+WINDOW * win_error_messages;
+WINDOW * win_debug_messages;
+WINDOW * win_context_current;
+WINDOW * win_context_change;
+WINDOW * win_context_usage;
+
+
+
+
+
+void ContextDecreaseStart(void);
+void ContextDecreaseStop(void);
+void ContextIncreaseStart(void);
+void ContextIncreaseStop(void);
+
+
+class TPedalAnalog
+{
+private:
+    int Number;
+    void (* OnChange)(int);
+
+public:
+    TPedalAnalog(int Number_param, void (*Function1_param)(int))
+    {
+        Number = 0;
+        OnChange = NULL;
+        if (Number_param < 1 || Number_param > 2)
+        {
+
+            wprintw(win_error_messages, "TPedalAnalog: wrong parameter");
+            return;
+        }
+        Number = Number_param;
+        OnChange = Function1_param;
+    }
+
+    void Change(int param)
+    {
+        OnChange(param);
+    }
+
+    int GetNumber(void)
+    {
+        return Number;
+    }
+};
+
+
+
+
+
+class TPedalDigital
+{
+private:
+    int Number;
+    void (* OnPress)(void);
+    void (* OnRelease)(void);
+
+public:
+    TPedalDigital(int Number_param, void (*Function1_param)(void), void (*Function2_param)(void))
+    {
+        Number = 0;
+        OnPress = NULL;
+        OnRelease = NULL;
+        if (Number_param < 1 || Number_param > 10)
+        {
+
+            wprintw(win_error_messages, "TPedalDigital: wrong parameter");
+            return;
+        }
+        if (Number_param == 6)
+        {
+            OnPress = ContextDecreaseStart;
+            OnRelease = ContextDecreaseStop;
+        }
+        if (Number_param == 7)
+        {
+            OnPress = ContextIncreaseStart;
+            OnRelease = ContextDecreaseStop;
+        }
+        Number = Number_param;
+        OnPress = Function1_param;
+        OnRelease = Function2_param;
+    }
+
+    void Press(void)
+    {
+        OnPress();
+    }
+
+    void Release(void)
+    {
+        OnRelease();
+    }
+
+    int GetNumber(void)
+    {
+        return Number;
+    }
+};
+
+
+
+
+
+
+typedef struct
+{
+    std::list<TPedalDigital> PedalsDigital;
+    std::list<TPedalAnalog> PedalsAnalog;
+} TPedalboard;
+
+
+typedef struct
+{
+    std::string Author;
+    std::string SongName;
+    TPedalboard Pedalboard;
+} TContext;
+
+//TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
+
+std::list<TContext> PlaylistData;
+std::list<TContext>::iterator Playlist;
+
+TContext cAveMaria, cCapitaineFlam, cWildThoughts;
+
+
+
+
+
+
+
+
+
+
+
+
+int startx, starty, width, height;
+int ch;
+
+
+
+
+
+
+void ContextDecreaseStart(void)
+{
+Playlist--;
+
+
+}
+
+void ContextDecreaseStop(void)
+{
+
+
+
+}
+
+
+void ContextIncreaseStart(void)
+{
+Playlist++;
+
+
+
+}
+
+void ContextIncreaseStop(void)
+{
+
+
+
+}
 
 
 
@@ -424,12 +599,16 @@ void * threadKeyboard(void * ptr)
         case 195:
             program--;
             printf("Program %i\n", program);
-            {TMidiProgramChange PC1(2, program);}
+            {
+                TMidiProgramChange PC1(2, program);
+            }
             break;
         case '*':
             program++;
             printf("Program %i\n", program);
-            {TMidiProgramChange PC2(2, program);}
+            {
+                TMidiProgramChange PC2(2, program);
+            }
             break;
 
         case 'a':
@@ -566,9 +745,6 @@ void Chord3_Off(void)
 
 }
 
-namespace JJDebout
-{
-
 namespace CapitaineFlam
 {
 
@@ -614,89 +790,84 @@ void Laser_Off(void)
 
 }
 
-}
 
-namespace Coolio
-{
 namespace Gansta_s_Paradise
 {
-    struct timeval tv1, tv2;
-    pthread_t thread;
-    unsigned int const MelodySize = 8;
-    int Melody[MelodySize] = {0, 0, 0, 0, -1, -1, 0, -5}; // do do do do si si do sol  (and loop)
-    unsigned int waitTime_ms = 1000; // type must be atomic
-    unsigned int rootNote = 60;
-    unsigned int index = 0;
-    unsigned int mutex = 0;
-    void indexBumpUp(void)
+struct timeval tv1, tv2;
+pthread_t thread;
+unsigned int const MelodySize = 8;
+int Melody[MelodySize] = {0, 0, 0, 0, -1, -1, 0, -5}; // do do do do si si do sol  (and loop)
+unsigned int waitTime_ms = 1000; // type must be atomic
+unsigned int rootNote = 60;
+unsigned int index = 0;
+unsigned int mutex = 0;
+void indexBumpUp(void)
+{
+    index++;
+    index%=MelodySize;
+}
+
+void PlayChord(void)
+{
+    PlayNote(2, Melody[index] + rootNote -12, waitTime_ms /5, 100);
+    waitMilliseconds(50);
+    PlayNote(2, Melody[index] + rootNote, waitTime_ms /4, 100);
+}
+
+void * RunSequence(void *)
+{
+    mutex = 1;
+    while(1)
     {
-        index++;
-        index%=MelodySize;
+        indexBumpUp();
+        PlayChord();
+        waitMilliseconds(waitTime_ms);
+
     }
+}
 
-    void PlayChord(void)
+void Start_NoteOn(void)
+{
+    if(mutex == 0)
     {
-        PlayNote(2, Melody[index] + rootNote -12, waitTime_ms /5, 100);
-        waitMilliseconds(50);
-        PlayNote(2, Melody[index] + rootNote, waitTime_ms /4, 100);
-    }
-
-    void * RunSequence(void *)
-    {
-        mutex = 1;
-        while(1)
-        {
-            indexBumpUp();
-            PlayChord();
-            waitMilliseconds(waitTime_ms);
-
-        }
-    }
-
-    void Start_NoteOn(void)
-    {
-        if(mutex == 0)
-        {
         TMidiProgramChange pc(2, 49);
         index = 0;
         PlayChord();
         gettimeofday(&tv1, NULL);
-        }
+    }
+}
+
+
+void Start_NoteOff(void)
+{
+    gettimeofday(&tv2, NULL);
+    // Compute time lapse between key press and release
+    // that will be our initial tempo
+    waitTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
+
+    int iret1;
+    iret1 = pthread_create(&thread, NULL, RunSequence, NULL);
+    if (iret1)
+    {
+        fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+        exit(EXIT_FAILURE);
     }
 
 
-    void Start_NoteOff(void)
+}
+
+
+void Stop(void)
+{
+    if(mutex == 1)
     {
-        gettimeofday(&tv2, NULL);
-        // Compute time lapse between key press and release
-        // that will be our initial tempo
-        waitTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
-
-        int iret1;
-        iret1 = pthread_create(&thread, NULL, RunSequence, NULL);
-        if (iret1)
-        {
-            fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
-            exit(EXIT_FAILURE);
-        }
-
-
-    }
-
-
-    void Stop(void)
-    {
-        if(mutex == 1)
-        {
         pthread_cancel(thread);
-        }
-        mutex = 0;
     }
+    mutex = 0;
+}
 
 }
 
-
-}
 
 
 extern "C" void showlist(void);
@@ -807,6 +978,13 @@ void AveMaria_Stop(void)
 }
 
 
+void ChangeTempo(int Value)
+{
+    seq_midi_tempo_direct(((float)Value- 60)/60, 100, 160);
+}
+
+
+
 }
 
 void *threadMidiAutomaton(void * ptr)
@@ -859,7 +1037,7 @@ void *threadMidiAutomaton(void * ptr)
                 smProcessControllerChange,
                 smWaitMidiNoteChar2,
                 smWaitMidiNoteChar3,
-                smProcessRequest,
+                smProcessNoteEvent,
                 smInterpretMidiNote,
                 smSendMidiNotes
             } stateMachine = smInit;
@@ -903,7 +1081,7 @@ void *threadMidiAutomaton(void * ptr)
                 case smWaitMidiNoteChar3:
                     snd_rawmidi_read(handle_in, &ch, 1);
                     rxVolume = ch;
-                    stateMachine = smProcessRequest;
+                    stateMachine = smProcessNoteEvent;
                     break;
 
                 case smWaitMidiControllerChangeChar2:
@@ -928,99 +1106,33 @@ void *threadMidiAutomaton(void * ptr)
                     printf("Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
                     break;
 
-                case smProcessRequest:
-                    if (rxNote == 1 && rxVolume > 0)
+                case smProcessNoteEvent:
+                {
+                    TContext context;
+                    context = *Playlist;
+                    for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
+                            it != context.Pedalboard.PedalsDigital.end(); \
+                            it++)
                     {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord1_On();
+                        TPedalDigital PedalDigital = *it;
+                        if (rxNote == PedalDigital.GetNumber())
+                        {
+                            if (rxVolume > 0)
+                            {
+                                PedalDigital.Press();
+                            }
+                            if (rxVolume == 0)
+                            {
+                                PedalDigital.Release();
+                            }
+                        }
                     }
 
-                    if (rxNote == 1 && rxVolume == 0)
-                    {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord1_Off();
-
-                    }
-
-                    if (rxNote == 2 && rxVolume > 0)
-                    {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord2_On();
-                    }
-
-                    if (rxNote == 2 && rxVolume == 0)
-                    {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord2_Off();
-                    }
-
-                    if (rxNote == 3 && rxVolume > 0)
-                    {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord3_On();
-                    }
-
-                    if (rxNote == 3 && rxVolume == 0)
-                    {
-                        // Rihanna, Wild Thoughts
-                        Rihanna::WildThoughts::Chord3_Off();
-                    }
-
-                    if (rxNote == 4 && rxVolume > 0)
-                    {
-                        // Capitaine Flam - Laser
-                        JJDebout::CapitaineFlam::Laser_On();
-
-                    }
-
-                    if (rxNote == 4 && rxVolume == 0)
-                    {
-                        // Capitaine Flam - Laser
-                        JJDebout::CapitaineFlam::Laser_Off();
-
-                    }
-
-                    if (rxNote == 5 && rxVolume > 0)
-                    {
-                        // Ave Maria
-                        AveMaria::AveMaria_Start();
+                }
 
 
-                    }
-
-
-                    if (rxNote == 6 && rxVolume > 0)
-                    {
-                        // Ave Maria
-                        AveMaria::AveMaria_Stop();
-
-
-                    }
-
-
-                    if (rxNote == 7 && rxVolume > 0)
-                    {
-                        Coolio::Gansta_s_Paradise::Start_NoteOn();
-
-                    }
-
-                    if (rxNote == 7 && rxVolume == 0)
-                    {
-                        Coolio::Gansta_s_Paradise::Start_NoteOff();
-
-                    }
-
-
-                    if (rxNote == 8 && rxVolume > 0)
-                    {
-                        Coolio::Gansta_s_Paradise::Stop();
-
-                    }
-
-
-
-                    stateMachine = smWaitMidiChar1;
-                    break;
+                stateMachine = smWaitMidiChar1;
+                break;
 
                 case smProcessControllerChange:
                     if (rxControllerNumber == 50)
@@ -1056,10 +1168,116 @@ void *threadMidiAutomaton(void * ptr)
     return 0;
 }
 
+
+
+
+WINDOW *create_newwin(int height, int width, int starty, int startx)
+{
+    WINDOW *local_win;
+
+    local_win = newwin(height, width, starty, startx);
+    box(local_win, 0, 0);          /* 0, 0 gives default characters
+                                         * for the vertical and horizontal
+                                         * lines                        */
+    wrefresh(local_win);            /* Show that box                */
+
+    return local_win;
+}
+
+
+
+
+
+void destroy_win(WINDOW *local_win)
+{
+    /* box(local_win, ' ', ' '); : This won't produce the desired
+     * result of erasing the window. It will leave it's four corners
+     * and so an ugly remnant of window.
+     */
+    wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+    /* The parameters taken are
+     * 1. win: the window on which to operate
+     * 2. ls: character to be used for the left side of the window
+     * 3. rs: character to be used for the right side of the window
+     * 4. ts: character to be used for the top side of the window
+     * 5. bs: character to be used for the bottom side of the window
+     * 6. tl: character to be used for the top left corner of the window
+     * 7. tr: character to be used for the top right corner of the window
+     * 8. bl: character to be used for the bottom left corner of the window
+     * 9. br: character to be used for the bottom right corner of the window
+     */
+    wrefresh(local_win);
+    delwin(local_win);
+}
+
+
+void InitializePlaylist(void)
+{
+    cAveMaria.Author = "";
+    cAveMaria.SongName = "Ave Maria";
+    cAveMaria.Pedalboard.PedalsDigital = {  {1, AveMaria::AveMaria_Start, NULL},
+                                            {2, AveMaria::AveMaria_Stop, NULL}};
+    cAveMaria.Pedalboard.PedalsAnalog = {{1, AveMaria::ChangeTempo}};
+
+    cCapitaineFlam.Author = "Jean-Jacques Debout";
+    cCapitaineFlam.SongName = "Capitaine Flam";
+    cCapitaineFlam.Pedalboard.PedalsDigital = {{1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off}};
+
+    cWildThoughts.Author = "Rihanna";
+    cWildThoughts.SongName = "Wild Thoughts";
+
+    cWildThoughts.Pedalboard.PedalsDigital = {  {1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off}, \
+        {2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off}, \
+        {3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off}
+    };
+
+
+
+    PlaylistData.clear();
+    PlaylistData.push_back(cAveMaria);
+    PlaylistData.push_back(cCapitaineFlam);
+    PlaylistData.push_back(cWildThoughts);
+
+    // For each context, add the two digital pedals 6 and 7
+
+    Playlist = PlaylistData.begin();
+//    cAveMaria.Pedalboard =  { { {1, AveMaria::AveMaria_Start, NULL}, {2, AveMaria::AveMaria_Stop, NULL} }, { {1, AveMaria::ChangeTempo}} };
+
+
+
+}
+
+
 int main(int argc, char** argv)
 {
-    pthread_t thread1;
 
+    InitializePlaylist();
+
+
+    initscr();                      /* Start curses mode            */
+    cbreak();                       /* Line buffering disabled, Pass on
+                                    /* every thing to me           */
+    keypad(stdscr, TRUE);           /* I need that nifty F1         */
+
+    height = 3;
+    width = 10;
+    starty = (LINES - height) / 2;  /* Calculating for a center placement */
+    startx = (COLS - width) / 2;    /* of the window                */
+    //printw("OXFORD");
+    refresh();
+    win_context_change = create_newwin(20, 20, 0, 0);
+    box(win_context_change, 0, 0);
+    win_context_current = create_newwin(20, 15, 0, 0);
+
+    //exit(1);
+
+
+
+
+
+
+
+    pthread_t thread1;
     // Create midi automaton thread
     const char *message1 = "";
     int iret1;
@@ -1080,3 +1298,4 @@ int main(int argc, char** argv)
     threadKeyboard(0);
 
 }
+

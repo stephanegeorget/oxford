@@ -35,6 +35,7 @@
 		<Linker>
 			<Add library="pthread" />
 			<Add library="asound" />
+			<Add library="ncurses" />
 		</Linker>
 		<Unit filename="oxford_main.cpp" />
 		<Unit filename="pmidi.c">

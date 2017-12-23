@@ -17,7 +17,7 @@
 	<setjmp.h>
 	"libintl.h"
 
-1513640800 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+1513986649 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -28,4 +28,7 @@
 	<termios.h>
 	<math.h>
 	<sys/time.h>
+	<ncurses.h>
+	<list>
+	<string>
 
