@@ -39,32 +39,35 @@ void ContextIncreaseStop(void);
 class TPedalAnalog
 {
 private:
-    int Number;
+    int ControllerNumber;
     void (* OnChange)(int);
 
 public:
-    TPedalAnalog(int Number_param, void (*Function1_param)(int))
+    TPedalAnalog(int ControllerNumber_param, void (*Function1_param)(int))
     {
-        Number = 0;
+        ControllerNumber = 0;
         OnChange = NULL;
-        if (Number_param < 1 || Number_param > 2)
+        if (ControllerNumber_param < 1 || ControllerNumber_param > 127)
         {
 
             wprintw(win_error_messages, "TPedalAnalog: wrong parameter");
             return;
         }
-        Number = Number_param;
+        ControllerNumber = ControllerNumber_param;
         OnChange = Function1_param;
     }
 
     void Change(int param)
     {
-        OnChange(param);
+        if(OnChange != NULL)
+        {
+            OnChange(param);
+        }
     }
 
-    int GetNumber(void)
+    int GetControllerNumber(void)
     {
-        return Number;
+        return ControllerNumber;
     }
 };
 
@@ -91,16 +94,6 @@ public:
             wprintw(win_error_messages, "TPedalDigital: wrong parameter");
             return;
         }
-        if (Number_param == 6)
-        {
-            OnPress = ContextDecreaseStart;
-            OnRelease = ContextDecreaseStop;
-        }
-        if (Number_param == 7)
-        {
-            OnPress = ContextIncreaseStart;
-            OnRelease = ContextDecreaseStop;
-        }
         Number = Number_param;
         OnPress = Function1_param;
         OnRelease = Function2_param;
@@ -108,12 +101,18 @@ public:
 
     void Press(void)
     {
-        OnPress();
+        if (OnPress != NULL)
+        {
+            OnPress();
+        }
     }
 
     void Release(void)
     {
-        OnRelease();
+        if (OnRelease != NULL)
+        {
+            OnRelease();
+        }
     }
 
     int GetNumber(void)
@@ -127,19 +126,28 @@ public:
 
 
 
-typedef struct
+class TPedalboard
 {
+public:
     std::list<TPedalDigital> PedalsDigital;
     std::list<TPedalAnalog> PedalsAnalog;
-} TPedalboard;
+    TPedalboard(void)
+    {
+//        TPedalDigital myPedalDigital(6,NULL,NULL);
+        PedalsDigital.push_back(TPedalDigital(6, ContextDecreaseStart, ContextDecreaseStop));
+        PedalsDigital.push_back(TPedalDigital(7, ContextIncreaseStart, ContextIncreaseStop));
+    }
+};
 
 
-typedef struct
+class TContext
 {
+public:
     std::string Author;
     std::string SongName;
     TPedalboard Pedalboard;
-} TContext;
+};
+
 
 //TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
 
@@ -169,8 +177,10 @@ int ch;
 
 void ContextDecreaseStart(void)
 {
-Playlist--;
-
+    if (Playlist != PlaylistData.begin())
+    {
+        Playlist--;
+    }
 
 }
 
@@ -184,8 +194,10 @@ void ContextDecreaseStop(void)
 
 void ContextIncreaseStart(void)
 {
-Playlist++;
-
+    if (Playlist != PlaylistData.end())
+    {
+        Playlist++;
+    }
 
 
 }
@@ -949,6 +961,7 @@ void StartSequencer(char * MidiFilename)
     {
         printf("StartSequencer called twice\n");
     }
+
 }
 
 
@@ -966,15 +979,13 @@ char AveMaria_MidiName[] = "am.mid";
 
 void AveMaria_Start(void)
 {
-    StartSequencer(AveMaria_MidiName);
-
+        StartSequencer(AveMaria_MidiName);
 }
 
 
 void AveMaria_Stop(void)
 {
     StopSequencer();
-
 }
 
 
@@ -1135,19 +1146,30 @@ void *threadMidiAutomaton(void * ptr)
                 break;
 
                 case smProcessControllerChange:
-                    if (rxControllerNumber == 50)
+                {
+                    TContext context;
+                    context = *Playlist;
+                    for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
+                            it != context.Pedalboard.PedalsAnalog.end(); \
+                            it++)
                     {
-                        if(SequencerRunning == 1)
+                        TPedalAnalog PedalAnalog = *it;
+                        if (rxControllerNumber == PedalAnalog.GetControllerNumber())
                         {
-                            seq_midi_tempo_direct(((float)rxControllerValue- 60)/60, 100, 160);
+                            PedalAnalog.Change(rxControllerValue);
                         }
+
+
                     }
+                }
+                stateMachine = smWaitMidiChar1;
+
+                break;
 
                 default:
                     stateMachine = smInit;
 
                 }
-
             }
         }
     }
@@ -1215,21 +1237,21 @@ void InitializePlaylist(void)
 {
     cAveMaria.Author = "";
     cAveMaria.SongName = "Ave Maria";
-    cAveMaria.Pedalboard.PedalsDigital = {  {1, AveMaria::AveMaria_Start, NULL},
-                                            {2, AveMaria::AveMaria_Stop, NULL}};
-    cAveMaria.Pedalboard.PedalsAnalog = {{1, AveMaria::ChangeTempo}};
+    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, AveMaria::AveMaria_Start, NULL));
+    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, AveMaria::AveMaria_Stop, NULL));
+    cAveMaria.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, AveMaria::ChangeTempo));
 
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
-    cCapitaineFlam.Pedalboard.PedalsDigital = {{1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off}};
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off));
 
     cWildThoughts.Author = "Rihanna";
     cWildThoughts.SongName = "Wild Thoughts";
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off));
 
-    cWildThoughts.Pedalboard.PedalsDigital = {  {1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off}, \
-        {2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off}, \
-        {3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off}
-    };
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off));
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off));
+
 
 
 
@@ -1238,7 +1260,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(cCapitaineFlam);
     PlaylistData.push_back(cWildThoughts);
 
-    // For each context, add the two digital pedals 6 and 7
 
     Playlist = PlaylistData.begin();
 //    cAveMaria.Pedalboard =  { { {1, AveMaria::AveMaria_Start, NULL}, {2, AveMaria::AveMaria_Stop, NULL} }, { {1, AveMaria::ChangeTempo}} };
@@ -1267,7 +1288,7 @@ int main(int argc, char** argv)
     refresh();
     win_context_change = create_newwin(20, 20, 0, 0);
     box(win_context_change, 0, 0);
-    win_context_current = create_newwin(20, 15, 0, 0);
+    win_context_current = create_newwin(3, 20, 15, 0);
 
     //exit(1);
 
