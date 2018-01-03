@@ -22,8 +22,9 @@ char device_out_str[] = "hw:1,0,0";
 WINDOW * win_midi_messages;
 WINDOW * win_error_messages;
 WINDOW * win_debug_messages;
+WINDOW * win_context_prev;
 WINDOW * win_context_current;
-WINDOW * win_context_change;
+WINDOW * win_context_next;
 WINDOW * win_context_usage;
 
 
@@ -220,7 +221,7 @@ void StartRawMidiIn(void)
         int err = snd_rawmidi_open(&handle_in, NULL, device_in_str, 0);
         if (err)
         {
-            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
+            wprintw(win_error_messages, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
         }
     }
 }
@@ -233,8 +234,7 @@ void StartRawMidiOut(void)
         int err = snd_rawmidi_open(NULL, &handle_out, device_out_str, 0);
         if (err)
         {
-            fprintf(stderr, "snd_rawmidi_open %s failed: %d\n", device_out_str,
-                    err);
+            wprintw(win_error_messages, "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
         }
     }
 }
@@ -339,7 +339,7 @@ void ExecuteAsynchronous(void (*pFunc)(void *), void * pFuncParam)
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: fix me\n");
+    wprintw(win_error_messages, "usage: fix me\n");
 }
 
 
@@ -387,7 +387,7 @@ public:
 
     void sendToMidi(void)
     {
-        printf("Note number: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages, "Note number: %i\n", (int) charArray[1]);
         if (handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -451,7 +451,7 @@ private:
 
     void sendToMidi(void)
     {
-        printf("Note number: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages, "Program Change: %i\n", (int) charArray[1]);
         if(handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -484,8 +484,8 @@ private:
 
     void sendToMidi(void)
     {
-        printf("Control Change - Controller Number: %i\n", (int) charArray[1]);
-        printf("Control Change - Controller Value: %i\n", (int) charArray[2]);
+        wprintw(win_debug_messages, "Control Change - Controller Number: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages, "Control Change - Controller Value: %i\n", (int) charArray[2]);
         if (handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -506,7 +506,6 @@ public:
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (ControlNumber) & 0x7F;
         charArray[2] = (ControllerValue);
-        printf("Program Change: %i\n", (int) charArray[1]);
         sendToMidi();
     }
 
@@ -517,7 +516,7 @@ void * playNoteThread(void * msg)
 //    TMidiProgramChange MidiProgramChange(2, ((TPlayNoteMsg*) msg)->Program);
     TMidiNoteOnEvent MidiNoteOnEvent((TPlayNoteMsg *) msg);
     waitMilliseconds(((TPlayNoteMsg*) msg)->DurationMS);
-    printf("blah");
+    wprintw(win_debug_messages, "playNoteThread\n");
     ((TPlayNoteMsg *) msg)->Velocity = 0;
     TMidiNoteOffEvent MidiNoteOffEvent((TPlayNoteMsg *) msg);
 
@@ -1008,8 +1007,8 @@ void *threadMidiAutomaton(void * ptr)
 
     if (verbose)
     {
-        fprintf(stderr, "Using: \n");
-        fprintf(stderr, "Input: ");
+        wprintw(win_debug_messages, "Using: \n");
+        wprintw(win_debug_messages, "Input: ");
         if (device_in_str)
         {
             fprintf(stderr, "device %s\n", device_in_str);
@@ -1057,7 +1056,7 @@ void *threadMidiAutomaton(void * ptr)
             {
                 if (verbose)
                 {
-                    fprintf(stderr, "read %02x\n", ch);
+                    wprintw(win_midi_messages, "read %02x\n", ch);
                 }
 
                 switch (stateMachine)
@@ -1201,6 +1200,7 @@ WINDOW *create_newwin(int height, int width, int starty, int startx)
     box(local_win, 0, 0);          /* 0, 0 gives default characters
                                          * for the vertical and horizontal
                                          * lines                        */
+    scrollok(local_win, TRUE);
     wrefresh(local_win);            /* Show that box                */
 
     return local_win;
@@ -1269,6 +1269,24 @@ void InitializePlaylist(void)
 }
 
 
+void * threadRedraw(void * pMessage)
+{
+    while(1)
+    {
+        waitMilliseconds(200);
+        refresh();
+        wrefresh(win_context_current);
+        wrefresh(win_context_next);
+        wrefresh(win_context_prev);
+        wrefresh(win_context_usage);
+        wrefresh(win_debug_messages);
+        wrefresh(win_error_messages);
+        wrefresh(win_midi_messages);
+
+    }
+
+}
+
 int main(int argc, char** argv)
 {
 
@@ -1286,9 +1304,20 @@ int main(int argc, char** argv)
     startx = (COLS - width) / 2;    /* of the window                */
     //printw("OXFORD");
     refresh();
-    win_context_change = create_newwin(20, 20, 0, 0);
-    box(win_context_change, 0, 0);
-    win_context_current = create_newwin(3, 20, 15, 0);
+    win_midi_messages =     create_newwin(LINES -3, 0.2*COLS, 3, 0.8*COLS);
+    win_context_prev =      create_newwin(3, 0.33*COLS, 0, 0);
+    win_context_current =   create_newwin(3, 0.33*COLS, 0, 0.33*COLS +1);
+    win_context_next =      create_newwin(3, 0.33*COLS, 0, 0.33*COLS +1 + 0.33*COLS +1);
+    win_error_messages =    create_newwin(5, 80, LINES-5, 0);
+    win_debug_messages =    create_newwin(5, 80, LINES-10, 0);
+    win_context_usage =     create_newwin(10, (3*COLS)/8, 3, 0);
+    //win_context_change = create_newwin(20, 20, 0, 0);
+//    box(win_midi_messages, 0, 0);
+//    box(win_context_current, 0, 0);
+//    box(win_error_messages, 0, 0);
+//    box(win_debug_messages, 0, 0);
+//    box(win_context_prev, 0, 0);
+//    box(win_context_next, 0, 0);
 
     //exit(1);
 
@@ -1306,9 +1335,23 @@ int main(int argc, char** argv)
                            (void*) message1);
     if (iret1)
     {
-        fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+        fprintf(stderr, "threadMidiAutomaton Error - pthread_create() return code: %d\n", iret1);
         exit(EXIT_FAILURE);
     }
+
+    pthread_t thread2;
+    // Create task that redraws screen at fixed intervals
+    const char *message2 = "";
+    int iret2;
+    iret2 = pthread_create(&thread2, NULL, threadRedraw,
+                           (void*) message2);
+    if (iret2)
+    {
+        fprintf(stderr, "threadRedraw Error - pthread_create() return code: %d\n", iret2);
+        exit(EXIT_FAILURE);
+    }
+
+
 
     if (argc != 1)
     {
