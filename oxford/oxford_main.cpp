@@ -15,6 +15,7 @@
 #include <ncurses.h>
 #include <list>
 #include <string>
+#include <algorithm>
 //#include <sstream>
 
 
@@ -46,9 +47,10 @@ class TPedalAnalog
 private:
     int ControllerNumber;
     void (* OnChange)(int);
+    std::string Comment;
 
 public:
-    TPedalAnalog(int ControllerNumber_param, void (*Function1_param)(int))
+    TPedalAnalog(int ControllerNumber_param, void (*Function1_param)(int), std::string Comment_param)
     {
         ControllerNumber = 0;
         OnChange = NULL;
@@ -60,6 +62,7 @@ public:
         }
         ControllerNumber = ControllerNumber_param;
         OnChange = Function1_param;
+        Comment = Comment_param;
     }
 
     void Change(int param)
@@ -74,6 +77,11 @@ public:
     {
         return ControllerNumber;
     }
+
+    std::string GetComment(void)
+    {
+        return Comment;
+    }
 };
 
 
@@ -86,9 +94,10 @@ private:
     int Number;
     void (* OnPress)(void);
     void (* OnRelease)(void);
+    std::string Comment;
 
 public:
-    TPedalDigital(int Number_param, void (*Function1_param)(void), void (*Function2_param)(void))
+    TPedalDigital(int Number_param, void (*Function1_param)(void), void (*Function2_param)(void), std::string Comment_param)
     {
         Number = 0;
         OnPress = NULL;
@@ -102,6 +111,7 @@ public:
         Number = Number_param;
         OnPress = Function1_param;
         OnRelease = Function2_param;
+        Comment = Comment_param;
     }
 
     void Press(void)
@@ -124,6 +134,11 @@ public:
     {
         return Number;
     }
+
+    std::string GetComment(void)
+    {
+        return Comment;
+    }
 };
 
 
@@ -139,8 +154,8 @@ public:
     TPedalboard(void)
     {
 //        TPedalDigital myPedalDigital(6,NULL,NULL);
-        PedalsDigital.push_back(TPedalDigital(6, ContextDecreaseStart, ContextDecreaseStop));
-        PedalsDigital.push_back(TPedalDigital(7, ContextIncreaseStart, ContextIncreaseStop));
+        PedalsDigital.push_back(TPedalDigital(6, ContextDecreaseStart, ContextDecreaseStop, "Playlist: previous song"));
+        PedalsDigital.push_back(TPedalDigital(7, ContextIncreaseStart, ContextIncreaseStop, "Playlist: next song"));
     }
 };
 
@@ -157,14 +172,35 @@ public:
 //TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
 
 std::list<TContext> PlaylistData;
+std::list<TContext> PlaylistData_ByAuthor;
+std::list<TContext> PlaylistData_BySongName;
+
 std::list<TContext>::iterator Playlist;
 
-TContext cAveMaria, cCapitaineFlam, cWildThoughts;
+TContext cAveMaria, cCapitaineFlam, cWildThoughts, cGangstaParadise;
 
 
+// Compare contexts by author (not case sensitive)
+bool CompareTContextByAuthor(const TContext &first, const TContext &second)
+{
+    std::string first_nocase = first.Author;
+    std::string second_nocase = second.Author;
+    std::transform(first_nocase.begin(), first_nocase.end(), first_nocase.begin(), ::tolower);
+    std::transform(second_nocase.begin(), second_nocase.end(), second_nocase.begin(), ::tolower);
 
+    return first_nocase < second_nocase;
+}
 
+// Compare contexts by song name (not case sensitive)
+bool CompareTContextBySongName(const TContext &first, const TContext &second)
+{
+    std::string first_nocase = first.SongName;
+    std::string second_nocase = second.SongName;
+    std::transform(first_nocase.begin(), first_nocase.end(), first_nocase.begin(), ::tolower);
+    std::transform(second_nocase.begin(), second_nocase.end(), second_nocase.begin(), ::tolower);
 
+    return first_nocase < second_nocase;
+}
 
 
 
@@ -861,8 +897,6 @@ void Start_NoteOff(void)
         fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
         exit(EXIT_FAILURE);
     }
-
-
 }
 
 
@@ -911,9 +945,7 @@ void StopSequencer(void)
             TMidiControlChange cc3(i, 0x7B, 0);
             TMidiControlChange cc4(i, 0x7C, 0);
         }
-
     }
-
 }
 
 
@@ -976,7 +1008,7 @@ char AveMaria_MidiName[] = "am.mid";
 
 void AveMaria_Start(void)
 {
-        StartSequencer(AveMaria_MidiName);
+    StartSequencer(AveMaria_MidiName);
 }
 
 
@@ -990,9 +1022,6 @@ void ChangeTempo(int Value)
 {
     seq_midi_tempo_direct(((float)Value- 60)/60, 100, 160);
 }
-
-
-
 }
 
 void *threadMidiAutomaton(void * ptr)
@@ -1244,21 +1273,24 @@ void InitializePlaylist(void)
 {
     cAveMaria.Author = "";
     cAveMaria.SongName = "Ave Maria";
-    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, AveMaria::AveMaria_Start, NULL));
-    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, AveMaria::AveMaria_Stop, NULL));
-    cAveMaria.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, AveMaria::ChangeTempo));
+    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, AveMaria::AveMaria_Start, NULL, "MIDI sequencer start"));
+    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, AveMaria::AveMaria_Stop, NULL, "MIDI sequencer stop"));
+    cAveMaria.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, AveMaria::ChangeTempo, "Adjust tempo"));
 
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
 
     cWildThoughts.Author = "Rihanna";
     cWildThoughts.SongName = "Wild Thoughts";
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off));
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off, "First chord"));
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off, "Second chord"));
+    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off, "Third chord"));
 
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off));
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off));
-
+    cGangstaParadise.Author = "Coolio";
+    cGangstaParadise.SongName = "Gangsta's paradise";
+    cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Gansta_s_Paradise::Start_NoteOn, Gansta_s_Paradise::Start_NoteOff, "Sequence; Press: first note, Release: set tempo and loop"));
+    cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Gansta_s_Paradise::Stop, NULL, "Sequence; Press: first note, Release: set tempo and loop"));
 
 
 
@@ -1266,9 +1298,18 @@ void InitializePlaylist(void)
     PlaylistData.push_back(cAveMaria);
     PlaylistData.push_back(cCapitaineFlam);
     PlaylistData.push_back(cWildThoughts);
+    PlaylistData.push_back(cGangstaParadise);
 
 
     Playlist = PlaylistData.begin();
+
+    PlaylistData_ByAuthor = PlaylistData;
+    PlaylistData_ByAuthor.sort(CompareTContextByAuthor);
+
+    PlaylistData_BySongName = PlaylistData;
+    PlaylistData_BySongName.sort(CompareTContextBySongName);
+
+
 //    cAveMaria.Pedalboard =  { { {1, AveMaria::AveMaria_Start, NULL}, {2, AveMaria::AveMaria_Stop, NULL} }, { {1, AveMaria::ChangeTempo}} };
 
 
@@ -1286,17 +1327,26 @@ void * threadRedraw(void * pMessage)
         werase(win_context_current);
         mvwprintw(win_context_current, 0,0, Context.SongName.c_str());
 
-        auto it = Context.Pedalboard.PedalsAnalog.begin();
-        while(it != Context.Pedalboard.PedalsAnalog.end())
+        werase(win_context_usage);
         {
-            TPedalAnalog PedalAnalog;
-            PedalAnalog = *it;
-            PedalAnalog.
-            it++;
+            auto it = Context.Pedalboard.PedalsDigital.begin();
+            while(it != Context.Pedalboard.PedalsDigital.end())
+            {
+                TPedalDigital PedalDigital = *it;
+                wprintw(win_context_usage, "Digital Pedal %i: %s\n", PedalDigital.GetNumber(), PedalDigital.GetComment().c_str());
+                it++;
+            }
+        }
+        {
+            auto it = Context.Pedalboard.PedalsAnalog.begin();
+            while(it != Context.Pedalboard.PedalsAnalog.end())
+            {
+                TPedalAnalog PedalAnalog = *it;
+                wprintw(win_context_usage, "Expressionm CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
+                it++;
+            }
 
         }
-
-
         refresh();
         wrefresh(win_context_current);
         wrefresh(win_context_next);
@@ -1309,6 +1359,114 @@ void * threadRedraw(void * pMessage)
 
 }
 
+
+
+
+void ContextSelection_Playlist (void)
+{
+   /* *INDENT-EQLS* */
+   CDKALPHALIST *alphaList      = 0;
+   const char *title            = "<C></B/24>Alpha List\n<C>Title";
+   const char *label            = "</B>Account: ";
+   char *word                   = 0;
+   char **userList              = 0;
+   const char *mesg[5];
+   char temp[256];
+
+   CDK_PARAMS params;
+
+   CDKparseParams (argc, argv, &params, "c" CDK_CLI_PARAMS);
+
+   /* Get the user list. */
+   userSize = getUserList (&userList);
+   if (userSize <= 0)
+   {
+      fprintf (stderr, "Cannot get user list\n");
+      ExitProgram (EXIT_FAILURE);
+   }
+   myUserList = copyCharList ((const char **)userList);
+   myUndoList = (UNDO *) malloc ((size_t) userSize * sizeof (UNDO));
+   undoSize = 0;
+
+   cdkscreen = initCDKScreen (NULL);
+
+   /* Start color. */
+   initCDKColor ();
+
+   /* Create the alpha list widget. */
+   alphaList = newCDKAlphalist (cdkscreen,
+				CDKparamValue (&params, 'X', CENTER),
+				CDKparamValue (&params, 'Y', CENTER),
+				CDKparamValue (&params, 'H', 0),
+				CDKparamValue (&params, 'W', 0),
+				title, label,
+				(CDKparamNumber (&params, 'c')
+				 ? 0
+				 : (CDK_CSTRING *)userList),
+				(CDKparamNumber (&params, 'c')
+				 ? 0
+				 : userSize),
+				'_', A_REVERSE,
+				CDKparamValue (&params, 'N', TRUE),
+				CDKparamValue (&params, 'S', FALSE));
+   if (alphaList == 0)
+   {
+      destroyCDKScreen (cdkscreen);
+      endCDK ();
+
+      fprintf (stderr, "Cannot create widget\n");
+      ExitProgram (EXIT_FAILURE);
+   }
+
+   bindCDKObject (vALPHALIST, alphaList, '?', do_help, NULL);
+   bindCDKObject (vALPHALIST, alphaList, KEY_F1, do_help, NULL);
+   bindCDKObject (vALPHALIST, alphaList, KEY_F2, do_delete, alphaList);
+   bindCDKObject (vALPHALIST, alphaList, KEY_F3, do_delete1, alphaList);
+   bindCDKObject (vALPHALIST, alphaList, KEY_F4, do_reload, alphaList);
+   bindCDKObject (vALPHALIST, alphaList, KEY_F5, do_undo, alphaList);
+
+   if (CDKparamNumber (&params, 'c'))
+   {
+      setCDKAlphalistContents (alphaList, (CDK_CSTRING *)userList, userSize);
+   }
+
+   /* Let them play with the alpha list. */
+   word = activateCDKAlphalist (alphaList, 0);
+
+   /* Determine what the user did. */
+   if (alphaList->exitType == vESCAPE_HIT)
+   {
+      mesg[0] = "<C>You hit escape. No word was selected.";
+      mesg[1] = "";
+      mesg[2] = "<C>Press any key to continue.";
+      popupLabel (cdkscreen, (CDK_CSTRING2)mesg, 3);
+   }
+   else if (alphaList->exitType == vNORMAL)
+   {
+      mesg[0] = "<C>You selected the following";
+      sprintf (temp, "<C>(%.*s)", (int)(sizeof (temp) - 10), word);
+      mesg[1] = temp;
+      mesg[2] = "";
+      mesg[3] = "<C>Press any key to continue.";
+      popupLabel (cdkscreen, (CDK_CSTRING2)mesg, 4);
+   }
+
+   freeCharList (myUserList, (unsigned)userSize);
+   free (myUserList);
+
+   destroyCDKAlphalist (alphaList);
+   destroyCDKScreen (cdkscreen);
+   endCDK ();
+
+   ExitProgram (EXIT_SUCCESS);
+}
+
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
 
@@ -1316,6 +1474,16 @@ int main(int argc, char** argv)
 
 
     initscr();                      /* Start curses mode            */
+    if (can_change_color() == TRUE)
+    {
+    start_color();
+    init_color(COLOR_BLACK, 400, 200, 0);
+    init_color(COLOR_WHITE, 1000, 700, 400);
+    }
+    else
+    {
+    printf("CANNOT SUPPORT COLORS");
+    }
     cbreak();                       /* Line buffering disabled, Pass on
                                     /* every thing to me           */
     keypad(stdscr, TRUE);           /* I need that nifty F1         */
@@ -1325,6 +1493,7 @@ int main(int argc, char** argv)
     starty = (LINES - height) / 2;  /* Calculating for a center placement */
     startx = (COLS - width) / 2;    /* of the window                */
     refresh();
+
     win_midi_in =     create_newwin("IN", LINES -3, 6, 3, COLS-6-6);
     win_midi_out =     create_newwin("OUT", LINES -3, 6, 3, COLS-6);
     win_context_prev =      create_newwin("CONTEXT PREV", 3, 0.33*COLS, 0, 0);

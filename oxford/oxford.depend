@@ -32,7 +32,7 @@
 	<list>
 	<string>
 
-1515063400 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
+1515086925 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -46,6 +46,7 @@
 	<ncurses.h>
 	<list>
 	<string>
+	<algorithm>
 
 1515057059 source:/home/stephane/Documents/devel/oxford/pmidi.c
 	<stdio.h>
