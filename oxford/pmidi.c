@@ -2902,6 +2902,7 @@ except(struct except *e, char *message, ...)
 	va_list ap;
 
 	va_start(ap, message);
+    fprintf(stderr, "pmidi :");
 	vfprintf(stderr, message, ap);
 	va_end(ap);
 	putc('\n', stderr);
@@ -3554,7 +3555,7 @@ read_track(struct midistate *msp)
 		struct noteElement *ns;
 		ns = g_ptr_array_index(msp->notes, i);
 		msp->device = MD_ELEMENT(ns)->device_channel;
-printf("Left over note, finishing\n");
+        printf("pmidi: Left over note, finishing\n");
 		finish_note(msp, ns->note, 0);
 		goto restart;
 	}
@@ -3915,7 +3916,7 @@ finish_note(struct midistate *msp, int note, int vel)
 			n->offvel = vel;
 			n->length = len;
 			if (n->length < 0) {
-				printf("Len neg: msp->time%d, s->time%d, note=%d, s.vel%d\n",
+				printf("pmidi: Len neg: msp->time%d, s->time%d, note=%d, s.vel%d\n",
 					msp->current_time, MD_ELEMENT(n)->element_time,
 					note, n->vel);
 				n->length = 0;
@@ -4102,7 +4103,7 @@ main_TODO(int argc, char **argv) /* TODO */
 		if (portdesc == NULL)
 			portdesc = getenv("ALSA_OUT_PORT");
 		if (portdesc == NULL) {
-			fprintf(stderr, "No client/port specified.\n"
+			fprintf(stderr, "pmidi: No client/port specified.\n"
 				"You must supply one with the -p option or with the\n"
 				"environment variable ALSA_OUTPUT_PORTS\n"
 				);
@@ -4174,7 +4175,7 @@ openports(char *portdesc)
 			ap->port = a[1];
 			break;
 		default:
-			printf("Addresses in %d parts not supported yet\n", count);
+			printf("pmidi: Addresses in %d parts not supported yet\n", count);
 			break;
 		}
 		ap++;
@@ -4187,7 +4188,7 @@ openports(char *portdesc)
 
 		err = seq_connect_add(ctxp, addr[i].client, addr[i].port);
 		if (err < 0) {
-			fprintf(stderr, _("Could not connect to port %d:%d\n"),
+			fprintf(stderr, _("pmidi: Could not connect to port %d:%d\n"),
 				addr[i].client, addr[i].port);
 		} else
 			count++;
@@ -4294,7 +4295,7 @@ showlist(void)
 
 	snd_seq_client_info_alloca(&cinfo);
 	snd_seq_client_info_set_client(cinfo, -1);
-	printf(_(" Port     %-30.30s    %s\n"), _("Client name"), _("Port name"));
+	printf(_("pmidi: Port     %-30.30s    %s\n"), _("Client name"), _("Port name"));
 
 	while (snd_seq_query_next_client(handle, cinfo) >= 0) {
 		client = snd_seq_client_info_get_client(cinfo);
@@ -4307,7 +4308,7 @@ showlist(void)
 
 			cap = (SND_SEQ_PORT_CAP_SUBS_WRITE|SND_SEQ_PORT_CAP_WRITE);
 			if ((snd_seq_port_info_get_capability(pinfo) & cap) == cap) {
-				printf("%3d:%-3d   %-30.30s    %s\n",
+				printf("pmidi: %3d:%-3d   %-30.30s    %s\n",
 					snd_seq_port_info_get_client(pinfo),
 					snd_seq_port_info_get_port(pinfo),
 					snd_seq_client_info_get_name(cinfo),
@@ -4335,7 +4336,7 @@ N_("  -v              - Print version and exit"),
 };
 
 	for (cpp = msg; cpp < msg+NELEM(msg); cpp++) {
-		fprintf(stderr, "%s\n", _(*cpp));
+		fprintf(stderr, "pmidi: %s\n", _(*cpp));
 	}
 }
 
@@ -4392,7 +4393,7 @@ play(void *arg, struct element *el)
 		/* Ones that have no sequencer action */
 		break;
 	default:
-		printf("WARNING: play: not implemented yet %d\n", el->type);
+		printf("pmidi: WARNING: play: not implemented yet %d\n", el->type);
 		break;
 	}
 }
@@ -4563,7 +4564,7 @@ seq_new_port(seq_context_t *ctxp)
 					 SND_SEQ_PORT_CAP_READ,
 					 SND_SEQ_PORT_TYPE_MIDI_GENERIC);
 	if (ret < 0) {
-		printf("Error creating port %s\n", snd_strerror(errno));
+		printf("pmidi: Error creating port %s\n", snd_strerror(errno));
 		return -1;
 	}
 	ctxp->port_count++;

@@ -1,3 +1,7 @@
+// use amidi -l to list midi hardware devices
+// don't forget to link with asound and pthread
+// use pmidi -l to list midi devices for pmidi
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -19,8 +23,8 @@ snd_rawmidi_t *handle_in = 0, *handle_out = 0;
 char device_in_str[] = "hw:1,0,0";
 char device_out_str[] = "hw:1,0,0";
 
-WINDOW * win_midi_messages;
-WINDOW * win_error_messages;
+WINDOW * win_midi_in;
+WINDOW * win_midi_out;
 WINDOW * win_debug_messages;
 WINDOW * win_context_prev;
 WINDOW * win_context_current;
@@ -51,7 +55,7 @@ public:
         if (ControllerNumber_param < 1 || ControllerNumber_param > 127)
         {
 
-            wprintw(win_error_messages, "TPedalAnalog: wrong parameter");
+            wprintw(win_debug_messages, "TPedalAnalog: wrong parameter");
             return;
         }
         ControllerNumber = ControllerNumber_param;
@@ -92,7 +96,7 @@ public:
         if (Number_param < 1 || Number_param > 10)
         {
 
-            wprintw(win_error_messages, "TPedalDigital: wrong parameter");
+            wprintw(win_debug_messages, "TPedalDigital: wrong parameter");
             return;
         }
         Number = Number_param;
@@ -195,12 +199,12 @@ void ContextDecreaseStop(void)
 
 void ContextIncreaseStart(void)
 {
-    if (Playlist != PlaylistData.end())
+    // Note that .end() returns an iterator that is already outside the bounds
+    // of the container, hence the -- to get to the last valid entry.
+    if (Playlist != (PlaylistData.end() --)  )
     {
         Playlist++;
     }
-
-
 }
 
 void ContextIncreaseStop(void)
@@ -221,7 +225,7 @@ void StartRawMidiIn(void)
         int err = snd_rawmidi_open(&handle_in, NULL, device_in_str, 0);
         if (err)
         {
-            wprintw(win_error_messages, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
+            wprintw(win_debug_messages, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
         }
     }
 }
@@ -234,7 +238,7 @@ void StartRawMidiOut(void)
         int err = snd_rawmidi_open(NULL, &handle_out, device_out_str, 0);
         if (err)
         {
-            wprintw(win_error_messages, "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
+            wprintw(win_debug_messages, "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
         }
     }
 }
@@ -269,9 +273,6 @@ void StopRawMidiOut(void)
 #define EV_RELEASED 0
 #define EV_REPEAT 2
 
-// use amidi -l to list midi devices
-
-// don't forget to link with asound and pthread
 
 #pragma reentrant
 void waitMilliseconds(int milliseconds)
@@ -300,7 +301,6 @@ typedef struct
 #pragma reentrant
 void * ExecuteAfterTimeout_Thread(void * pMessage)
 {
-    printf("ExecuteAfterTimeout_Thread called\n");
     waitMilliseconds(((TExecuteAfterTimeoutStruct*) pMessage)->Delay_ms);
 
     // call pFunction(pFuncParam)
@@ -311,7 +311,6 @@ void * ExecuteAfterTimeout_Thread(void * pMessage)
 #pragma reentrant
 void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
 {
-    printf("ExecuteAfterTimeout called\n");
     pthread_t thread;
     TExecuteAfterTimeoutStruct * pExecuteAfterTimeoutStruct;
     pExecuteAfterTimeoutStruct = (TExecuteAfterTimeoutStruct *) malloc(
@@ -324,10 +323,9 @@ void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, vo
                            (void*) pExecuteAfterTimeoutStruct);
     if (iret1)
     {
-        fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+        wprintw(win_debug_messages, "Error - pthread_create() return code: %d\n", iret1);
         exit(EXIT_FAILURE);
     }
-    printf("ExecuteAfterTimeout exits\n");
 }
 
 #pragma reentrant
@@ -339,7 +337,7 @@ void ExecuteAsynchronous(void (*pFunc)(void *), void * pFuncParam)
 
 static void usage(void)
 {
-    wprintw(win_error_messages, "usage: fix me\n");
+    wprintw(win_debug_messages, "usage: fix me\n");
 }
 
 
@@ -387,7 +385,7 @@ public:
 
     void sendToMidi(void)
     {
-        wprintw(win_debug_messages, "Note number: %i\n", (int) charArray[1]);
+        wprintw(win_midi_out, "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
         if (handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -423,7 +421,7 @@ void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
     charArray[0] = (NoteOnField << 4) + ((Channel - 1) & 0x0F);
     charArray[1] = NoteNumber & 0x7F;
     charArray[2] = Velocity;
-    printf("Note number: %i\n", (int) charArray[1]);
+    wprintw(win_debug_messages, "Note number: %i\n", (int) charArray[1]);
 
     sendToMidi();
 
@@ -470,7 +468,7 @@ public:
 
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (Program - 1) & 0x7F;
-        printf("Program Change: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages, "Program Change: %i\n", (int) charArray[1]);
         sendToMidi();
     }
 
@@ -540,7 +538,7 @@ void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int D
     PlayNoteMsg->thread = thread;
     if (iret)
     {
-        fprintf(stderr, "Error - pthread_create() return code: %d\n", iret);
+        wprintw(win_debug_messages, "Error - pthread_create() return code: %d\n", iret);
         exit(EXIT_FAILURE);
     }
 
@@ -586,7 +584,7 @@ void * threadKeyboard(void * ptr)
     int octave = 2;
     int program = 1;
     message = (char *) ptr;
-    printf("%s \n", message);
+    wprintw(win_debug_messages, "%s \n", message);
 
     while (1)
     {
@@ -600,23 +598,23 @@ void * threadKeyboard(void * ptr)
         {
         case ')':
             octave--;
-            printf("Octave %i\n", octave);
+            wprintw(win_debug_messages, "Octave %i\n", octave);
             break;
         case '=':
             octave++;
-            printf("Octave %i\n", octave);
+            wprintw(win_debug_messages, "Octave %i\n", octave);
             break;
 
         case 195:
             program--;
-            printf("Program %i\n", program);
+            wprintw(win_debug_messages, "Program %i\n", program);
             {
                 TMidiProgramChange PC1(2, program);
             }
             break;
         case '*':
             program++;
-            printf("Program %i\n", program);
+            wprintw(win_debug_messages, "Program %i\n", program);
             {
                 TMidiProgramChange PC2(2, program);
             }
@@ -958,7 +956,7 @@ void StartSequencer(char * MidiFilename)
     }
     else
     {
-        printf("StartSequencer called twice\n");
+        wprintw(win_debug_messages, "StartSequencer called twice\n");
     }
 
 }
@@ -1011,20 +1009,20 @@ void *threadMidiAutomaton(void * ptr)
         wprintw(win_debug_messages, "Input: ");
         if (device_in_str)
         {
-            fprintf(stderr, "device %s\n", device_in_str);
+            wprintw(win_debug_messages, "device %s\n", device_in_str);
         }
         else
         {
-            fprintf(stderr, "NONE\n");
+            wprintw(win_debug_messages, "NONE\n");
         }
         fprintf(stderr, "Output: ");
         if (device_out_str)
         {
-            fprintf(stderr, "device %s\n", device_out_str);
+            wprintw(win_debug_messages, "device %s\n", device_out_str);
         }
         else
         {
-            fprintf(stderr, "NONE\n");
+            wprintw(win_debug_messages, "NONE\n");
         }
     }
 
@@ -1056,7 +1054,7 @@ void *threadMidiAutomaton(void * ptr)
             {
                 if (verbose)
                 {
-                    wprintw(win_midi_messages, "read %02x\n", ch);
+                    wprintw(win_midi_in, "0x%02x\n", ch);
                 }
 
                 switch (stateMachine)
@@ -1113,7 +1111,7 @@ void *threadMidiAutomaton(void * ptr)
                     snd_rawmidi_read(handle_in, &ch, 1);
                     stateMachine = smProcessControllerChange;
                     rxControllerValue = ch;
-                    printf("Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
+                    wprintw(win_debug_messages, "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
                     break;
 
                 case smProcessNoteEvent:
@@ -1192,7 +1190,7 @@ void *threadMidiAutomaton(void * ptr)
 
 
 
-WINDOW *create_newwin(int height, int width, int starty, int startx)
+WINDOW *create_newwin(char* name, int height, int width, int starty, int startx)
 {
     WINDOW *local_win;
 
@@ -1200,7 +1198,16 @@ WINDOW *create_newwin(int height, int width, int starty, int startx)
     box(local_win, 0, 0);          /* 0, 0 gives default characters
                                          * for the vertical and horizontal
                                          * lines                        */
+    mvwprintw(local_win, 0, 0, name);
+    wrefresh(local_win);
+    delwin(local_win);
+    local_win = newwin(height-2, width-2, starty+1, startx+1);
+    if (local_win == NULL)
+    {
+        printf("****************** COULD NOT CREATE WINDOW ****************");
+    }
     scrollok(local_win, TRUE);
+    idlok(local_win, TRUE);
     wrefresh(local_win);            /* Show that box                */
 
     return local_win;
@@ -1271,18 +1278,33 @@ void InitializePlaylist(void)
 
 void * threadRedraw(void * pMessage)
 {
+    TContext Context;
     while(1)
     {
         waitMilliseconds(200);
+        Context = *Playlist;
+        werase(win_context_current);
+        mvwprintw(win_context_current, 0,0, Context.SongName.c_str());
+
+        auto it = Context.Pedalboard.PedalsAnalog.begin();
+        while(it != Context.Pedalboard.PedalsAnalog.end())
+        {
+            TPedalAnalog PedalAnalog;
+            PedalAnalog = *it;
+            PedalAnalog.
+            it++;
+
+        }
+
+
         refresh();
         wrefresh(win_context_current);
         wrefresh(win_context_next);
         wrefresh(win_context_prev);
         wrefresh(win_context_usage);
         wrefresh(win_debug_messages);
-        wrefresh(win_error_messages);
-        wrefresh(win_midi_messages);
-
+        wrefresh(win_midi_in);
+        wrefresh(win_midi_out);
     }
 
 }
@@ -1302,30 +1324,14 @@ int main(int argc, char** argv)
     width = 10;
     starty = (LINES - height) / 2;  /* Calculating for a center placement */
     startx = (COLS - width) / 2;    /* of the window                */
-    //printw("OXFORD");
     refresh();
-    win_midi_messages =     create_newwin(LINES -3, 0.2*COLS, 3, 0.8*COLS);
-    win_context_prev =      create_newwin(3, 0.33*COLS, 0, 0);
-    win_context_current =   create_newwin(3, 0.33*COLS, 0, 0.33*COLS +1);
-    win_context_next =      create_newwin(3, 0.33*COLS, 0, 0.33*COLS +1 + 0.33*COLS +1);
-    win_error_messages =    create_newwin(5, 80, LINES-5, 0);
-    win_debug_messages =    create_newwin(5, 80, LINES-10, 0);
-    win_context_usage =     create_newwin(10, (3*COLS)/8, 3, 0);
-    //win_context_change = create_newwin(20, 20, 0, 0);
-//    box(win_midi_messages, 0, 0);
-//    box(win_context_current, 0, 0);
-//    box(win_error_messages, 0, 0);
-//    box(win_debug_messages, 0, 0);
-//    box(win_context_prev, 0, 0);
-//    box(win_context_next, 0, 0);
-
-    //exit(1);
-
-
-
-
-
-
+    win_midi_in =     create_newwin("IN", LINES -3, 6, 3, COLS-6-6);
+    win_midi_out =     create_newwin("OUT", LINES -3, 6, 3, COLS-6);
+    win_context_prev =      create_newwin("CONTEXT PREV", 3, 0.33*COLS, 0, 0);
+    win_context_current =   create_newwin("CONTEXT CURRENT", 3, 0.33*COLS, 0, 0.33*COLS +1);
+    win_context_next =      create_newwin("CONTEXT NEXT", 3, 0.33*COLS, 0, 0.33*COLS +1 + 0.33*COLS +1);
+    win_debug_messages =    create_newwin("DEBUG MESSAGES", 11, 80 -6-6, LINES-11, 0);
+    win_context_usage =     create_newwin("CONTEXT USAGE", 10, (3*COLS)/8, 3, 0);
 
     pthread_t thread1;
     // Create midi automaton thread
