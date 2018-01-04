@@ -31,11 +31,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="cdk-5.0-20171209/include" />
 		</Compiler>
 		<Linker>
 			<Add library="pthread" />
 			<Add library="asound" />
 			<Add library="ncurses" />
+			<Add library="libcdk" />
+			<Add directory="cdk-5.0-20171209" />
 		</Linker>
 		<Unit filename="oxford_main.cpp" />
 		<Unit filename="pmidi.c">

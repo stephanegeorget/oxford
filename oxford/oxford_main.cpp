@@ -16,6 +16,8 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <cdk.h>
+
 //#include <sstream>
 
 
@@ -31,6 +33,7 @@ WINDOW * win_context_prev;
 WINDOW * win_context_current;
 WINDOW * win_context_next;
 WINDOW * win_context_usage;
+WINDOW * win_context_select_arrows;
 
 
 
@@ -236,8 +239,11 @@ void ContextDecreaseStop(void)
 void ContextIncreaseStart(void)
 {
     // Note that .end() returns an iterator that is already outside the bounds
-    // of the container, hence the -- to get to the last valid entry.
-    if (Playlist != (PlaylistData.end() --)  )
+    // of the container.
+    std::list<TContext>::iterator it;
+    it = Playlist;
+    it++;
+    if (it != PlaylistData.end())
     {
         Playlist++;
     }
@@ -1083,7 +1089,7 @@ void *threadMidiAutomaton(void * ptr)
             {
                 if (verbose)
                 {
-                    wprintw(win_midi_in, "0x%02x\n", ch);
+                    wprintw(win_midi_in, "0x%02x", ch);
                 }
 
                 switch (stateMachine)
@@ -1355,114 +1361,127 @@ void * threadRedraw(void * pMessage)
         wrefresh(win_debug_messages);
         wrefresh(win_midi_in);
         wrefresh(win_midi_out);
+//        wrefresh(win_context_select_arrows);
     }
 
 }
 
 
 
+static const char *menulist[MAX_MENU_ITEMS][MAX_SUB_ITEMS];
+
 
 void ContextSelection_Playlist (void)
 {
-   /* *INDENT-EQLS* */
-   CDKALPHALIST *alphaList      = 0;
-   const char *title            = "<C></B/24>Alpha List\n<C>Title";
-   const char *label            = "</B>Account: ";
-   char *word                   = 0;
-   char **userList              = 0;
-   const char *mesg[5];
-   char temp[256];
+    /* *INDENT-EQLS* */
+    CDKSCREEN *cdkscreen = 0;
+    CDKLABEL *infoBox    = 0;
+    CDKMENU *menu        = 0;
+    int submenusize[2], menuloc[2];
+    const char *mesg[5];
+    char temp[256];
+    int selection;
 
-   CDK_PARAMS params;
+    cdkscreen = initCDKScreen (win_context_select_arrows);
 
-   CDKparseParams (argc, argv, &params, "c" CDK_CLI_PARAMS);
+    /* Start CDK color. */
+    initCDKColor ();
 
-   /* Get the user list. */
-   userSize = getUserList (&userList);
-   if (userSize <= 0)
-   {
-      fprintf (stderr, "Cannot get user list\n");
-      ExitProgram (EXIT_FAILURE);
-   }
-   myUserList = copyCharList ((const char **)userList);
-   myUndoList = (UNDO *) malloc ((size_t) userSize * sizeof (UNDO));
-   undoSize = 0;
+    /* Set up the menu. */
+    menulist[0][0] = "By playlist      ";
+    unsigned idx = 0;
+    std::list<TContext>::iterator it;
+    for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
+    {
+        idx++;
+        TContext Context = *it;
+        char * pMenuStr = (char *)malloc(Context.SongName.size()+1);
+        strcpy(pMenuStr, Context.SongName.c_str());
+        menulist[0][idx] = pMenuStr;
+    }
+    submenusize[0] = idx +1;
 
-   cdkscreen = initCDKScreen (NULL);
+    menulist[1][0] = "By song name      ";
+    idx = 0;
+    for (it = PlaylistData_BySongName.begin(); it != PlaylistData_BySongName.end(); it++)
+    {
+        idx++;
+        TContext Context = *it;
+        char * pMenuStr = (char *) malloc(Context.SongName.size()+1);
+        strcpy(pMenuStr, Context.SongName.c_str());
+        menulist[1][idx] = pMenuStr;
+    }
+    submenusize[1] = idx+1;
+/*
+    menulist[0][0] = "</B>Help<!B>";
+    menulist[0][1] = "</B>On Edit <!B>";
+    menulist[0][2] = "</B>On File <!B>";
+    menulist[0][3] = "</B>About...<!B>";
 
-   /* Start color. */
-   initCDKColor ();
+    menulist[1][0] = "</B>Help<!B>";
+    menulist[1][1] = "</B>On Edit <!B>";
+    menulist[1][2] = "</B>On File <!B>";
+    menulist[1][3] = "</B>About...<!B>";
 
-   /* Create the alpha list widget. */
-   alphaList = newCDKAlphalist (cdkscreen,
-				CDKparamValue (&params, 'X', CENTER),
-				CDKparamValue (&params, 'Y', CENTER),
-				CDKparamValue (&params, 'H', 0),
-				CDKparamValue (&params, 'W', 0),
-				title, label,
-				(CDKparamNumber (&params, 'c')
-				 ? 0
-				 : (CDK_CSTRING *)userList),
-				(CDKparamNumber (&params, 'c')
-				 ? 0
-				 : userSize),
-				'_', A_REVERSE,
-				CDKparamValue (&params, 'N', TRUE),
-				CDKparamValue (&params, 'S', FALSE));
-   if (alphaList == 0)
-   {
-      destroyCDKScreen (cdkscreen);
-      endCDK ();
+    menulist[2][0] = "</B>Help<!B>";
+    menulist[2][1] = "</B>On Edit <!B>";
+    menulist[2][2] = "</B>On File <!B>";
+    menulist[2][3] = "</B>About...<!B>";
 
-      fprintf (stderr, "Cannot create widget\n");
-      ExitProgram (EXIT_FAILURE);
-   }
+    submenusize[0] = 3;
+    submenusize[1] = 3;
+//    submenusize[2] = 3;
+*/
+    menuloc[0] = LEFT;
+    menuloc[1] = LEFT;
 
-   bindCDKObject (vALPHALIST, alphaList, '?', do_help, NULL);
-   bindCDKObject (vALPHALIST, alphaList, KEY_F1, do_help, NULL);
-   bindCDKObject (vALPHALIST, alphaList, KEY_F2, do_delete, alphaList);
-   bindCDKObject (vALPHALIST, alphaList, KEY_F3, do_delete1, alphaList);
-   bindCDKObject (vALPHALIST, alphaList, KEY_F4, do_reload, alphaList);
-   bindCDKObject (vALPHALIST, alphaList, KEY_F5, do_undo, alphaList);
+    /* Create the label window. */
+    mesg[0] = "                                          ";
+    mesg[1] = "                                          ";
+    mesg[2] = "                                          ";
+    mesg[3] = "                                          ";
+//    infoBox = newCDKLabel (cdkscreen, CENTER, CENTER,
+  //                         (CDK_CSTRING2) mesg, 4,
+    //                       TRUE, TRUE);
 
-   if (CDKparamNumber (&params, 'c'))
-   {
-      setCDKAlphalistContents (alphaList, (CDK_CSTRING *)userList, userSize);
-   }
+    /* Create the menu. */
+    menu = newCDKMenu (cdkscreen, menulist, 2, submenusize, menuloc,
+                       TOP, A_UNDERLINE, A_REVERSE);
 
-   /* Let them play with the alpha list. */
-   word = activateCDKAlphalist (alphaList, 0);
+    /* Create the post process function. */
+//    setCDKMenuPostProcess (menu, displayCallback, infoBox);
 
-   /* Determine what the user did. */
-   if (alphaList->exitType == vESCAPE_HIT)
-   {
-      mesg[0] = "<C>You hit escape. No word was selected.";
-      mesg[1] = "";
-      mesg[2] = "<C>Press any key to continue.";
-      popupLabel (cdkscreen, (CDK_CSTRING2)mesg, 3);
-   }
-   else if (alphaList->exitType == vNORMAL)
-   {
-      mesg[0] = "<C>You selected the following";
-      sprintf (temp, "<C>(%.*s)", (int)(sizeof (temp) - 10), word);
-      mesg[1] = temp;
-      mesg[2] = "";
-      mesg[3] = "<C>Press any key to continue.";
-      popupLabel (cdkscreen, (CDK_CSTRING2)mesg, 4);
-   }
+    /* Draw the CDK screen. */
+    refreshCDKScreen (cdkscreen);
 
-   freeCharList (myUserList, (unsigned)userSize);
-   free (myUserList);
+    /* Activate the menu. */
+    selection = activateCDKMenu (menu, 0);
 
-   destroyCDKAlphalist (alphaList);
-   destroyCDKScreen (cdkscreen);
-   endCDK ();
+    /* Determine how the user exited from the widget. */
+    if (menu->exitType == vEARLY_EXIT)
+    {
+        mesg[0] = "<C>You hit escape. No menu item was selected.";
+        mesg[1] = "",
+                  mesg[2] = "<C>Press any key to continue.";
+        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
+    }
+    else if (menu->exitType == vNORMAL)
+    {
+        sprintf (temp, "<C>You selected menu #%d, submenu #%d",
+                 selection / 100,
+                 selection % 100);
+        mesg[0] = temp;
+        mesg[1] = "",
+                  mesg[2] = "<C>Press any key to continue.";
+        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
+    }
 
-   ExitProgram (EXIT_SUCCESS);
+    /* Clean up. */
+    destroyCDKMenu (menu);
+    destroyCDKLabel (infoBox);
+    destroyCDKScreen (cdkscreen);
+    endCDK ();
 }
-
-
-
 
 
 
@@ -1476,13 +1495,13 @@ int main(int argc, char** argv)
     initscr();                      /* Start curses mode            */
     if (can_change_color() == TRUE)
     {
-    start_color();
-    init_color(COLOR_BLACK, 400, 200, 0);
-    init_color(COLOR_WHITE, 1000, 700, 400);
+        start_color();
+        init_color(COLOR_BLACK, 400, 200, 0);
+        init_color(COLOR_WHITE, 1000, 700, 400);
     }
     else
     {
-    printf("CANNOT SUPPORT COLORS");
+        printf("CANNOT SUPPORT COLORS");
     }
     cbreak();                       /* Line buffering disabled, Pass on
                                     /* every thing to me           */
@@ -1499,8 +1518,9 @@ int main(int argc, char** argv)
     win_context_prev =      create_newwin("CONTEXT PREV", 3, 0.33*COLS, 0, 0);
     win_context_current =   create_newwin("CONTEXT CURRENT", 3, 0.33*COLS, 0, 0.33*COLS +1);
     win_context_next =      create_newwin("CONTEXT NEXT", 3, 0.33*COLS, 0, 0.33*COLS +1 + 0.33*COLS +1);
-    win_debug_messages =    create_newwin("DEBUG MESSAGES", 11, 80 -6-6, LINES-11, 0);
-    win_context_usage =     create_newwin("CONTEXT USAGE", 10, (3*COLS)/8, 3, 0);
+    win_debug_messages =    create_newwin("DEBUG MESSAGES", 11, COLS -6-6, LINES-11, 0);
+    win_context_usage =     create_newwin("CONTEXT USAGE", 10, (COLS -6-6)/2, 3, 0);
+    win_context_select_arrows = create_newwin("CONTEXT SELECT", 10, (COLS -6-6)/2, 3, (COLS -6-6)/2);
 
     pthread_t thread1;
     // Create midi automaton thread
@@ -1527,6 +1547,8 @@ int main(int argc, char** argv)
     }
 
 
+    ContextSelection_Playlist();
+
 
     if (argc != 1)
     {
@@ -1534,7 +1556,7 @@ int main(int argc, char** argv)
         exit(0);
     }
 
-    threadKeyboard(0);
+//    threadKeyboard(0);
 
 }
 
