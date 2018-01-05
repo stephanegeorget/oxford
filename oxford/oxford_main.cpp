@@ -17,7 +17,7 @@
 #include <string>
 #include <algorithm>
 #include <cdk.h>
-
+#include <panel.h>
 //#include <sstream>
 
 
@@ -26,14 +26,81 @@ snd_rawmidi_t *handle_in = 0, *handle_out = 0;
 char device_in_str[] = "hw:1,0,0";
 char device_out_str[] = "hw:1,0,0";
 
-WINDOW * win_midi_in;
-WINDOW * win_midi_out;
-WINDOW * win_debug_messages;
-WINDOW * win_context_prev;
-WINDOW * win_context_current;
-WINDOW * win_context_next;
-WINDOW * win_context_usage;
-WINDOW * win_context_select_arrows;
+
+
+
+
+
+class TBoxedWindow
+{
+private:
+    PANEL * Panel;
+    WINDOW * BoxedWindow; // outer window
+    WINDOW * SubWindow;
+public:
+    TBoxedWindow(void) {};
+    void Init(char* name, int height, int width, int starty, int startx)
+    {
+        BoxedWindow = newwin(height, width, starty, startx);
+        Panel = new_panel(BoxedWindow);
+        box(BoxedWindow, 0, 0);
+        mvwprintw(BoxedWindow, 0, 0, name);
+        SubWindow = subwin(BoxedWindow, height-2, width-2, starty+1, startx+1);
+        scrollok(SubWindow, TRUE);
+        idlok(SubWindow, TRUE);
+    }
+
+    void Show(void)
+    {
+        show_panel(Panel);
+        update_panels();
+        doupdate();
+    }
+
+    void Hide(void)
+    {
+        hide_panel(Panel);
+        update_panels();
+        doupdate();
+    }
+
+    WINDOW * GetRef(void)
+    {
+        return SubWindow;
+    }
+
+    void Refresh(void)
+    {
+        touchwin(BoxedWindow);
+//        wrefresh(SubWindow);
+        update_panels();
+        doupdate();
+    }
+
+    void Erase(void)
+    {
+        wclear(SubWindow);
+    }
+};
+
+
+
+
+
+
+
+
+
+TBoxedWindow win_midi_in;
+TBoxedWindow win_midi_out;
+TBoxedWindow win_debug_messages;
+TBoxedWindow win_context_prev;
+TBoxedWindow win_context_current;
+TBoxedWindow win_context_next;
+TBoxedWindow win_context_usage;
+TBoxedWindow win_context_user_specific;
+TBoxedWindow win_context_select_menu;
+
 
 
 
@@ -60,7 +127,7 @@ public:
         if (ControllerNumber_param < 1 || ControllerNumber_param > 127)
         {
 
-            wprintw(win_debug_messages, "TPedalAnalog: wrong parameter");
+            wprintw(win_debug_messages.GetRef(), "TPedalAnalog: wrong parameter");
             return;
         }
         ControllerNumber = ControllerNumber_param;
@@ -108,7 +175,7 @@ public:
         if (Number_param < 1 || Number_param > 10)
         {
 
-            wprintw(win_debug_messages, "TPedalDigital: wrong parameter");
+            wprintw(win_debug_messages.GetRef(), "TPedalDigital: wrong parameter");
             return;
         }
         Number = Number_param;
@@ -267,7 +334,7 @@ void StartRawMidiIn(void)
         int err = snd_rawmidi_open(&handle_in, NULL, device_in_str, 0);
         if (err)
         {
-            wprintw(win_debug_messages, "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
+            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
         }
     }
 }
@@ -280,7 +347,7 @@ void StartRawMidiOut(void)
         int err = snd_rawmidi_open(NULL, &handle_out, device_out_str, 0);
         if (err)
         {
-            wprintw(win_debug_messages, "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
+            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
         }
     }
 }
@@ -365,7 +432,7 @@ void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, vo
                            (void*) pExecuteAfterTimeoutStruct);
     if (iret1)
     {
-        wprintw(win_debug_messages, "Error - pthread_create() return code: %d\n", iret1);
+        wprintw(win_debug_messages.GetRef(), "Error - pthread_create() return code: %d\n", iret1);
         exit(EXIT_FAILURE);
     }
 }
@@ -379,7 +446,7 @@ void ExecuteAsynchronous(void (*pFunc)(void *), void * pFuncParam)
 
 static void usage(void)
 {
-    wprintw(win_debug_messages, "usage: fix me\n");
+    wprintw(win_debug_messages.GetRef(), "usage: fix me\n");
 }
 
 
@@ -427,7 +494,7 @@ public:
 
     void sendToMidi(void)
     {
-        wprintw(win_midi_out, "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
+        wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
         if (handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -463,7 +530,7 @@ void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
     charArray[0] = (NoteOnField << 4) + ((Channel - 1) & 0x0F);
     charArray[1] = NoteNumber & 0x7F;
     charArray[2] = Velocity;
-    wprintw(win_debug_messages, "Note number: %i\n", (int) charArray[1]);
+    wprintw(win_debug_messages.GetRef(), "Note number: %i\n", (int) charArray[1]);
 
     sendToMidi();
 
@@ -491,7 +558,7 @@ private:
 
     void sendToMidi(void)
     {
-        wprintw(win_debug_messages, "Program Change: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages.GetRef(), "Program Change: %i\n", (int) charArray[1]);
         if(handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -510,7 +577,7 @@ public:
 
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (Program - 1) & 0x7F;
-        wprintw(win_debug_messages, "Program Change: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages.GetRef(), "Program Change: %i\n", (int) charArray[1]);
         sendToMidi();
     }
 
@@ -524,8 +591,8 @@ private:
 
     void sendToMidi(void)
     {
-        wprintw(win_debug_messages, "Control Change - Controller Number: %i\n", (int) charArray[1]);
-        wprintw(win_debug_messages, "Control Change - Controller Value: %i\n", (int) charArray[2]);
+        wprintw(win_debug_messages.GetRef(), "Control Change - Controller Number: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages.GetRef(), "Control Change - Controller Value: %i\n", (int) charArray[2]);
         if (handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -556,7 +623,7 @@ void * playNoteThread(void * msg)
 //    TMidiProgramChange MidiProgramChange(2, ((TPlayNoteMsg*) msg)->Program);
     TMidiNoteOnEvent MidiNoteOnEvent((TPlayNoteMsg *) msg);
     waitMilliseconds(((TPlayNoteMsg*) msg)->DurationMS);
-    wprintw(win_debug_messages, "playNoteThread\n");
+    wprintw(win_debug_messages.GetRef(), "playNoteThread\n");
     ((TPlayNoteMsg *) msg)->Velocity = 0;
     TMidiNoteOffEvent MidiNoteOffEvent((TPlayNoteMsg *) msg);
 
@@ -580,7 +647,7 @@ void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int D
     PlayNoteMsg->thread = thread;
     if (iret)
     {
-        wprintw(win_debug_messages, "Error - pthread_create() return code: %d\n", iret);
+        wprintw(win_debug_messages.GetRef(), "Error - pthread_create() return code: %d\n", iret);
         exit(EXIT_FAILURE);
     }
 
@@ -626,7 +693,7 @@ void * threadKeyboard(void * ptr)
     int octave = 2;
     int program = 1;
     message = (char *) ptr;
-    wprintw(win_debug_messages, "%s \n", message);
+    wprintw(win_debug_messages.GetRef(), "%s \n", message);
 
     while (1)
     {
@@ -640,23 +707,23 @@ void * threadKeyboard(void * ptr)
         {
         case ')':
             octave--;
-            wprintw(win_debug_messages, "Octave %i\n", octave);
+            wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
             break;
         case '=':
             octave++;
-            wprintw(win_debug_messages, "Octave %i\n", octave);
+            wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
             break;
 
         case 195:
             program--;
-            wprintw(win_debug_messages, "Program %i\n", program);
+            wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
             {
                 TMidiProgramChange PC1(2, program);
             }
             break;
         case '*':
             program++;
-            wprintw(win_debug_messages, "Program %i\n", program);
+            wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
             {
                 TMidiProgramChange PC2(2, program);
             }
@@ -730,6 +797,20 @@ void * threadKeyboard(void * ptr)
             noteInScale = 16;
             midiPlay(octave, noteInScale);
             break;
+
+
+
+        case ' ':
+        extern void ContextSelectionMenu(void);
+            ContextSelectionMenu();
+
+            break;
+
+        case 'b':
+
+            win_context_select_menu.Show();
+            break;
+
         }
     }
 
@@ -994,7 +1075,7 @@ void StartSequencer(char * MidiFilename)
     }
     else
     {
-        wprintw(win_debug_messages, "StartSequencer called twice\n");
+        wprintw(win_debug_messages.GetRef(), "StartSequencer called twice\n");
     }
 
 }
@@ -1040,24 +1121,24 @@ void *threadMidiAutomaton(void * ptr)
 
     if (verbose)
     {
-        wprintw(win_debug_messages, "Using: \n");
-        wprintw(win_debug_messages, "Input: ");
+        wprintw(win_debug_messages.GetRef(), "Using: \n");
+        wprintw(win_debug_messages.GetRef(), "Input: ");
         if (device_in_str)
         {
-            wprintw(win_debug_messages, "device %s\n", device_in_str);
+            wprintw(win_debug_messages.GetRef(), "device %s\n", device_in_str);
         }
         else
         {
-            wprintw(win_debug_messages, "NONE\n");
+            wprintw(win_debug_messages.GetRef(), "NONE\n");
         }
-        fprintf(stderr, "Output: ");
+        wprintw(win_debug_messages.GetRef(), "Output: ");
         if (device_out_str)
         {
-            wprintw(win_debug_messages, "device %s\n", device_out_str);
+            wprintw(win_debug_messages.GetRef(), "device %s\n", device_out_str);
         }
         else
         {
-            wprintw(win_debug_messages, "NONE\n");
+            wprintw(win_debug_messages.GetRef(), "NONE\n");
         }
     }
 
@@ -1089,7 +1170,7 @@ void *threadMidiAutomaton(void * ptr)
             {
                 if (verbose)
                 {
-                    wprintw(win_midi_in, "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
                 }
 
                 switch (stateMachine)
@@ -1146,7 +1227,7 @@ void *threadMidiAutomaton(void * ptr)
                     snd_rawmidi_read(handle_in, &ch, 1);
                     stateMachine = smProcessControllerChange;
                     rxControllerValue = ch;
-                    wprintw(win_debug_messages, "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
+                    wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
                     break;
 
                 case smProcessNoteEvent:
@@ -1206,7 +1287,7 @@ void *threadMidiAutomaton(void * ptr)
         }
     }
 
-    fprintf(stderr, "Closing\n");
+    wprintw(win_debug_messages.GetRef(), "Closing\n");
 
     StopRawMidiIn();
     StopRawMidiOut();
@@ -1225,54 +1306,6 @@ void *threadMidiAutomaton(void * ptr)
 
 
 
-WINDOW *create_newwin(char* name, int height, int width, int starty, int startx)
-{
-    WINDOW *local_win;
-
-    local_win = newwin(height, width, starty, startx);
-    box(local_win, 0, 0);          /* 0, 0 gives default characters
-                                         * for the vertical and horizontal
-                                         * lines                        */
-    mvwprintw(local_win, 0, 0, name);
-    wrefresh(local_win);
-    delwin(local_win);
-    local_win = newwin(height-2, width-2, starty+1, startx+1);
-    if (local_win == NULL)
-    {
-        printf("****************** COULD NOT CREATE WINDOW ****************");
-    }
-    scrollok(local_win, TRUE);
-    idlok(local_win, TRUE);
-    wrefresh(local_win);            /* Show that box                */
-
-    return local_win;
-}
-
-
-
-
-
-void destroy_win(WINDOW *local_win)
-{
-    /* box(local_win, ' ', ' '); : This won't produce the desired
-     * result of erasing the window. It will leave it's four corners
-     * and so an ugly remnant of window.
-     */
-    wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-    /* The parameters taken are
-     * 1. win: the window on which to operate
-     * 2. ls: character to be used for the left side of the window
-     * 3. rs: character to be used for the right side of the window
-     * 4. ts: character to be used for the top side of the window
-     * 5. bs: character to be used for the bottom side of the window
-     * 6. tl: character to be used for the top left corner of the window
-     * 7. tr: character to be used for the top right corner of the window
-     * 8. bl: character to be used for the bottom left corner of the window
-     * 9. br: character to be used for the bottom right corner of the window
-     */
-    wrefresh(local_win);
-    delwin(local_win);
-}
 
 
 void InitializePlaylist(void)
@@ -1330,16 +1363,16 @@ void * threadRedraw(void * pMessage)
     {
         waitMilliseconds(200);
         Context = *Playlist;
-        werase(win_context_current);
-        mvwprintw(win_context_current, 0,0, Context.SongName.c_str());
+        win_context_current.Erase();
+        mvwprintw(win_context_current.GetRef(), 0,0, Context.SongName.c_str());
 
-        werase(win_context_usage);
+        win_context_usage.Erase();
         {
             auto it = Context.Pedalboard.PedalsDigital.begin();
             while(it != Context.Pedalboard.PedalsDigital.end())
             {
                 TPedalDigital PedalDigital = *it;
-                wprintw(win_context_usage, "Digital Pedal %i: %s\n", PedalDigital.GetNumber(), PedalDigital.GetComment().c_str());
+                wprintw(win_context_usage.GetRef(), "Digital Pedal %i: %s\n", PedalDigital.GetNumber(), PedalDigital.GetComment().c_str());
                 it++;
             }
         }
@@ -1348,19 +1381,22 @@ void * threadRedraw(void * pMessage)
             while(it != Context.Pedalboard.PedalsAnalog.end())
             {
                 TPedalAnalog PedalAnalog = *it;
-                wprintw(win_context_usage, "Expressionm CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
+                wprintw(win_context_usage.GetRef(), "Expressionm CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
                 it++;
             }
 
         }
-        refresh();
-        wrefresh(win_context_current);
-        wrefresh(win_context_next);
-        wrefresh(win_context_prev);
-        wrefresh(win_context_usage);
-        wrefresh(win_debug_messages);
-        wrefresh(win_midi_in);
-        wrefresh(win_midi_out);
+
+        //wnoutrefresh(win_context_current);
+        win_context_current.Refresh();
+        win_context_next.Refresh();
+        win_context_prev.Refresh();
+        win_context_usage.Refresh();
+        win_debug_messages.Refresh();
+        win_midi_in.Refresh();
+        win_midi_out.Refresh();
+
+        doupdate();
 //        wrefresh(win_context_select_arrows);
     }
 
@@ -1371,7 +1407,7 @@ void * threadRedraw(void * pMessage)
 static const char *menulist[MAX_MENU_ITEMS][MAX_SUB_ITEMS];
 
 
-void ContextSelection_Playlist (void)
+void ContextSelectionMenu (void)
 {
     /* *INDENT-EQLS* */
     CDKSCREEN *cdkscreen = 0;
@@ -1382,10 +1418,11 @@ void ContextSelection_Playlist (void)
     char temp[256];
     int selection;
 
-    cdkscreen = initCDKScreen (win_context_select_arrows);
+    win_context_select_menu.Show();
+    cdkscreen = initCDKScreen (win_context_select_menu.GetRef());
 
     /* Start CDK color. */
-    initCDKColor ();
+    //initCDKColor ();
 
     /* Set up the menu. */
     menulist[0][0] = "By playlist      ";
@@ -1412,26 +1449,10 @@ void ContextSelection_Playlist (void)
         menulist[1][idx] = pMenuStr;
     }
     submenusize[1] = idx+1;
-/*
-    menulist[0][0] = "</B>Help<!B>";
-    menulist[0][1] = "</B>On Edit <!B>";
-    menulist[0][2] = "</B>On File <!B>";
-    menulist[0][3] = "</B>About...<!B>";
 
-    menulist[1][0] = "</B>Help<!B>";
-    menulist[1][1] = "</B>On Edit <!B>";
-    menulist[1][2] = "</B>On File <!B>";
-    menulist[1][3] = "</B>About...<!B>";
 
-    menulist[2][0] = "</B>Help<!B>";
-    menulist[2][1] = "</B>On Edit <!B>";
-    menulist[2][2] = "</B>On File <!B>";
-    menulist[2][3] = "</B>About...<!B>";
-
-    submenusize[0] = 3;
-    submenusize[1] = 3;
 //    submenusize[2] = 3;
-*/
+
     menuloc[0] = LEFT;
     menuloc[1] = LEFT;
 
@@ -1441,7 +1462,7 @@ void ContextSelection_Playlist (void)
     mesg[2] = "                                          ";
     mesg[3] = "                                          ";
 //    infoBox = newCDKLabel (cdkscreen, CENTER, CENTER,
-  //                         (CDK_CSTRING2) mesg, 4,
+    //                         (CDK_CSTRING2) mesg, 4,
     //                       TRUE, TRUE);
 
     /* Create the menu. */
@@ -1479,8 +1500,9 @@ void ContextSelection_Playlist (void)
     /* Clean up. */
     destroyCDKMenu (menu);
     destroyCDKLabel (infoBox);
-    destroyCDKScreen (cdkscreen);
+
     endCDK ();
+    win_context_select_menu.Hide();
 }
 
 
@@ -1488,11 +1510,15 @@ void ContextSelection_Playlist (void)
 
 int main(int argc, char** argv)
 {
+    int term_lines, term_cols;
 
     InitializePlaylist();
 
 
     initscr();                      /* Start curses mode            */
+    curs_set(0);
+    term_lines = LINES;
+    term_cols = COLS;
     if (can_change_color() == TRUE)
     {
         start_color();
@@ -1507,27 +1533,25 @@ int main(int argc, char** argv)
                                     /* every thing to me           */
     keypad(stdscr, TRUE);           /* I need that nifty F1         */
 
-    height = 3;
-    width = 10;
-    starty = (LINES - height) / 2;  /* Calculating for a center placement */
-    startx = (COLS - width) / 2;    /* of the window                */
-    refresh();
 
-    win_midi_in =     create_newwin("IN", LINES -3, 6, 3, COLS-6-6);
-    win_midi_out =     create_newwin("OUT", LINES -3, 6, 3, COLS-6);
-    win_context_prev =      create_newwin("CONTEXT PREV", 3, 0.33*COLS, 0, 0);
-    win_context_current =   create_newwin("CONTEXT CURRENT", 3, 0.33*COLS, 0, 0.33*COLS +1);
-    win_context_next =      create_newwin("CONTEXT NEXT", 3, 0.33*COLS, 0, 0.33*COLS +1 + 0.33*COLS +1);
-    win_debug_messages =    create_newwin("DEBUG MESSAGES", 11, COLS -6-6, LINES-11, 0);
-    win_context_usage =     create_newwin("CONTEXT USAGE", 10, (COLS -6-6)/2, 3, 0);
-    win_context_select_arrows = create_newwin("CONTEXT SELECT", 10, (COLS -6-6)/2, 3, (COLS -6-6)/2);
+    win_midi_in.Init("IN", term_lines -3, 6, 3, term_cols-6-6);
+    win_midi_out.Init("OUT", term_lines -3, 6, 3, term_cols-6);
+    win_context_prev.Init("CONTEXT PREV", 3, 0.33*term_cols, 0, 0);
+    win_context_current.Init("CONTEXT CURRENT", 3, 0.33*term_cols, 0, 0.33*term_cols +1);
+    win_context_next.Init("CONTEXT NEXT", 3, 0.33*term_cols, 0, 0.33*term_cols +1 + 0.33*term_cols +1);
+    win_debug_messages.Init("DEBUG MESSAGES", 11, term_cols -6-6, term_lines-11, 0);
+    win_context_usage.Init("CONTEXT USAGE", (term_lines -3)/2, (term_cols -6-6)/2, 3, 0);
+    win_context_user_specific.Init("CONTEXT SPECIFIC", (term_lines -3)/2, (term_cols -6-6)/2, 3, (term_cols -6-6)/2);
+    win_context_select_menu.Init("CONTEXT SELECTION MENU", term_lines, term_cols, 0, 0);
+    win_context_select_menu.Hide();
+
+    wprintw(win_debug_messages.GetRef(), "Terminal LINES: %i, COLUMNS: %i\n", term_lines, term_cols);
 
     pthread_t thread1;
     // Create midi automaton thread
     const char *message1 = "";
     int iret1;
-    iret1 = pthread_create(&thread1, NULL, threadMidiAutomaton,
-                           (void*) message1);
+    iret1 = pthread_create(&thread1, NULL, threadMidiAutomaton, (void*) message1);
     if (iret1)
     {
         fprintf(stderr, "threadMidiAutomaton Error - pthread_create() return code: %d\n", iret1);
@@ -1547,16 +1571,17 @@ int main(int argc, char** argv)
     }
 
 
-    ContextSelection_Playlist();
+    // ContextSelection_Playlist();
 
-
-    if (argc != 1)
+    threadKeyboard(0);
+    while(1) //(ch = getch()) != KEY_ESC)
     {
-        usage();
-        exit(0);
+        sleep(1);
+
     }
 
-//    threadKeyboard(0);
+
+
 
 }
 

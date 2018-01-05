@@ -34,7 +34,7 @@
 	<algorithm>
 	<cdk.h>
 
-1515086925 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
+1515165843 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -49,6 +49,8 @@
 	<list>
 	<string>
 	<algorithm>
+	<cdk.h>
+	<panel.h>
 
 1515057059 source:/home/stephane/Documents/devel/oxford/pmidi.c
 	<stdio.h>
@@ -339,6 +341,282 @@
 	<cdk_objs.h>
 
 1513984583 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/draw.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk.h
+	<cdk_config.h>
+	<cdk_version.h>
+	<xcurses.h>
+	<ncursesw/ncurses.h>
+	<ncurses/ncurses.h>
+	<ncurses.h>
+	<curses.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	<unistd.h>
+	<dirent.h>
+	<time.h>
+	<errno.h>
+	<pwd.h>
+	<grp.h>
+	<limits.h>
+	<getopt.h>
+	<dmalloc.h>
+	<dbmalloc.h>
+	<cdkscreen.h>
+	<curdefs.h>
+	<binding.h>
+	<cdk_util.h>
+	<cdk_objs.h>
+	<cdk_params.h>
+	<alphalist.h>
+	<buttonbox.h>
+	<calendar.h>
+	<dialog.h>
+	<entry.h>
+	<fselect.h>
+	<graph.h>
+	<histogram.h>
+	<itemlist.h>
+	<label.h>
+	<marquee.h>
+	<matrix.h>
+	<mentry.h>
+	<menu.h>
+	<radio.h>
+	<scroll.h>
+	<selection.h>
+	<swindow.h>
+	<template.h>
+	<viewer.h>
+	<traverse.h>
+	<button.h>
+	<dscale.h>
+	<fscale.h>
+	<scale.h>
+	<uscale.h>
+	<fslider.h>
+	<slider.h>
+	<uslider.h>
+	<draw.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk_config.h
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk_version.h
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdkscreen.h
+	<cdk.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/curdefs.h
+	<cdk.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/binding.h
+	<cdk.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk_util.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk_objs.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/cdk_params.h
+	<cdk.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/alphalist.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+	<entry.h>
+	<scroll.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/entry.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/scroll.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+	<scroller.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/scroller.h
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/buttonbox.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/calendar.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/dialog.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/fselect.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+	<entry.h>
+	<scroll.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/graph.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/histogram.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/itemlist.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/label.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/marquee.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/matrix.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/mentry.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/menu.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/radio.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+	<scroller.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/selection.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/swindow.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/template.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/viewer.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/traverse.h
+	"cdk.h"
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/button.h
+	"cdk.h"
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/dscale.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/fscale.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/scale.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/uscale.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/fslider.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/slider.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515157408 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/uslider.h
+	<cdk.h>
+	<binding.h>
+	<cdkscreen.h>
+	<cdk_objs.h>
+
+1515055607 /home/stephane/Documents/devel/oxford/cdk-5.0-20171209/include/draw.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
