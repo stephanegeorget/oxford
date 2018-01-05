@@ -71,12 +71,19 @@ public:
 
     void Refresh(void)
     {
-        touchwin(BoxedWindow);
-//        wrefresh(SubWindow);
-        update_panels();
-        doupdate();
+        if (!panel_hidden(Panel))
+        {
+            touchwin(BoxedWindow);
+//       wrefresh(SubWindow);
+            update_panels();
+            doupdate();
+        }
     }
 
+    void PutOnTop(void)
+    {
+        top_panel(Panel);
+    }
     void Erase(void)
     {
         wclear(SubWindow);
@@ -801,8 +808,8 @@ void * threadKeyboard(void * ptr)
 
 
         case ' ':
-        extern void ContextSelectionMenu(void);
-            ContextSelectionMenu();
+            extern void SelectContextInPlaylist(void);
+            SelectContextInPlaylist();
 
             break;
 
@@ -1396,7 +1403,7 @@ void * threadRedraw(void * pMessage)
         win_midi_in.Refresh();
         win_midi_out.Refresh();
 
-        doupdate();
+        //doupdate();
 //        wrefresh(win_context_select_arrows);
     }
 
@@ -1407,8 +1414,188 @@ void * threadRedraw(void * pMessage)
 static const char *menulist[MAX_MENU_ITEMS][MAX_SUB_ITEMS];
 
 
-void ContextSelectionMenu (void)
+void SelectContextByName(void)
 {
+
+}
+
+void SelectContextInPlaylist (void)
+{
+    /* Declare variables. */
+    CDKSCREEN *cdkscreen = 0;
+    CDKSCROLL *scrollList = 0;
+
+    char **item = 0;
+    const char *mesg[5];
+    char temp[256];
+    int selection, count;
+
+    win_midi_in.Hide();
+    win_midi_out.Hide();
+    win_context_prev.Hide();
+    win_context_current.Hide();
+    win_context_next.Hide();
+    win_debug_messages.Hide();
+    win_context_usage.Hide();
+    win_context_user_specific.Hide();
+    win_context_select_menu.Hide();
+    win_context_select_menu.PutOnTop();
+    win_context_select_menu.Show();
+
+
+
+    cdkscreen = initCDKScreen(win_context_select_menu.GetRef());
+
+    /* Set up CDK Colors. */
+    //initCDKColor ();
+
+
+
+    /* Use the current diretory list to fill the radio list. */
+    //count = CDKgetDirectoryContents (".", &item);
+    char ** itemlist = (char **) malloc(PlaylistData.size() * sizeof(char *));
+    int idx = 0;
+    std::list<TContext>::iterator it;
+    for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
+    {
+        TContext Context = *it;
+        char * pMenuStr = (char *)malloc(Context.SongName.size()+1);
+        strcpy(pMenuStr, Context.SongName.c_str());
+        itemlist[idx] = pMenuStr;
+        idx++;
+    }
+
+
+    /* Create the scrolling list. */
+    scrollList = newCDKScroll (cdkscreen, CENTER, CENTER, RIGHT, 20, 70, "Context selection, by playlist order", itemlist, idx, TRUE, A_REVERSE, TRUE, FALSE);
+
+
+    /* Is the scrolling list null? */
+    if (scrollList == 0)
+    {
+        /* Exit CDK. */
+        destroyCDKScreen (cdkscreen);
+        endCDK ();
+
+        printf ("Cannot make scrolling list. Is the window too small?\n");
+        return;
+    }
+
+    // if (CDKparamNumber (&params, 'c'))
+    // {
+    //    setCDKScrollItems (scrollList, (CDK_CSTRING2) item, count, TRUE);
+    // }
+#if 0
+    drawCDKScroll (scrollList, 1);
+
+    setCDKScrollPosition (scrollList, 10);
+    drawCDKScroll (scrollList, 1);
+    sleep (3);
+
+    setCDKScrollPosition (scrollList, 20);
+    drawCDKScroll (scrollList, 1);
+    sleep (3);
+
+    setCDKScrollPosition (scrollList, 30);
+    drawCDKScroll (scrollList, 1);
+    sleep (3);
+
+    setCDKScrollPosition (scrollList, 70);
+    drawCDKScroll (scrollList, 1);
+    sleep (3);
+#endif
+//   bindCDKObject (vSCROLL, scrollList, 'a', addItemCB, NULL);
+//bindCDKObject (vSCROLL, scrollList, 'i', insItemCB, NULL);
+//  bindCDKObject (vSCROLL, scrollList, 'd', delItemCB, NULL);
+
+    /* Activate the scrolling list. */
+
+    selection = activateCDKScroll (scrollList, 0);
+
+    /* Determine how the widget was exited. */
+    if (scrollList->exitType == vESCAPE_HIT)
+    {
+        mesg[0] = "<C>You hit escape. No file selected.";
+        mesg[1] = "";
+        mesg[2] = "<C>Press any key to continue.";
+        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
+    }
+    else if (scrollList->exitType == vNORMAL)
+    {
+        //char *theItem = chtype2Char (scrollList->item[selection]);
+
+        idx = 0;
+        for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
+        {
+            if (idx == scrollList->currentItem)
+            {
+                Playlist = it;
+
+                break;
+            }
+            idx++;
+
+        }
+
+
+//freeChar (theItem);
+#if 0
+        char *theItem = chtype2Char (scrollList->item[selection]);
+        mesg[0] = "<C>You selected the following file";
+        sprintf (temp, "<C>%.*s", (int)(sizeof (temp) - 20), theItem);
+        mesg[1] = temp;
+        mesg[2] = "<C>Press any key to continue.";
+        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
+        freeChar (theItem);
+#endif
+    }
+
+    /* Clean up. */
+    CDKfreeStrings (item);
+    destroyCDKScroll (scrollList);
+    destroyCDKScreen (cdkscreen);
+    endCDK ();
+
+
+
+
+
+    win_context_select_menu.Hide();
+
+    win_midi_in.Show();
+    win_midi_out.Show();
+    win_context_prev.Show();
+    win_context_current.Show();
+    win_context_next.Show();
+    win_debug_messages.Show();
+    win_context_usage.Show();
+    win_context_user_specific.Show();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
+
+
+
     /* *INDENT-EQLS* */
     CDKSCREEN *cdkscreen = 0;
     CDKLABEL *infoBox    = 0;
@@ -1420,9 +1607,6 @@ void ContextSelectionMenu (void)
 
     win_context_select_menu.Show();
     cdkscreen = initCDKScreen (win_context_select_menu.GetRef());
-
-    /* Start CDK color. */
-    //initCDKColor ();
 
     /* Set up the menu. */
     menulist[0][0] = "By playlist      ";
@@ -1481,16 +1665,13 @@ void ContextSelectionMenu (void)
     /* Determine how the user exited from the widget. */
     if (menu->exitType == vEARLY_EXIT)
     {
-        mesg[0] = "<C>You hit escape. No menu item was selected.";
-        mesg[1] = "",
-                  mesg[2] = "<C>Press any key to continue.";
-        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
+        // You hit escape. No menu item was selected.
     }
     else if (menu->exitType == vNORMAL)
     {
-        sprintf (temp, "<C>You selected menu #%d, submenu #%d",
-                 selection / 100,
-                 selection % 100);
+        // You selected menu #%d, submenu #%d",
+        selection / 100,
+                  selection % 100);
         mesg[0] = temp;
         mesg[1] = "",
                   mesg[2] = "<C>Press any key to continue.";
@@ -1503,6 +1684,9 @@ void ContextSelectionMenu (void)
 
     endCDK ();
     win_context_select_menu.Hide();
+
+#endif
+
 }
 
 
