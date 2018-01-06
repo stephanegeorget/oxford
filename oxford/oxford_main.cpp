@@ -1256,7 +1256,7 @@ void AveMaria_Stop(void)
 void ChangeTempo(int Value)
 {
 //    waitMilliseconds(10);
-    ChangeTempoSequencer(Value, 70, 130);
+    ChangeTempoSequencer(Value, 70*2, 130*2);
 }
 }
 

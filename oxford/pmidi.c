@@ -4545,6 +4545,7 @@ seq_free_context(seq_context_t *ctxp)
 	}
 
 	g_free(ctxp);
+	ctxp = 0;
 }
 
 /*
@@ -5200,11 +5201,15 @@ snd_seq_ev_set_direct(ep);
 void pmidiStop(void)
 {
 //    seq_control_timer(ctxp, SND_SEQ_EVENT_STOP);
+snd_seq_free_queue(ctxp->handle, ctxp->queue);
 
+// snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
 
-//snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
+    seq_free_context(ctxp);
 
-  //  seq_free_context(ctxp);
+	/* Restore signal handler */
+	signal(SIGINT, SIG_DFL);
+
 }
 
 /*
