@@ -4044,7 +4044,7 @@ seq_context_t * ctxp;
  *    argv      - arg vector
  */
 int
-main_TODO(int argc, char **argv) /* TODO */
+main_TODO(int argc, char **argv, int Tempo) /* TODO */
 {
 	char opts[NELEM(long_opts) * 2 + 1];
 	char *portdesc;
@@ -4776,7 +4776,6 @@ int
 seq_write(seq_context_t *ctxp, snd_seq_event_t *ep)
 {
 	int  err = 0;
-
 	err = snd_seq_event_output(ctxp->handle, ep);
 	if (err < 0)
 		return err;
@@ -5129,7 +5128,7 @@ seq_midi_echo(seq_context_t *ctxp, unsigned long time)
 // 500000 = duration of one tick.
 // Assume 96 ticks per beat, 500000 => 120BPM
 void
-seq_midi_tempo_direct(float skew, float bpm_min, float bpm_max)
+seq_midi_tempo_direct(int Tempo)
 {
 
 /*
@@ -5168,8 +5167,7 @@ printf("K=%i", k);
 //seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 //seq_control_timer(ctxp, 0);
     // 500000 is 120BPM by default with the 96PPQ
-    float bpm_average = (bpm_min + bpm_max)/2;
-    float micro_tempo = 500000.0 / 120.0 * (bpm_average + skew * (bpm_average - bpm_min));
+    float micro_tempo = 500000.0 / 120.0 * Tempo;
     snd_seq_event_t epvar;
 
     snd_seq_event_t * ep = &epvar;
@@ -5186,11 +5184,13 @@ printf("K=%i", k);
 
 snd_seq_ev_set_direct(ep);
 
-	seq_write(ctxp, ep);
+//	seq_write(ctxp, ep);
+
+	snd_seq_event_output_direct(ctxp->handle, ep);
 
 //	snd_seq_continue_queue(ctxp->handle, ctxp->queue, 0);
 
-	snd_seq_drain_output(ctxp->handle);
+//	snd_seq_drain_output(ctxp->handle);
 
 
 
@@ -5199,8 +5199,12 @@ snd_seq_ev_set_direct(ep);
 
 void pmidiStop(void)
 {
-    seq_control_timer(ctxp, 0);
-    seq_free_context(ctxp);
+//    seq_control_timer(ctxp, SND_SEQ_EVENT_STOP);
+
+
+//snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
+
+  //  seq_free_context(ctxp);
 }
 
 /*

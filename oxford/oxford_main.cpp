@@ -1131,10 +1131,11 @@ void Chord3_Off(void)
 
 
 extern "C" void showlist(void);
-extern "C" int main_TODO(int argc, char **argv);
-extern "C" void seq_midi_tempo_direct(float skew, float bpm_min, float bpm_max);
+extern "C" int main_TODO(int argc, char **argv, int Tempo);
+extern "C" void seq_midi_tempo_direct(int Tempo);
 extern "C" void pmidiStop(void);
 
+static int Tempo = 120;
 unsigned int SequencerRunning = 0;
 
 pthread_t thread_sequencer = NULL;
@@ -1182,7 +1183,7 @@ void * ThreadSequencerFunction (void * params)
     char * str13 = (char*) params;
     char * (argv1[4]) =
     { str10, str11, str12, str13 };
-    main_TODO(argc, argv1);
+    main_TODO(argc, argv1, Tempo);
     StartRawMidiOut();
 
     thread_sequencer = NULL;
@@ -1210,13 +1211,23 @@ void StartSequencer(char * MidiFilename)
 
 }
 
-void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
+
+void SetTempoSequencer(void)
 {
     if (thread_sequencer != NULL)
     {
-        seq_midi_tempo_direct((controllerValue- 60)/60, bpm_min, bpm_max);
+        seq_midi_tempo_direct(Tempo);
     }
+}
 
+
+
+void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
+{
+        float bpm_average = (bpm_min + bpm_max)/2;
+        float skew = (controllerValue- 60)/60;
+        Tempo = (bpm_average + skew * (bpm_average - bpm_min));
+        SetTempoSequencer();
 }
 
 
@@ -1244,7 +1255,7 @@ void AveMaria_Stop(void)
 
 void ChangeTempo(int Value)
 {
-    waitMilliseconds(100);
+//    waitMilliseconds(10);
     ChangeTempoSequencer(Value, 70, 130);
 }
 }
