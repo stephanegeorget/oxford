@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1515099633 source:/home/stephane/oxford/devel/oxford/pmidi.c
+1515197301 source:/home/stephane/oxford/devel/oxford/pmidi.c
 	<stdio.h>
 	<stdarg.h>
 	<stdlib.h>
@@ -17,7 +17,7 @@
 	<setjmp.h>
 	"libintl.h"
 
-1515109702 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+1515197182 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -33,6 +33,7 @@
 	<string>
 	<algorithm>
 	<cdk.h>
+	<panel.h>
 
 1515171945 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
 	<stdio.h>
@@ -298,43 +299,43 @@
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/dscale.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/dscale.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/fscale.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/fscale.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/scale.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/scale.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/uscale.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/uscale.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/fslider.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/fslider.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/slider.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/slider.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
 
-1515101234 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/uslider.h
+1515183777 /home/stephane/oxford/devel/oxford/cdk-5.0-20171209/include/uslider.h
 	<cdk.h>
 	<binding.h>
 	<cdkscreen.h>

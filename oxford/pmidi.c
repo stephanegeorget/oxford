@@ -5063,7 +5063,7 @@ seq_midi_pitchbend(seq_context_t *ctxp, snd_seq_event_t *ep, int devchan, int be
 void
 seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 {
-/*
+
 	ep->type = SND_SEQ_EVENT_TEMPO;
 
 	ep->data.queue.queue = ctxp->queue;
@@ -5071,7 +5071,7 @@ seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 	ep->dest.client = SND_SEQ_CLIENT_SYSTEM;
 	ep->dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
 	seq_write(ctxp, ep);
-*/
+
 }
 
 /*

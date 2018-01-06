@@ -239,22 +239,45 @@ public:
 
 class TContext
 {
+private:
+    void (*InitFunc)(void) = NULL;
+
 public:
     std::string Author;
     std::string SongName;
     TPedalboard Pedalboard;
+    void Init(void)
+    {
+        if(InitFunc != NULL)
+        {
+            InitFunc();
+        }
+    }
+    void SetInitFunc( void (*InitFunc_param)(void))
+    {
+         InitFunc = InitFunc_param;
+    }
 };
 
 
 //TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
 
+
 std::list<TContext> PlaylistData;
 std::list<TContext> PlaylistData_ByAuthor;
 std::list<TContext> PlaylistData_BySongName;
 
+
+
 std::list<TContext>::iterator Playlist;
 
-TContext cAveMaria, cCapitaineFlam, cWildThoughts, cGangstaParadise;
+
+
+TContext cAveMaria;
+TContext cCapitaineFlam;
+TContext cWildThoughts;
+TContext cGangstaParadise;
+TContext cBeatIt;
 
 
 // Compare contexts by author (not case sensitive)
@@ -298,6 +321,8 @@ void ContextDecreaseStart(void)
     if (Playlist != PlaylistData.begin())
     {
         Playlist--;
+        TContext Context = *Playlist;
+        Context.Init();
     }
 
 }
@@ -320,6 +345,8 @@ void ContextIncreaseStart(void)
     if (it != PlaylistData.end())
     {
         Playlist++;
+        TContext Context = *Playlist;
+        Context.Init();
     }
 }
 
@@ -565,7 +592,7 @@ private:
 
     void sendToMidi(void)
     {
-        wprintw(win_debug_messages.GetRef(), "Program Change: %i\n", (int) charArray[1]);
+        wprintw(win_midi_out.GetRef(), "%i\n%i\n", (int) charArray[0], (int) charArray[1]);
         if(handle_out != 0)
         {
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
@@ -584,7 +611,7 @@ public:
 
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (Program - 1) & 0x7F;
-        wprintw(win_debug_messages.GetRef(), "Program Change: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages.GetRef(), "Program Change: Channel %i; Program %i\n", (int) Channel, (int) Program);
         sendToMidi();
     }
 
@@ -598,10 +625,9 @@ private:
 
     void sendToMidi(void)
     {
-        wprintw(win_debug_messages.GetRef(), "Control Change - Controller Number: %i\n", (int) charArray[1]);
-        wprintw(win_debug_messages.GetRef(), "Control Change - Controller Value: %i\n", (int) charArray[2]);
         if (handle_out != 0)
         {
+            wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
         }
     }
@@ -620,6 +646,7 @@ public:
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (ControlNumber) & 0x7F;
         charArray[2] = (ControllerValue);
+        wprintw(win_debug_messages.GetRef(), "Control Change - Controller Number: %i; Controller Value: %i\n", (int) charArray[1], (int) charArray[2]);
         sendToMidi();
     }
 
@@ -813,10 +840,9 @@ void * threadKeyboard(void * ptr)
 
             break;
 
-        case 'b':
-
-            win_context_select_menu.Show();
-            break;
+//        case 'b':
+  //          cCapitaineFlam.Init();
+    //          break;
 
         }
     }
@@ -904,10 +930,22 @@ void * Laser_Cycle(void * pMessage)
 
 pthread_t thread;
 
-void Laser_On(void)
+
+void Init(void)
 {
+    // For a reason that eludes me, changing the variation of the part
+    // must be sent twice...
+    // We want to select the LaserGun (program 128, variation 2)
     TMidiProgramChange pc(2, 128);
     TMidiControlChange cc(2, 0, 2);
+    TMidiProgramChange pc1(2, 128);
+    TMidiControlChange cc1(2, 0, 2);
+
+}
+
+
+void Laser_On(void)
+{
 
     poorMansSemaphore = 1;
 
@@ -925,6 +963,11 @@ void Laser_Off(void)
 {
     poorMansSemaphore = 0;
 
+}
+
+void Starship(void)
+{
+    system("aplay ./wav/FXCarpenterLaserBig.wav &");
 }
 
 }
@@ -1002,6 +1045,86 @@ void Stop(void)
     }
     mutex = 0;
 }
+
+}
+
+
+
+namespace MickaelJackson
+{
+namespace BeatIt
+{
+
+void Init(void)
+{
+    TMidiProgramChange pc1(2, 92);
+    TMidiProgramChange pc2(3, 101);
+    TMidiProgramChange pc3(4, 89);
+
+
+
+
+}
+
+
+void Partial_On(int NoteNumber)
+{
+    PlayNote(2, NoteNumber -12, 400, 100);
+    PlayNote(2, NoteNumber , 400, 80);
+    PlayNote(3, NoteNumber -12, 400, 100);
+    PlayNote(3, NoteNumber , 400, 80);
+    PlayNote(4, NoteNumber -12, 400, 100);
+    PlayNote(4, NoteNumber , 400, 100);
+    TMidiControlChange cc1(2,0x42, 127);
+    TMidiControlChange cc2(3,0x42, 127);
+    TMidiControlChange cc3(4,0x42, 127);
+
+
+}
+
+
+void Partial_Off(void)
+{
+    TMidiControlChange cc1(2,0x42, 0);
+    TMidiControlChange cc2(3,0x42, 0);
+    TMidiControlChange cc3(4,0x42, 0);
+
+}
+
+void Chord1_On(void)
+{
+    Partial_On(55);
+}
+
+void Chord1_Off(void)
+{
+    Partial_Off();
+}
+
+
+void Chord2_On(void)
+{
+    Partial_On(52);
+}
+
+void Chord2_Off(void)
+{
+    Partial_Off();
+}
+
+void Chord3_On(void)
+{
+    Partial_On(50);
+}
+
+
+void Chord3_Off(void)
+{
+    Partial_Off();
+}
+
+}
+
 
 }
 
@@ -1087,7 +1210,14 @@ void StartSequencer(char * MidiFilename)
 
 }
 
+void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
+{
+    if (thread_sequencer != NULL)
+    {
+        seq_midi_tempo_direct((controllerValue- 60)/60, bpm_min, bpm_max);
+    }
 
+}
 
 
 namespace AveMaria
@@ -1114,7 +1244,8 @@ void AveMaria_Stop(void)
 
 void ChangeTempo(int Value)
 {
-    seq_midi_tempo_direct(((float)Value- 60)/60, 100, 160);
+    waitMilliseconds(100);
+    ChangeTempoSequencer(Value, 70, 130);
 }
 }
 
@@ -1326,6 +1457,8 @@ void InitializePlaylist(void)
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship, NULL, "Starship"));
+    cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
     cWildThoughts.Author = "Rihanna";
     cWildThoughts.SongName = "Wild Thoughts";
@@ -1338,6 +1471,12 @@ void InitializePlaylist(void)
     cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Gansta_s_Paradise::Start_NoteOn, Gansta_s_Paradise::Start_NoteOff, "Sequence; Press: first note, Release: set tempo and loop"));
     cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Gansta_s_Paradise::Stop, NULL, "Sequence; Press: first note, Release: set tempo and loop"));
 
+    cBeatIt.Author = "Mickael Jackson";
+    cBeatIt.SongName = "Beat It";
+    cBeatIt.SetInitFunc(MickaelJackson::BeatIt::Init);
+    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MickaelJackson::BeatIt::Chord1_On, MickaelJackson::BeatIt::Chord1_Off, "Chord 1"));
+    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MickaelJackson::BeatIt::Chord2_On, MickaelJackson::BeatIt::Chord2_Off, "Chord 2"));
+    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3"));
 
 
     PlaylistData.clear();
@@ -1345,9 +1484,13 @@ void InitializePlaylist(void)
     PlaylistData.push_back(cCapitaineFlam);
     PlaylistData.push_back(cWildThoughts);
     PlaylistData.push_back(cGangstaParadise);
+    PlaylistData.push_back(cBeatIt);
+
 
 
     Playlist = PlaylistData.begin();
+    TContext Context = *Playlist;
+    Context.Init();
 
     PlaylistData_ByAuthor = PlaylistData;
     PlaylistData_ByAuthor.sort(CompareTContextByAuthor);
@@ -1530,6 +1673,8 @@ void SelectContextInPlaylist (void)
             if (idx == scrollList->currentItem)
             {
                 Playlist = it;
+                TContext Context = *Playlist;
+                Context.Init();
 
                 break;
             }

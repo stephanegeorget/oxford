@@ -38,6 +38,7 @@
 			<Add library="asound" />
 			<Add library="ncurses" />
 			<Add library="libcdk" />
+			<Add library="panel" />
 			<Add directory="cdk-5.0-20171209" />
 		</Linker>
 		<Unit filename="oxford_main.cpp" />
