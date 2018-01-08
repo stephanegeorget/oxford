@@ -910,8 +910,163 @@ void Chord3_Off(void)
 
 }
 
+
+
+void AllSoundsOff(void)
+{
+        // all sounds off for all channels
+        for (unsigned int i = 1; i<=16; i++)
+        {
+            TMidiControlChange cc(i, 0x78, 0);
+            TMidiControlChange cc2(i, 0x79, 0);
+            TMidiControlChange cc3(i, 0x7B, 0);
+            TMidiControlChange cc4(i, 0x7C, 0);
+        }
+}
+
+
+
+
+
+typedef struct
+{
+    public:
+    int NoteNumber;
+    float NoteDuration; // In fraction of a pulse
+} TNote;
+
+class TSequence
+{
+    private:
+    struct timeval tv1, tv2;
+    pthread_t thread;
+    int event_flag = 0;
+    int BeatTime_ms = 0;
+    std::list<TNote> MelodyNotes;
+    std::list<TNote>::iterator it;
+    TNote CurrentNote;
+    void (*pFuncNoteOn)(int NoteNumber) = NULL;
+    void (*pFuncNoteOff)(int NoteNumber) = NULL;
+    int RootNoteNumber = 60;
+
+    static void * SequencerThread(void * pParam)
+    {
+        TSequence * pSeq = (TSequence *) pParam;
+        pSeq->Sequencer();
+    }
+
+    void Sequencer(void)
+    {
+        event_flag = 1;
+        while(event_flag)
+        {
+            pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            it++;
+            if (it == MelodyNotes.end())
+            {
+                event_flag = 0;
+            }
+            else
+            {
+                CurrentNote = *it;
+
+                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                waitMilliseconds(CurrentNote.NoteDuration * (float)BeatTime_ms);
+            }
+        }
+    }
+
+
+
+    public:
+
+    TSequence(std::list<TNote> MelodyNotes_param,
+                void (*pFuncNoteOn_param)(int NoteNumber),
+                void (*pFuncNoteOff_param)(int NoteNumber),
+                int RootNoteNumber_param)
+                {
+                    MelodyNotes = MelodyNotes_param;
+                    pFuncNoteOn = pFuncNoteOn_param;
+                    pFuncNoteOff = pFuncNoteOff_param;
+                    RootNoteNumber = RootNoteNumber_param;
+                }
+
+    // Downswing of the start sequencer pedal (step 1)
+    void Start_PedalDown(void)
+    {
+        it = MelodyNotes.begin();
+        CurrentNote = *it;
+        pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+        gettimeofday(&tv1, NULL);
+    }
+
+    // Upswing of the start sequencer pedal (step 2)
+    void Start_PedalUp(void)
+    {
+        gettimeofday(&tv2, NULL);
+        // Compute time lapse between pedal down and pedal up
+        // that will set our "one beat" tempo time
+        BeatTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
+
+        // Next, let the sequencer run in its own thread
+        int iret1;
+        iret1 = pthread_create(&thread, NULL, SequencerThread, this);
+        if (iret1)
+        {
+            fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Stop sequencer
+    void Stop_PedalDown(void)
+    {
+        // Stop sequence if any
+        event_flag = 0;
+        AllSoundsOff();
+    }
+};
+
+
+
 namespace CapitaineFlam
 {
+
+
+void Partial_On(int NoteNumber)
+{
+    TMidiNoteOnEvent no1(3, NoteNumber, 100);
+    TMidiNoteOnEvent no2(4, NoteNumber, 100);
+    TMidiNoteOnEvent no3(5, NoteNumber, 100);
+}
+
+void Partial_Off(int NoteNumber)
+{
+    TMidiNoteOffEvent no1(3, NoteNumber, 0);
+    TMidiNoteOffEvent no2(4, NoteNumber, 0);
+    TMidiNoteOffEvent no3(5, NoteNumber, 0);
+}
+
+
+TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}},
+                            Partial_On, Partial_Off, 72);
+
+
+void Sequence_Start_PedalDown(void)
+{
+    Sequence.Start_PedalDown();
+}
+
+void Sequence_Start_PedalUp(void)
+{
+    Sequence.Start_PedalUp();
+}
+
+
+void Sequence_Stop_PedalDown(void)
+{
+    Sequence.Stop_PedalDown();
+}
 
 int poorMansSemaphore = 0;
 
@@ -940,6 +1095,10 @@ void Init(void)
     TMidiControlChange cc(2, 0, 2);
     TMidiProgramChange pc1(2, 128);
     TMidiControlChange cc1(2, 0, 2);
+
+    TMidiProgramChange pc3(3, 57); // channel 3, trumpet
+    TMidiProgramChange pc4(4, 64); // channel 3, synth brass
+    TMidiProgramChange pc5(5, 61); // channel 3, trumpet
 
 }
 
@@ -1067,6 +1226,15 @@ void Init(void)
 }
 
 
+void Partial_Off(void * pParam)
+{
+    TMidiControlChange cc1(2,0x42, 0);
+    TMidiControlChange cc2(3,0x42, 0);
+    TMidiControlChange cc3(4,0x42, 0);
+
+}
+
+
 void Partial_On(int NoteNumber)
 {
     PlayNote(2, NoteNumber -12, 400, 100);
@@ -1079,17 +1247,9 @@ void Partial_On(int NoteNumber)
     TMidiControlChange cc2(3,0x42, 127);
     TMidiControlChange cc3(4,0x42, 127);
 
-
+    ExecuteAfterTimeout(Partial_Off, 1700, NULL);
 }
 
-
-void Partial_Off(void)
-{
-    TMidiControlChange cc1(2,0x42, 0);
-    TMidiControlChange cc2(3,0x42, 0);
-    TMidiControlChange cc3(4,0x42, 0);
-
-}
 
 void Chord1_On(void)
 {
@@ -1098,7 +1258,6 @@ void Chord1_On(void)
 
 void Chord1_Off(void)
 {
-    Partial_Off();
 }
 
 
@@ -1109,7 +1268,6 @@ void Chord2_On(void)
 
 void Chord2_Off(void)
 {
-    Partial_Off();
 }
 
 void Chord3_On(void)
@@ -1120,7 +1278,6 @@ void Chord3_On(void)
 
 void Chord3_Off(void)
 {
-    Partial_Off();
 }
 
 }
@@ -1154,15 +1311,7 @@ void StopSequencer(void)
         sleep(1);
 
         StartRawMidiOut();
-
-        // all sounds off for all channels
-        for (unsigned int i = 1; i<=16; i++)
-        {
-            TMidiControlChange cc(i, 0x78, 0);
-            TMidiControlChange cc2(i, 0x79, 0);
-            TMidiControlChange cc3(i, 0x7B, 0);
-            TMidiControlChange cc4(i, 0x7C, 0);
-        }
+        AllSoundsOff();
     }
 }
 
@@ -1469,6 +1618,8 @@ void InitializePlaylist(void)
     cCapitaineFlam.SongName = "Capitaine Flam";
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship, NULL, "Starship"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
     cWildThoughts.Author = "Rihanna";
