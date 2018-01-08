@@ -1124,10 +1124,17 @@ void Laser_Off(void)
 
 }
 
-void Starship(void)
+void Starship1(void)
 {
     system("aplay ./wav/FXCarpenterLaserBig.wav &");
 }
+
+
+void Starship2(void)
+{
+    system("aplay ./wav/FXAlienWoosh.wav &");
+}
+
 
 }
 
@@ -1617,9 +1624,10 @@ void InitializePlaylist(void)
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship, NULL, "Starship"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship1, NULL, "Starship Fx 1"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
     cWildThoughts.Author = "Rihanna";
