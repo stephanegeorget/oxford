@@ -280,6 +280,47 @@ TContext cGangstaParadise;
 TContext cBeatIt;
 
 
+
+TContext cFlyMeToTheMoon;
+TContext cAllOfMe;
+TContext cCryMeARiver;
+TContext cJustAGigolo;
+TContext cSuperstition;
+TContext cStandByMe;
+TContext cGetBack;
+TContext cAllShookUp;
+TContext cBackToBlack;
+TContext cUnchainMyHeart;
+TContext cFaith;
+TContext cIsntSheLovely;
+TContext cJammin;
+TContext cRehab;
+TContext cIFeelGood;
+TContext cPapasGotABrandNewBag;
+TContext cLongTrainRunning;
+TContext cMasterBlaster;
+TContext cAuxChampsElysees;
+TContext cProudMary;
+TContext cMonAmantDeSaintJean;
+TContext cGetLucky;
+TContext cIllusion;
+TContext cDockOfTheBay;
+TContext cLockedOutOfHeaven;
+TContext cWhatsUp;
+TContext cLesFillesDesForges;
+TContext cThatsAllRight;
+TContext cJohnnyBeGood;
+TContext cBebopALula;
+TContext cFunkMedley;
+TContext cKnockOnWood;
+TContext cHotelCalifornia;
+TContext cRaggamuffin;
+TContext cManDown;
+TContext cShouldIStay;
+TContext cMercy;
+
+
+
 // Compare contexts by author (not case sensitive)
 bool CompareTContextByAuthor(const TContext &first, const TContext &second)
 {
@@ -835,14 +876,19 @@ void * threadKeyboard(void * ptr)
 
 
         case ' ':
-            extern void SelectContextInPlaylist(void);
-            SelectContextInPlaylist();
-
+            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
+            SelectContextInPlaylist(PlaylistData);
             break;
 
-//        case 'b':
-  //          cCapitaineFlam.Init();
-    //          break;
+        case 'b':
+            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
+            SelectContextInPlaylist(PlaylistData_BySongName);
+            break;
+
+        case 'n':
+            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
+            SelectContextInPlaylist(PlaylistData_ByAuthor);
+            break;
 
         }
     }
@@ -1412,7 +1458,7 @@ void AveMaria_Stop(void)
 void ChangeTempo(int Value)
 {
 //    waitMilliseconds(10);
-    ChangeTempoSequencer(Value, 70*2, 130*2);
+    ChangeTempoSequencer(Value, 60, 100);
 }
 }
 
@@ -1615,6 +1661,79 @@ void *threadMidiAutomaton(void * ptr)
 
 void InitializePlaylist(void)
 {
+
+    cFlyMeToTheMoon.Author = "Count Basie";
+    cFlyMeToTheMoon.SongName = "Fly me to the moon";
+
+    cAllOfMe.Author = "John Legend";
+    cAllOfMe.SongName = "All of me";
+
+    cCryMeARiver.Author = "Ella Fitzerald";
+    cCryMeARiver.SongName = "Cry me a river";
+
+    cJustAGigolo.Author = "Louis Prima";
+    cJustAGigolo.SongName = "Just a gigolo";
+
+    cSuperstition.Author = "Stevie Wonder";
+    cSuperstition.SongName = "Superstition";
+
+    cStandByMe.Author = "Ben E. King";
+    cStandByMe.SongName = "Stand by me";
+
+    cGetBack.Author = "Beatles";
+    cGetBack.SongName = "Get back";
+
+    cAllShookUp.Author = "Elvis Presley";
+    cAllShookUp.SongName = "All shook up";
+
+    cBackToBlack.Author = "Amy Winehouse";
+    cBackToBlack.SongName = "Back to black";
+
+
+    cUnchainMyHeart.Author = "Joe Cooker";
+    cUnchainMyHeart.SongName = "Unchain my heart";
+
+    cFaith.Author = "George Michael";
+    cFaith.SongName = "Faith";
+
+    cIsntSheLovely.Author = "Stevie Wonder";
+    cIsntSheLovely.SongName = "Isn't she lovely";
+
+    cJammin.Author = "Bob Marley";
+    cJammin.SongName = "Jammin'";
+
+    cRehab.Author = "Amy Winehouse";
+    cRehab.SongName = "Rehab";
+
+    cIFeelGood.Author = "James Brown";
+    cIFeelGood.SongName = "I feel good";
+
+    cPapasGotABrandNewBag.Author = "James Brown";
+    cPapasGotABrandNewBag.SongName = "Papa's got a brand new bag";
+
+    cLongTrainRunning.Author = "Doobie Brothers";
+    cLongTrainRunning.SongName = "Long train running";
+
+    cMasterBlaster.Author = "Stevie Wonder";
+    cMasterBlaster.SongName = "Master Blaster";
+
+    cAuxChampsElysees.Author = "";
+    cAuxChampsElysees.SongName = "Aux champs élysées";
+
+    cProudMary.Author = "Tina Turner";
+    cProudMary.SongName = "Proud mary";
+
+    cMonAmantDeSaintJean.Author = "";
+    cMonAmantDeSaintJean.SongName = "Mon amant de St. Jean";
+
+    cGetLucky.Author = "Daft Punk";
+    cGetLucky.SongName = "Get lucky";
+
+    cIllusion.Author = "";
+    cIllusion.SongName = "Illusion";
+
+
+
     cAveMaria.Author = "";
     cAveMaria.SongName = "Ave Maria";
     cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, AveMaria::AveMaria_Start, NULL, "MIDI sequencer start"));
@@ -1650,6 +1769,45 @@ void InitializePlaylist(void)
 
 
     PlaylistData.clear();
+    PlaylistData.push_back(cFlyMeToTheMoon);
+    PlaylistData.push_back(cAllOfMe);
+    PlaylistData.push_back(cCryMeARiver);
+    PlaylistData.push_back(cJustAGigolo);
+    PlaylistData.push_back(cSuperstition);
+    PlaylistData.push_back(cStandByMe);
+    PlaylistData.push_back(cGetBack);
+    PlaylistData.push_back(cAllShookUp);
+    PlaylistData.push_back(cBackToBlack);
+    PlaylistData.push_back(cUnchainMyHeart);
+    PlaylistData.push_back(cFaith);
+    PlaylistData.push_back(cIsntSheLovely);
+    PlaylistData.push_back(cJammin);
+    PlaylistData.push_back(cRehab);
+    PlaylistData.push_back(cIFeelGood);
+    PlaylistData.push_back(cPapasGotABrandNewBag);
+    PlaylistData.push_back(cLongTrainRunning);
+    PlaylistData.push_back(cMasterBlaster);
+    PlaylistData.push_back(cAuxChampsElysees);
+    PlaylistData.push_back(cProudMary);
+    PlaylistData.push_back(cMonAmantDeSaintJean);
+    PlaylistData.push_back(cGetLucky);
+    PlaylistData.push_back(cIllusion);
+    PlaylistData.push_back(cDockOfTheBay);
+    PlaylistData.push_back(cLockedOutOfHeaven);
+    PlaylistData.push_back(cWhatsUp);
+    PlaylistData.push_back(cLesFillesDesForges);
+    PlaylistData.push_back(cThatsAllRight);
+    PlaylistData.push_back(cJohnnyBeGood);
+    PlaylistData.push_back(cBebopALula);
+    PlaylistData.push_back(cFunkMedley);
+    PlaylistData.push_back(cKnockOnWood);
+    PlaylistData.push_back(cHotelCalifornia);
+    PlaylistData.push_back(cRaggamuffin);
+    PlaylistData.push_back(cManDown);
+    PlaylistData.push_back(cShouldIStay);
+    PlaylistData.push_back(cMercy);
+
+
     PlaylistData.push_back(cAveMaria);
     PlaylistData.push_back(cCapitaineFlam);
     PlaylistData.push_back(cWildThoughts);
@@ -1732,7 +1890,7 @@ void SelectContextByName(void)
 
 }
 
-void SelectContextInPlaylist (void)
+void SelectContextInPlaylist (std::list<TContext>& ContextList)
 {
     /* Declare variables. */
     CDKSCREEN *cdkscreen = 0;
@@ -1759,17 +1917,11 @@ void SelectContextInPlaylist (void)
 
     cdkscreen = initCDKScreen(win_context_select_menu.GetRef());
 
-    /* Set up CDK Colors. */
-    //initCDKColor ();
-
-
-
-    /* Use the current diretory list to fill the radio list. */
-    //count = CDKgetDirectoryContents (".", &item);
-    char ** itemlist = (char **) malloc(PlaylistData.size() * sizeof(char *));
+    // Populate scrolling list with songnames
+    char ** itemlist = (char **) malloc(ContextList.size() * sizeof(char *));
     int idx = 0;
     std::list<TContext>::iterator it;
-    for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
+    for (it = ContextList.begin(); it != ContextList.end(); it++)
     {
         TContext Context = *it;
         char * pMenuStr = (char *)malloc(Context.SongName.size()+1);
@@ -2038,13 +2190,28 @@ int main(int argc, char** argv)
     win_context_prev.Init("CONTEXT PREV", 3, 0.33*term_cols, 0, 0);
     win_context_current.Init("CONTEXT CURRENT", 3, 0.33*term_cols, 0, 0.33*term_cols +1);
     win_context_next.Init("CONTEXT NEXT", 3, 0.33*term_cols, 0, 0.33*term_cols +1 + 0.33*term_cols +1);
-    win_debug_messages.Init("DEBUG MESSAGES", 11, term_cols -6-6, term_lines-11, 0);
+    win_debug_messages.Init("DEBUG MESSAGES", 10, term_cols -6-6, term_lines-11, 0);
     win_context_usage.Init("CONTEXT USAGE", (term_lines -3)/2, (term_cols -6-6)/2, 3, 0);
     win_context_user_specific.Init("CONTEXT SPECIFIC", (term_lines -3)/2, (term_cols -6-6)/2, 3, (term_cols -6-6)/2);
     win_context_select_menu.Init("CONTEXT SELECTION MENU", term_lines, term_cols, 0, 0);
     win_context_select_menu.Hide();
 
     wprintw(win_debug_messages.GetRef(), "Terminal LINES: %i, COLUMNS: %i\n", term_lines, term_cols);
+    attron(A_BOLD | A_REVERSE);
+    mvprintw(term_lines-1, 0, "[SPACE]");
+    attroff(A_BOLD | A_REVERSE);
+    printw(":Select by playlist ");
+    attron(A_BOLD + A_REVERSE);
+    printw("[b]");
+    attroff(A_BOLD | A_REVERSE);
+    printw(":by song name");
+    attron(A_BOLD + A_REVERSE);
+    printw("[n]");
+    attroff(A_BOLD | A_REVERSE);
+    printw(":by artist");
+    refresh();
+
+
 
     pthread_t thread1;
     // Create midi automaton thread

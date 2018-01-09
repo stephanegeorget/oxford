@@ -5168,7 +5168,7 @@ printf("K=%i", k);
 //seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
 //seq_control_timer(ctxp, 0);
     // 500000 is 120BPM by default with the 96PPQ
-    float micro_tempo = 500000.0 / 120.0 * Tempo;
+    float micro_tempo = 500000.0 / Tempo * 120.0 ;
     snd_seq_event_t epvar;
 
     snd_seq_event_t * ep = &epvar;
