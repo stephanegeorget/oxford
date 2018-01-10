@@ -245,6 +245,8 @@ private:
 public:
     std::string Author;
     std::string SongName;
+    std::string Comments;
+    float BaseTempo;
     TPedalboard Pedalboard;
     void Init(void)
     {
@@ -255,7 +257,7 @@ public:
     }
     void SetInitFunc( void (*InitFunc_param)(void))
     {
-         InitFunc = InitFunc_param;
+        InitFunc = InitFunc_param;
     }
 };
 
@@ -263,12 +265,16 @@ public:
 //TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
 
 
+// Gather all the data about the playlist, sorted by arbitrary "playlist" order.
 std::list<TContext> PlaylistData;
+
+// Same, sorted alphabetically by Author
 std::list<TContext> PlaylistData_ByAuthor;
+
+// Same, sorted alphabetically by Song Name
 std::list<TContext> PlaylistData_BySongName;
 
-
-
+// Points to the current song in the playlist
 std::list<TContext>::iterator Playlist;
 
 
@@ -278,9 +284,6 @@ TContext cCapitaineFlam;
 TContext cWildThoughts;
 TContext cGangstaParadise;
 TContext cBeatIt;
-
-
-
 TContext cFlyMeToTheMoon;
 TContext cAllOfMe;
 TContext cCryMeARiver;
@@ -311,7 +314,12 @@ TContext cLesFillesDesForges;
 TContext cThatsAllRight;
 TContext cJohnnyBeGood;
 TContext cBebopALula;
-TContext cFunkMedley;
+TContext cUptownFunk;
+TContext cLeFreak;
+TContext cRappersDelight;
+TContext cMachistador;
+TContext cAnotherOneBiteTheDust;
+TContext cWot;
 TContext cKnockOnWood;
 TContext cHotelCalifornia;
 TContext cRaggamuffin;
@@ -960,14 +968,14 @@ void Chord3_Off(void)
 
 void AllSoundsOff(void)
 {
-        // all sounds off for all channels
-        for (unsigned int i = 1; i<=16; i++)
-        {
-            TMidiControlChange cc(i, 0x78, 0);
-            TMidiControlChange cc2(i, 0x79, 0);
-            TMidiControlChange cc3(i, 0x7B, 0);
-            TMidiControlChange cc4(i, 0x7C, 0);
-        }
+    // all sounds off for all channels
+    for (unsigned int i = 1; i<=16; i++)
+    {
+        TMidiControlChange cc(i, 0x78, 0);
+        TMidiControlChange cc2(i, 0x79, 0);
+        TMidiControlChange cc3(i, 0x7B, 0);
+        TMidiControlChange cc4(i, 0x7C, 0);
+    }
 }
 
 
@@ -976,14 +984,14 @@ void AllSoundsOff(void)
 
 typedef struct
 {
-    public:
+public:
     int NoteNumber;
     float NoteDuration; // In fraction of a pulse
 } TNote;
 
 class TSequence
 {
-    private:
+private:
     struct timeval tv1, tv2;
     pthread_t thread;
     int event_flag = 0;
@@ -1024,18 +1032,18 @@ class TSequence
 
 
 
-    public:
+public:
 
     TSequence(std::list<TNote> MelodyNotes_param,
-                void (*pFuncNoteOn_param)(int NoteNumber),
-                void (*pFuncNoteOff_param)(int NoteNumber),
-                int RootNoteNumber_param)
-                {
-                    MelodyNotes = MelodyNotes_param;
-                    pFuncNoteOn = pFuncNoteOn_param;
-                    pFuncNoteOff = pFuncNoteOff_param;
-                    RootNoteNumber = RootNoteNumber_param;
-                }
+              void (*pFuncNoteOn_param)(int NoteNumber),
+              void (*pFuncNoteOff_param)(int NoteNumber),
+              int RootNoteNumber_param)
+    {
+        MelodyNotes = MelodyNotes_param;
+        pFuncNoteOn = pFuncNoteOn_param;
+        pFuncNoteOff = pFuncNoteOff_param;
+        RootNoteNumber = RootNoteNumber_param;
+    }
 
     // Downswing of the start sequencer pedal (step 1)
     void Start_PedalDown(void)
@@ -1095,7 +1103,7 @@ void Partial_Off(int NoteNumber)
 
 
 TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}},
-                            Partial_On, Partial_Off, 72);
+Partial_On, Partial_Off, 72);
 
 
 void Sequence_Start_PedalDown(void)
@@ -1291,11 +1299,11 @@ void Partial_Off(void * pParam)
 void Partial_On(int NoteNumber)
 {
     PlayNote(2, NoteNumber -12, 400, 100);
-    PlayNote(2, NoteNumber , 400, 80);
+    PlayNote(2, NoteNumber, 400, 80);
     PlayNote(3, NoteNumber -12, 400, 100);
-    PlayNote(3, NoteNumber , 400, 80);
+    PlayNote(3, NoteNumber, 400, 80);
     PlayNote(4, NoteNumber -12, 400, 100);
-    PlayNote(4, NoteNumber , 400, 100);
+    PlayNote(4, NoteNumber, 400, 100);
     TMidiControlChange cc1(2,0x42, 127);
     TMidiControlChange cc2(3,0x42, 127);
     TMidiControlChange cc3(4,0x42, 127);
@@ -1426,10 +1434,10 @@ void SetTempoSequencer(void)
 
 void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
 {
-        float bpm_average = (bpm_min + bpm_max)/2;
-        float skew = (controllerValue- 60)/60;
-        Tempo = (bpm_average + skew * (bpm_average - bpm_min));
-        SetTempoSequencer();
+    float bpm_average = (bpm_min + bpm_max)/2;
+    float skew = (controllerValue- 60)/60;
+    Tempo = (bpm_average + skew * (bpm_average - bpm_min));
+    SetTempoSequencer();
 }
 
 
@@ -1676,18 +1684,26 @@ void InitializePlaylist(void)
 
     cSuperstition.Author = "Stevie Wonder";
     cSuperstition.SongName = "Superstition";
+    cSuperstition.BaseTempo = 100;
 
     cStandByMe.Author = "Ben E. King";
     cStandByMe.SongName = "Stand by me";
+    cStandByMe.BaseTempo = 120;
+
 
     cGetBack.Author = "Beatles";
     cGetBack.SongName = "Get back";
 
+
     cAllShookUp.Author = "Elvis Presley";
     cAllShookUp.SongName = "All shook up";
+    cAllShookUp.BaseTempo = 135;
+
+
 
     cBackToBlack.Author = "Amy Winehouse";
     cBackToBlack.SongName = "Back to black";
+    cBackToBlack.BaseTempo = 122;
 
 
     cUnchainMyHeart.Author = "Joe Cooker";
@@ -1707,21 +1723,28 @@ void InitializePlaylist(void)
 
     cIFeelGood.Author = "James Brown";
     cIFeelGood.SongName = "I feel good";
+    cIFeelGood.BaseTempo = 140;
 
     cPapasGotABrandNewBag.Author = "James Brown";
     cPapasGotABrandNewBag.SongName = "Papa's got a brand new bag";
+    cPapasGotABrandNewBag.BaseTempo = 130;
 
     cLongTrainRunning.Author = "Doobie Brothers";
     cLongTrainRunning.SongName = "Long train running";
+    cLongTrainRunning.BaseTempo = 110;
+
 
     cMasterBlaster.Author = "Stevie Wonder";
     cMasterBlaster.SongName = "Master Blaster";
+    cMasterBlaster.BaseTempo = 130;
+
 
     cAuxChampsElysees.Author = "";
     cAuxChampsElysees.SongName = "Aux champs élysées";
 
     cProudMary.Author = "Tina Turner";
     cProudMary.SongName = "Proud mary";
+    cProudMary.BaseTempo = 142;
 
     cMonAmantDeSaintJean.Author = "";
     cMonAmantDeSaintJean.SongName = "Mon amant de St. Jean";
@@ -1732,7 +1755,68 @@ void InitializePlaylist(void)
     cIllusion.Author = "";
     cIllusion.SongName = "Illusion";
 
+    cDockOfTheBay.Author = "Otis Redding";
+    cDockOfTheBay.SongName = "Dock of the bay";
 
+    cLockedOutOfHeaven.Author = "Bruno Mars";
+    cLockedOutOfHeaven.SongName = "Locked out of heaven";
+    cLockedOutOfHeaven.BaseTempo = 140;
+
+    cWhatsUp.Author = "4 Non Blondes";
+    cWhatsUp.SongName = "What's up";
+    cWhatsUp.BaseTempo = 127;
+
+
+    cLesFillesDesForges.Author = "";
+    cLesFillesDesForges.SongName = "Les filles des forges";
+
+    cThatsAllRight.Author = "Elvis Presley";
+    cThatsAllRight.SongName = "That's all right";
+
+    cJohnnyBeGood.Author = "";
+    cJohnnyBeGood.SongName = "Johnny be good";
+
+    cBebopALula.Author = "Elvis Presley";
+    cBebopALula.SongName = "Bebop a lula";
+
+    cUptownFunk.Author = "Bruno Mars";
+    cUptownFunk.SongName = "Uptown Funk";
+
+    cLeFreak.Author = "Chic";
+    cLeFreak.SongName = "Le freak";
+
+    cRappersDelight.Author = "The Sugarhill Gang";
+    cRappersDelight.SongName = "Rapper's Delight";
+
+    cMachistador.Author = "M";
+    cMachistador.SongName = "Machistador";
+
+    cAnotherOneBiteTheDust.Author = "Queen";
+    cAnotherOneBiteTheDust.SongName = "Another one bite the dust";
+
+    cWot.Author = "Captain Sensible";
+    cWot.SongName = "Wot";
+
+    cKnockOnWood.Author = "Eddy Floyd";
+    cKnockOnWood.SongName = "Knock on wood";
+    cKnockOnWood.BaseTempo = 123;
+
+    cHotelCalifornia.Author = "Eagles";
+    cHotelCalifornia.SongName = "Hotel california";
+
+    cRaggamuffin.Author = "Selah Sue";
+    cRaggamuffin.SongName = "Raggamuffin";
+
+    cManDown.Author = "Rihanna";
+    cManDown.SongName = "Man Down";
+    cManDown.BaseTempo = 155;
+
+    cShouldIStay.Author = "The Clash";
+    cShouldIStay.SongName = "Should I stay";
+
+    cMercy.Author = "Duffy";
+    cMercy.SongName = "Mercy";
+    cMercy.BaseTempo = 130;
 
     cAveMaria.Author = "";
     cAveMaria.SongName = "Ave Maria";
@@ -1799,7 +1883,12 @@ void InitializePlaylist(void)
     PlaylistData.push_back(cThatsAllRight);
     PlaylistData.push_back(cJohnnyBeGood);
     PlaylistData.push_back(cBebopALula);
-    PlaylistData.push_back(cFunkMedley);
+    PlaylistData.push_back(cUptownFunk);
+    PlaylistData.push_back(cLeFreak);
+    PlaylistData.push_back(cRappersDelight);
+    PlaylistData.push_back(cMachistador);
+    PlaylistData.push_back(cAnotherOneBiteTheDust);
+    PlaylistData.push_back(cWot);
     PlaylistData.push_back(cKnockOnWood);
     PlaylistData.push_back(cHotelCalifornia);
     PlaylistData.push_back(cRaggamuffin);
@@ -2157,6 +2246,31 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
 }
 
 
+void * threadMetronome (void * pParam)
+{
+    const int PulseDuration = 100;
+    TContext Context;
+    while (1)
+    {
+        // Get current Base Tempo of the song
+        Context = *Playlist;
+        float Tempo = Context.BaseTempo;
+        if (Tempo < 30) Tempo = 30;
+        if (Tempo > 200) Tempo = 200;
+        // Compute wait time from the tempo
+        unsigned long int delay_ms = 60000.0 / Tempo - PulseDuration;
+        // Display metronome
+        wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
+        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "TEMPO:%03d",(int)Tempo);
+        win_context_user_specific.Refresh();
+        waitMilliseconds(PulseDuration);
+        wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
+        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "TEMPO:%03d",(int)Tempo);
+        win_context_user_specific.Refresh();
+        waitMilliseconds(delay_ms);
+    }
+}
+
 
 
 int main(int argc, char** argv)
@@ -2238,6 +2352,16 @@ int main(int argc, char** argv)
 
 
     // ContextSelection_Playlist();
+
+    pthread_t thread3;
+    int iret3;
+    iret3 = pthread_create(&thread3, NULL, threadMetronome, NULL);
+    if(iret3)
+    {
+        fprintf(stderr, "Could not spawn metronome thread, return code: %d\n", iret3);
+        exit(EXIT_FAILURE);
+    }
+
 
     threadKeyboard(0);
     while(1) //(ch = getch()) != KEY_ESC)
