@@ -12,8 +12,8 @@ srcdir		= .
 
 CC		= gcc
 RM		= rm -f
-CTAGS		= ctags
-ETAGS		= etags
+CTAGS		= 
+ETAGS		= 
 LINT		= 
 LINT_OPTS	= 
 
@@ -30,7 +30,7 @@ LOCAL_LIBDIR	= .
 
 CFLAGS		= -g -O2 
 CPPFLAGS	= -DHAVE_CONFIG_H -I../include -I$(srcdir)/../include -I.  -D_GNU_SOURCE -D_DEFAULT_SOURCE
-LDFLAGS		= -L.. -L/lib  
+LDFLAGS		= -L.. -L/lib64  
 
 BINS		= \
 		fileview$x \
@@ -118,11 +118,11 @@ clean::
 distclean::	clean
 	-rm -f Makefile
 
-tags :
-	$(CTAGS) *.[ch] */*.[ch]
+#tags :
+#	$(CTAGS) *.[ch] */*.[ch]
 
-TAGS :
-	$(ETAGS) *.[ch] */*.[ch]
+#TAGS :
+#	$(ETAGS) *.[ch] */*.[ch]
 
 lint: $(CDKSRC)
 	$(LINT) $(LINT_OPTS) $(CPPFLAGS) $(CDKSRC)

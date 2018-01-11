@@ -1,6 +1,6 @@
 // use amidi -l to list midi hardware devices
-// don't forget to link with asound and pthread
-// use pmidi -l to list midi devices for pmidi
+// don't forget to link with asound, pthread, cdk (sometimes called libcdk), and panel
+// use pmidi -l to list midi devices for pmidi, which is for midi file playback
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,25 +18,20 @@
 #include <algorithm>
 #include <cdk.h>
 #include <panel.h>
-//#include <sstream>
-
 
 int stop = 0;
 snd_rawmidi_t *handle_in = 0, *handle_out = 0;
-char device_in_str[] = "hw:1,0,0";
-char device_out_str[] = "hw:1,0,0";
-
-
-
-
+char device_in_str[] = "hw:1,0,0"; // obtained with amidi -l
+char device_out_str[] = "hw:1,0,0"; // obtained with amidi -l
+#define MIDI_SEQUENCER_NAME "20:0" // obtained with pmidi -l
 
 
 class TBoxedWindow
 {
 private:
     PANEL * Panel;
-    WINDOW * BoxedWindow; // outer window
-    WINDOW * SubWindow;
+    WINDOW * BoxedWindow; // outer window, shown with a box, prevent writing on that
+    WINDOW * SubWindow; // inner space of the window, usable to display text
 public:
     TBoxedWindow(void) {};
     void Init(char* name, int height, int width, int starty, int startx)
@@ -74,7 +69,6 @@ public:
         if (!panel_hidden(Panel))
         {
             touchwin(BoxedWindow);
-//       wrefresh(SubWindow);
             update_panels();
             doupdate();
         }
@@ -91,13 +85,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
+// Create various boxed windows to construct the display
 TBoxedWindow win_midi_in;
 TBoxedWindow win_midi_out;
 TBoxedWindow win_debug_messages;
@@ -109,16 +97,23 @@ TBoxedWindow win_context_user_specific;
 TBoxedWindow win_context_select_menu;
 
 
+// I try to avoid the use of function prototypes and headers,
+// but these are required due to circular references in the program.
+void ContextPreviousPress(void);
+void ContextPreviousRelease(void);
+void ContextNextPress(void);
+void ContextNextRelease(void);
 
 
-
-
-void ContextDecreaseStart(void);
-void ContextDecreaseStop(void);
-void ContextIncreaseStart(void);
-void ContextIncreaseStop(void);
-
-
+// A pedal, from the pedalboard (Behringer FCB1010), with analog action
+// (i.e. can take a range of positions between two bounds).
+// Such a pedal must be programmed (from the FCS1010) to send Midi Control Change
+// events on a particular "Controller Number".
+// When this program receives CC events from ControllerNumber, the OnChange callback
+// function is called.
+// These callback functions must be set up properly during the initialization of the
+// TPedalAnalog object.
+// As of today, only CC on Midi channel 1 are recognized.
 class TPedalAnalog
 {
 private:
@@ -164,7 +159,15 @@ public:
 
 
 
-
+// A pedal, from the pedalboard (Behringer FCB1010), with digital action
+// (i.e. can take two positions: pressed, or released.)
+// Such a pedal must be programmed (from the FCS1010) to send Midi Note ON events,
+// Each Digital Pedal is associated with a particular Note Number.
+// When this program receives Note ON event for Note Number "Number", the corresponding
+// OnPress and OnRelease callback functions are called. These callback functions must be
+// set up properly during the initialization of the TPedalDigital object.
+//
+// As of today, only Midi events sent on Midi Channel 2 are recognized.
 class TPedalDigital
 {
 private:
@@ -222,7 +225,9 @@ public:
 
 
 
-
+// A pedalboard is a collection of digital and analog pedals.
+// In the case of the Behringer FCB1010, there are 10 digital pedals
+// and 2 analog pedals.
 class TPedalboard
 {
 public:
@@ -230,23 +235,34 @@ public:
     std::list<TPedalAnalog> PedalsAnalog;
     TPedalboard(void)
     {
-//        TPedalDigital myPedalDigital(6,NULL,NULL);
-        PedalsDigital.push_back(TPedalDigital(6, ContextDecreaseStart, ContextDecreaseStop, "Playlist: previous song"));
-        PedalsDigital.push_back(TPedalDigital(7, ContextIncreaseStart, ContextIncreaseStop, "Playlist: next song"));
+        // By default: we reserve Digital pedals associated to Midi Note On 6 and 7 (so, if mapped one-to-one
+        // with the FCB1010 numbers written on the pedals, the two pedals at the left of the top row), to
+        // the context switch actions, i.e. move from one context to the following context, as listed in object
+        // PlaylistData. In short, Pedal 6 goes back one song, Pedal 7 goes to the next song.
+        PedalsDigital.push_back(TPedalDigital(6, ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song"));
+        PedalsDigital.push_back(TPedalDigital(7, ContextNextPress, ContextNextRelease, "Playlist: next song"));
     }
 };
 
 
+// A Context is a collection of features that belong to a particular performance. In other
+// words, a context gathers everything that is needed to play a song:
+// Song name and Author are used to search through all the available Contexts,
+// Then the base tempo, arrangement of the pedalboards (i.e. which pedal does what), and
+// initialization (with the Init function) that is performed when that particular
+// context is activated.
+//
+// Only one context can be active at a point in time. Two contexts cannot be active at the same time.
 class TContext
 {
 private:
     void (*InitFunc)(void) = NULL;
 
 public:
-    std::string Author;
-    std::string SongName;
-    std::string Comments;
-    float BaseTempo;
+    std::string Author; // used to search by Author
+    std::string SongName; // used to search by Song Name
+    std::string Comments; // used to display various info, cheat sheet, and so on.
+    float BaseTempo; // base tempo of the song. The metronome always pulse at the tempo of the active context.
     TPedalboard Pedalboard;
     void Init(void)
     {
@@ -261,24 +277,36 @@ public:
     }
 };
 
-
-//TContext cAveMaria = {"", "Ave Maria", {{AveMaria::  }   }}
-
-
+// Very important variable:
 // Gather all the data about the playlist, sorted by arbitrary "playlist" order.
-std::list<TContext> PlaylistData;
+// It is that variables that represents a playlist.
+// If is oksy to define several playlists, but then assign one to PlaylistData.
+// Reads: PlaylistData is a list of TContext pointers. Please note that PlaylistData
+// keeps track of pointer to contexts, not actual contexts. This is useful to generate
+// lists with different orders, yet keeping the pool of context objects the same, and only
+// REFERENCED by these lists (not copied into them).
+std::list<TContext *> PlaylistData;
 
-// Same, sorted alphabetically by Author
-std::list<TContext> PlaylistData_ByAuthor;
+// Take the raw information of PlaylistData, and sort alphabetically by Author
+std::list<TContext *> PlaylistData_ByAuthor;
 
 // Same, sorted alphabetically by Song Name
-std::list<TContext> PlaylistData_BySongName;
+std::list<TContext *> PlaylistData_BySongName;
 
-// Points to the current song in the playlist
-std::list<TContext>::iterator Playlist;
+// Very important global variable: points to the current context in the playlist.
+// This is a list::iterator, so dereferencing it (e.g. *PlaylistPosition)
+// gives an element, that is a pointer to a Context. Then dereference another
+// time to get to the context.
+// E.g: TContext MyContext;
+//      MyContext = **PlaylistPosition;
+//      printf("%s", MyContext.SongName.c_str());
+
+std::list<TContext *>::iterator PlaylistPosition;
 
 
 
+// Here, the actual TContext objects are instanciated. One for each context, which
+// more or less represents one for each *song* in the playlist, in the band/musical sense.
 TContext cAveMaria;
 TContext cCapitaineFlam;
 TContext cWildThoughts;
@@ -328,23 +356,25 @@ TContext cShouldIStay;
 TContext cMercy;
 
 
-
-// Compare contexts by author (not case sensitive)
-bool CompareTContextByAuthor(const TContext &first, const TContext &second)
+// This function is needed to sort lists of elements.
+// Sorting a list requires that a comparison function be provided.
+// But how can we say "that context comes before that one"? It depends on
+// how we want to sort, namely by Author...
+bool CompareTContextByAuthor(const TContext* first, const TContext* second)
 {
-    std::string first_nocase = first.Author;
-    std::string second_nocase = second.Author;
+    std::string first_nocase = first->Author;
+    std::string second_nocase = second->Author;
     std::transform(first_nocase.begin(), first_nocase.end(), first_nocase.begin(), ::tolower);
     std::transform(second_nocase.begin(), second_nocase.end(), second_nocase.begin(), ::tolower);
 
     return first_nocase < second_nocase;
 }
 
-// Compare contexts by song name (not case sensitive)
-bool CompareTContextBySongName(const TContext &first, const TContext &second)
+// ... and by Song Name.
+bool CompareTContextBySongName(const TContext* first, const TContext* second)
 {
-    std::string first_nocase = first.SongName;
-    std::string second_nocase = second.SongName;
+    std::string first_nocase = first->SongName;
+    std::string second_nocase = second->SongName;
     std::transform(first_nocase.begin(), first_nocase.end(), first_nocase.begin(), ::tolower);
     std::transform(second_nocase.begin(), second_nocase.end(), second_nocase.begin(), ::tolower);
 
@@ -352,64 +382,51 @@ bool CompareTContextBySongName(const TContext &first, const TContext &second)
 }
 
 
-
-
-
-
-
-int startx, starty, width, height;
-int ch;
-
-
-
-
-
-
-void ContextDecreaseStart(void)
+// This function is called each time one wants to go to the previous context.
+// Since a FCB1010 pedal is allocated to that (normally pedal 6), two events are generated:
+// When you press on the pedal...
+void ContextPreviousPress(void)
 {
-    if (Playlist != PlaylistData.begin())
+    if (PlaylistPosition != PlaylistData.begin())
     {
-        Playlist--;
-        TContext Context = *Playlist;
+        PlaylistPosition--;
+        TContext Context = **PlaylistPosition;
         Context.Init();
     }
 
 }
 
-void ContextDecreaseStop(void)
+// ... and when you release the pedal.
+void ContextPreviousRelease(void)
 {
-
-
-
+    // And in that case, do nothing.
 }
 
+// Sames goes with Pedal 7, go to go the next context (you'll say the *next song*...).
 
-void ContextIncreaseStart(void)
+void ContextNextPress(void)
 {
     // Note that .end() returns an iterator that is already outside the bounds
     // of the container.
-    std::list<TContext>::iterator it;
-    it = Playlist;
+    std::list<TContext*>::iterator it;
+    it = PlaylistPosition;
     it++;
     if (it != PlaylistData.end())
     {
-        Playlist++;
-        TContext Context = *Playlist;
+        PlaylistPosition++;
+        TContext Context = **PlaylistPosition;
         Context.Init();
     }
 }
 
-void ContextIncreaseStop(void)
+void ContextNextRelease(void)
 {
-
-
-
+    // And in that case, do nothing.
 }
 
 
-
-
-
+// Talk to ALSA and open a midi port in RAW mode, for data going IN.
+// (into the computer, into this program)
 void StartRawMidiIn(void)
 {
     if (handle_in == 0)
@@ -423,6 +440,8 @@ void StartRawMidiIn(void)
 }
 
 
+// Talk to ALSA and open a midi port in RAW mode, for data going OUT.
+// (from this program, out of the computer, to the expander, to the Rack Eleven, etc.)
 void StartRawMidiOut(void)
 {
     if (handle_out == 0)
@@ -436,6 +455,7 @@ void StartRawMidiOut(void)
 }
 
 
+// Close the RAW midi IN port
 void StopRawMidiIn(void)
 {
     if (handle_in != 0)
@@ -447,6 +467,7 @@ void StopRawMidiIn(void)
 
 }
 
+// Close the RAW midi OUT port
 void StopRawMidiOut(void)
 {
     if(handle_out != 0)
@@ -459,13 +480,7 @@ void StopRawMidiOut(void)
 }
 
 
-
-
-#define EV_PRESSED 1
-#define EV_RELEASED 0
-#define EV_REPEAT 2
-
-
+// Wait "milliseconds" milliseconds.
 #pragma reentrant
 void waitMilliseconds(int milliseconds)
 {
@@ -483,6 +498,8 @@ start_wait:
     }
 }
 
+
+// Intermediate structure used to communicate information to a spawned thread.
 typedef struct
 {
     void (*pFunction)(void *);
@@ -490,6 +507,7 @@ typedef struct
     void * pFuncParam;
 } TExecuteAfterTimeoutStruct;
 
+// Thread used to support the functionality of function ExecuteAfterTimeout.
 #pragma reentrant
 void * ExecuteAfterTimeout_Thread(void * pMessage)
 {
@@ -500,6 +518,9 @@ void * ExecuteAfterTimeout_Thread(void * pMessage)
     free(pMessage);
 }
 
+// This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
+// that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
+// Then the thread disappears.
 #pragma reentrant
 void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
 {
@@ -520,29 +541,26 @@ void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, vo
     }
 }
 
-#pragma reentrant
-void ExecuteAsynchronous(void (*pFunc)(void *), void * pFuncParam)
-{
-    ExecuteAfterTimeout(pFunc, 0, pFuncParam);
-}
 
-
+// Shows usage - but real programmers don't need that; they look at the code :-)
 static void usage(void)
 {
     wprintw(win_debug_messages.GetRef(), "usage: fix me\n");
 }
 
 
-
+// TODO: handle events passed to this program (i.e. CTRL+C, kill, etc.)
 void sighandler(int dum)
 {
     stop = 1;
 }
 
+
 typedef enum
 {
     ceOn, ceOff
 } TChordEvent;
+
 
 typedef enum
 {
@@ -559,20 +577,27 @@ typedef enum
     nnMiBemol = 4
 } TNoteName;
 
+
+// Helper structure used to gather some information required to merely play a note.
+// Including how long it should last.
 typedef struct
 {
     unsigned char NoteNumber;
     unsigned char Velocity;
     unsigned char Channel;
     unsigned int DurationMS;
-    pthread_t thread;
+    pthread_t thread; // handle all the Midi Note ON and OFF from a dedicated (short-lived) thread.
 } TPlayNoteMsg;
 
+
+// This class sends a Note ON event on MIDI channel managed by handle_out.
+// Example: TMidiNoteOnEvent NoteOnEvent(2, 60, 100);
+// The real stuff happends upon the object instanciation. Optionally, one can send the message again
+// after by calling NoteOnEvent.sendToMidi(), but that would send it a second time.
 class TMidiNoteOnEvent
 {
-
 public:
-    unsigned char NoteOnField = 9;
+    unsigned char NoteOnField = 9; // See MIDI specifications
     unsigned char charArray[3];
 
     void sendToMidi(void)
@@ -583,7 +608,6 @@ public:
             snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
         }
     }
-    ;
 
     TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg);
 
@@ -624,6 +648,10 @@ TMidiNoteOnEvent::TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
     Init(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
 }
 
+
+// Same for Note Off MIDI event.
+// If you want to send out some MIDI notes,
+// you're better off using PlayNote(), rather than drilling down to the Note ON / OFF events...
 class TMidiNoteOffEvent: public TMidiNoteOnEvent
 {
     using TMidiNoteOnEvent::TMidiNoteOnEvent;
@@ -636,7 +664,7 @@ public:
 class TMidiProgramChange
 {
 private:
-    unsigned char MidiFunctionID = 0xC;
+    unsigned char MidiFunctionID = 0xC; // See MIDI specifications
     unsigned char charArray[2];
 
     void sendToMidi(void)
@@ -666,6 +694,7 @@ public:
 
 };
 
+// Send out a CC (Control Change) MIDI event.
 class TMidiControlChange
 {
 private:
@@ -701,9 +730,10 @@ public:
 
 };
 
+
+// Thread used by PlayNote() to keep track of time, for each note.
 void * playNoteThread(void * msg)
 {
-//    TMidiProgramChange MidiProgramChange(2, ((TPlayNoteMsg*) msg)->Program);
     TMidiNoteOnEvent MidiNoteOnEvent((TPlayNoteMsg *) msg);
     waitMilliseconds(((TPlayNoteMsg*) msg)->DurationMS);
     wprintw(win_debug_messages.GetRef(), "playNoteThread\n");
@@ -714,7 +744,7 @@ void * playNoteThread(void * msg)
     return 0;
 }
 
-
+// Useful function that plays a note, on a specific MIDI channel, Note Number, Duration in milliseconds, and Velocity.
 void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int DurationMS_param, int Velocity_param)
 {
     TPlayNoteMsg * PlayNoteMsg = new TPlayNoteMsg;
@@ -725,7 +755,6 @@ void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int D
 
     int iret;
     pthread_t thread;
-    // Create midi automaton thread
     iret = pthread_create(&thread, NULL, playNoteThread, (void*) PlayNoteMsg);
     PlayNoteMsg->thread = thread;
     if (iret)
@@ -733,9 +762,10 @@ void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int D
         wprintw(win_debug_messages.GetRef(), "Error - pthread_create() return code: %d\n", iret);
         exit(EXIT_FAILURE);
     }
-
 }
 
+
+// A wrapper function to play a MIDI note, used by the micro-midi-keyboard.
 void midiPlay(int octave, unsigned char noteInScale)
 {
     PlayNote(2, octave *12 + noteInScale, 1000, 100);
@@ -769,6 +799,8 @@ int getkey()
     return character;
 }
 
+
+// Scan keyboard for events, and process keypresses accordingly.
 void * threadKeyboard(void * ptr)
 {
     char *message;
@@ -884,24 +916,28 @@ void * threadKeyboard(void * ptr)
 
 
         case ' ':
-            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
-            SelectContextInPlaylist(PlaylistData);
+        // List all Contexts (i.e. songs) by original playlist order
+            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList, bool);
+            SelectContextInPlaylist(PlaylistData, false);
             break;
 
         case 'b':
-            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
-            SelectContextInPlaylist(PlaylistData_BySongName);
+        // List all Contexts (i.e. songs) alphabetically by song name
+            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList);
+            SelectContextInPlaylist(PlaylistData_BySongName, false);
             break;
 
         case 'n':
-            extern void SelectContextInPlaylist(std::list<TContext>& ContextList);
-            SelectContextInPlaylist(PlaylistData_ByAuthor);
+        // List all Contexts (i.e. songs) alphabetically by author
+            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList);
+            SelectContextInPlaylist(PlaylistData_ByAuthor, true);
             break;
 
         }
     }
 
 }
+
 
 namespace Rihanna
 {
@@ -965,7 +1001,10 @@ void Chord3_Off(void)
 }
 
 
-
+// Mute all sounds (that is, cancel any running note), on the Sound Canvas SC55.
+// But after the call, the SC55 can play.
+// Often tied to a "panic" key, to mute all sounds in case a midi NOTE OFF event would
+// be missed. Or to clean up after the midi sequencer has finished playing.
 void AllSoundsOff(void)
 {
     // all sounds off for all channels
@@ -989,6 +1028,14 @@ public:
     float NoteDuration; // In fraction of a pulse
 } TNote;
 
+
+// Represents and plays a short sequence of notes, at a tempo that is computed from the time
+// that mapsed between the calls to Start_PedalPressed and Start_PedalReleased.
+// Upon Start_PedalPressed, it starts playing the sequence (first note),
+// Upon Start_PedalReleased, it continues to play the sequence at said tempo.
+// Of course, there is a requirement that the time duration between the first and second note
+// should be 1, i.e. one "unit of time", that lapsed between the pedal pressed and pedal released.
+// Stop_PedalPressed stops the sequence in progress, if any.
 class TSequence
 {
 private:
@@ -1046,7 +1093,7 @@ public:
     }
 
     // Downswing of the start sequencer pedal (step 1)
-    void Start_PedalDown(void)
+    void Start_PedalPressed(void)
     {
         it = MelodyNotes.begin();
         CurrentNote = *it;
@@ -1055,7 +1102,7 @@ public:
     }
 
     // Upswing of the start sequencer pedal (step 2)
-    void Start_PedalUp(void)
+    void Start_PedalReleased(void)
     {
         gettimeofday(&tv2, NULL);
         // Compute time lapse between pedal down and pedal up
@@ -1073,7 +1120,7 @@ public:
     }
 
     // Stop sequencer
-    void Stop_PedalDown(void)
+    void Stop_PedalPressed(void)
     {
         // Stop sequence if any
         event_flag = 0;
@@ -1108,18 +1155,18 @@ Partial_On, Partial_Off, 72);
 
 void Sequence_Start_PedalDown(void)
 {
-    Sequence.Start_PedalDown();
+    Sequence.Start_PedalPressed();
 }
 
 void Sequence_Start_PedalUp(void)
 {
-    Sequence.Start_PedalUp();
+    Sequence.Start_PedalReleased();
 }
 
 
 void Sequence_Stop_PedalDown(void)
 {
-    Sequence.Stop_PedalDown();
+    Sequence.Stop_PedalPressed();
 }
 
 int poorMansSemaphore = 0;
@@ -1359,6 +1406,7 @@ unsigned int SequencerRunning = 0;
 pthread_t thread_sequencer = NULL;
 
 
+// Stop the pmidi sequencer.
 void StopSequencer(void)
 {
     if (thread_sequencer != NULL)
@@ -1376,7 +1424,7 @@ void StopSequencer(void)
     }
 }
 
-
+// Run the pmidi sequencer in its own thread.
 void * ThreadSequencerFunction (void * params)
 {
 
@@ -1389,7 +1437,7 @@ void * ThreadSequencerFunction (void * params)
     int argc = 4;
     char str10[] = "fakename";
     char str11[] = "-p";
-    char str12[] = "20:0";
+    char str12[] = MIDI_SEQUENCER_NAME;
     char * str13 = (char*) params;
     char * (argv1[4]) =
     { str10, str11, str12, str13 };
@@ -1400,7 +1448,7 @@ void * ThreadSequencerFunction (void * params)
 
 }
 
-
+// Start the full-fledged pmidi sequencer for file MidiFilename
 void StartSequencer(char * MidiFilename)
 {
     int iret1;
@@ -1422,6 +1470,8 @@ void StartSequencer(char * MidiFilename)
 }
 
 
+// Validate the tempo passed on to the pmidi sequencer by ChangeTempoSequencer.
+// First call ChangeTempoSequencer, then call SetTempoSequencer.
 void SetTempoSequencer(void)
 {
     if (thread_sequencer != NULL)
@@ -1431,7 +1481,8 @@ void SetTempoSequencer(void)
 }
 
 
-
+// Pass new tempo to pmidi sequencer, based on the analog pedal controller value
+// which is usually from 0 to 127.
 void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
 {
     float bpm_average = (bpm_min + bpm_max)/2;
@@ -1470,6 +1521,9 @@ void ChangeTempo(int Value)
 }
 }
 
+
+// Inspect MIDI IN for events, and dispatch then accordingly as Control Change events,
+// midi notes assigned to pedals of the pedalboard, or other.
 void *threadMidiAutomaton(void * ptr)
 {
     int err;
@@ -1592,7 +1646,7 @@ void *threadMidiAutomaton(void * ptr)
                 case smProcessNoteEvent:
                 {
                     TContext context;
-                    context = *Playlist;
+                    context = **PlaylistPosition;
                     for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
                             it != context.Pedalboard.PedalsDigital.end(); \
                             it++)
@@ -1620,7 +1674,7 @@ void *threadMidiAutomaton(void * ptr)
                 case smProcessControllerChange:
                 {
                     TContext context;
-                    context = *Playlist;
+                    context = **PlaylistPosition;
                     for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
                             it != context.Pedalboard.PedalsAnalog.end(); \
                             it++)
@@ -1663,10 +1717,10 @@ void *threadMidiAutomaton(void * ptr)
 }
 
 
-
-
-
-
+// This function initializes all the TContext objects, and then gathers
+// them all in a so-called PlaylistData object.
+// You must manually edit the code in there to add new contexts (songs)
+// or to alter the order of the playlist.
 void InitializePlaylist(void)
 {
 
@@ -1852,84 +1906,81 @@ void InitializePlaylist(void)
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3"));
 
 
+    // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
-    PlaylistData.push_back(cFlyMeToTheMoon);
-    PlaylistData.push_back(cAllOfMe);
-    PlaylistData.push_back(cCryMeARiver);
-    PlaylistData.push_back(cJustAGigolo);
-    PlaylistData.push_back(cSuperstition);
-    PlaylistData.push_back(cStandByMe);
-    PlaylistData.push_back(cGetBack);
-    PlaylistData.push_back(cAllShookUp);
-    PlaylistData.push_back(cBackToBlack);
-    PlaylistData.push_back(cUnchainMyHeart);
-    PlaylistData.push_back(cFaith);
-    PlaylistData.push_back(cIsntSheLovely);
-    PlaylistData.push_back(cJammin);
-    PlaylistData.push_back(cRehab);
-    PlaylistData.push_back(cIFeelGood);
-    PlaylistData.push_back(cPapasGotABrandNewBag);
-    PlaylistData.push_back(cLongTrainRunning);
-    PlaylistData.push_back(cMasterBlaster);
-    PlaylistData.push_back(cAuxChampsElysees);
-    PlaylistData.push_back(cProudMary);
-    PlaylistData.push_back(cMonAmantDeSaintJean);
-    PlaylistData.push_back(cGetLucky);
-    PlaylistData.push_back(cIllusion);
-    PlaylistData.push_back(cDockOfTheBay);
-    PlaylistData.push_back(cLockedOutOfHeaven);
-    PlaylistData.push_back(cWhatsUp);
-    PlaylistData.push_back(cLesFillesDesForges);
-    PlaylistData.push_back(cThatsAllRight);
-    PlaylistData.push_back(cJohnnyBeGood);
-    PlaylistData.push_back(cBebopALula);
-    PlaylistData.push_back(cUptownFunk);
-    PlaylistData.push_back(cLeFreak);
-    PlaylistData.push_back(cRappersDelight);
-    PlaylistData.push_back(cMachistador);
-    PlaylistData.push_back(cAnotherOneBiteTheDust);
-    PlaylistData.push_back(cWot);
-    PlaylistData.push_back(cKnockOnWood);
-    PlaylistData.push_back(cHotelCalifornia);
-    PlaylistData.push_back(cRaggamuffin);
-    PlaylistData.push_back(cManDown);
-    PlaylistData.push_back(cShouldIStay);
-    PlaylistData.push_back(cMercy);
+    PlaylistData.push_back(&cFlyMeToTheMoon);
+    PlaylistData.push_back(&cAllOfMe);
+    PlaylistData.push_back(&cCryMeARiver);
+    PlaylistData.push_back(&cJustAGigolo);
+    PlaylistData.push_back(&cSuperstition);
+    PlaylistData.push_back(&cStandByMe);
+    PlaylistData.push_back(&cGetBack);
+    PlaylistData.push_back(&cAllShookUp);
+    PlaylistData.push_back(&cBackToBlack);
+    PlaylistData.push_back(&cUnchainMyHeart);
+    PlaylistData.push_back(&cFaith);
+    PlaylistData.push_back(&cIsntSheLovely);
+    PlaylistData.push_back(&cJammin);
+    PlaylistData.push_back(&cRehab);
+    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cPapasGotABrandNewBag);
+    PlaylistData.push_back(&cLongTrainRunning);
+    PlaylistData.push_back(&cMasterBlaster);
+    PlaylistData.push_back(&cAuxChampsElysees);
+    PlaylistData.push_back(&cProudMary);
+    PlaylistData.push_back(&cMonAmantDeSaintJean);
+    PlaylistData.push_back(&cGetLucky);
+    PlaylistData.push_back(&cIllusion);
+    PlaylistData.push_back(&cDockOfTheBay);
+    PlaylistData.push_back(&cLockedOutOfHeaven);
+    PlaylistData.push_back(&cWhatsUp);
+    PlaylistData.push_back(&cLesFillesDesForges);
+    PlaylistData.push_back(&cThatsAllRight);
+    PlaylistData.push_back(&cJohnnyBeGood);
+    PlaylistData.push_back(&cBebopALula);
+    PlaylistData.push_back(&cUptownFunk);
+    PlaylistData.push_back(&cLeFreak);
+    PlaylistData.push_back(&cRappersDelight);
+    PlaylistData.push_back(&cMachistador);
+    PlaylistData.push_back(&cAnotherOneBiteTheDust);
+    PlaylistData.push_back(&cWot);
+    PlaylistData.push_back(&cKnockOnWood);
+    PlaylistData.push_back(&cHotelCalifornia);
+    PlaylistData.push_back(&cRaggamuffin);
+    PlaylistData.push_back(&cManDown);
+    PlaylistData.push_back(&cShouldIStay);
+    PlaylistData.push_back(&cMercy);
+    PlaylistData.push_back(&cAveMaria);
+    PlaylistData.push_back(&cCapitaineFlam);
+    PlaylistData.push_back(&cWildThoughts);
+    PlaylistData.push_back(&cGangstaParadise);
+    PlaylistData.push_back(&cBeatIt);
 
 
-    PlaylistData.push_back(cAveMaria);
-    PlaylistData.push_back(cCapitaineFlam);
-    PlaylistData.push_back(cWildThoughts);
-    PlaylistData.push_back(cGangstaParadise);
-    PlaylistData.push_back(cBeatIt);
+    // Set the current active context here.
+    // By default: that would be PlaylistData.begin()...
+    // Note that std::list cannot be accessed randomly.
+    PlaylistPosition = PlaylistData.begin();
+    TContext Context = **PlaylistPosition;
+    Context.Init(); // The .Init() function must be called manually. I tried to overload the assignment operator but did not find a good way to do it.
 
 
-
-    Playlist = PlaylistData.begin();
-    TContext Context = *Playlist;
-    Context.Init();
-
+    // These so-called Playlists are a bit fictive and only a copy of the original playlist, but sorted by author or by song name.
     PlaylistData_ByAuthor = PlaylistData;
     PlaylistData_ByAuthor.sort(CompareTContextByAuthor);
-
     PlaylistData_BySongName = PlaylistData;
     PlaylistData_BySongName.sort(CompareTContextBySongName);
-
-
-//    cAveMaria.Pedalboard =  { { {1, AveMaria::AveMaria_Start, NULL}, {2, AveMaria::AveMaria_Stop, NULL} }, { {1, AveMaria::ChangeTempo}} };
-
-
-
 }
 
 
+// Redraw screen 5 times a second.
 void * threadRedraw(void * pMessage)
 {
     TContext Context;
     while(1)
     {
         waitMilliseconds(200);
-        Context = *Playlist;
+        Context = **PlaylistPosition;
         win_context_current.Erase();
         mvwprintw(win_context_current.GetRef(), 0,0, Context.SongName.c_str());
 
@@ -1954,7 +2005,6 @@ void * threadRedraw(void * pMessage)
 
         }
 
-        //wnoutrefresh(win_context_current);
         win_context_current.Refresh();
         win_context_next.Refresh();
         win_context_prev.Refresh();
@@ -1962,13 +2012,9 @@ void * threadRedraw(void * pMessage)
         win_debug_messages.Refresh();
         win_midi_in.Refresh();
         win_midi_out.Refresh();
-
-        //doupdate();
-//        wrefresh(win_context_select_arrows);
     }
 
 }
-
 
 
 static const char *menulist[MAX_MENU_ITEMS][MAX_SUB_ITEMS];
@@ -1979,7 +2025,7 @@ void SelectContextByName(void)
 
 }
 
-void SelectContextInPlaylist (std::list<TContext>& ContextList)
+void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor)
 {
     /* Declare variables. */
     CDKSCREEN *cdkscreen = 0;
@@ -1989,6 +2035,7 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
     const char *mesg[5];
     char temp[256];
     int selection, count;
+    std::list<std::string> ListOfStrings;
 
     win_midi_in.Hide();
     win_midi_out.Hide();
@@ -2003,25 +2050,41 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
     win_context_select_menu.Show();
 
 
-
     cdkscreen = initCDKScreen(win_context_select_menu.GetRef());
 
     // Populate scrolling list with songnames
-    char ** itemlist = (char **) malloc(ContextList.size() * sizeof(char *));
+    char  ** itemlist = (char  **) malloc(ContextList.size() * sizeof(char *));
     int idx = 0;
-    std::list<TContext>::iterator it;
+    int initial_position = 0; // this is the initial position highlighted in the menu list.
+    std::list<TContext*>::iterator it;
     for (it = ContextList.begin(); it != ContextList.end(); it++)
     {
-        TContext Context = *it;
+        TContext Context = **it;
         char * pMenuStr = (char *)malloc(Context.SongName.size()+1);
         strcpy(pMenuStr, Context.SongName.c_str());
-        itemlist[idx] = pMenuStr;
+        itemlist[idx] = (char *)(**it).SongName.c_str();
+
+        if(ShowAuthor)
+        {
+            std::string tmpString;
+            tmpString = Context.SongName + "(" + Context.Author + ")";
+            ListOfStrings.push_back(tmpString);
+            itemlist[idx] = (char *) ListOfStrings.back().c_str();
+        }
+        // Question: we are currently pointing to a context ( *PlaylistPosition ).
+        // But which position is this in the list we will display?
+        // Let's find out:
+        if (*it == *PlaylistPosition)
+        {
+            initial_position = idx;
+        }
         idx++;
+
     }
 
 
     /* Create the scrolling list. */
-    scrollList = newCDKScroll (cdkscreen, CENTER, CENTER, RIGHT, 20, 70, "Context selection, by playlist order", itemlist, idx, TRUE, A_REVERSE, TRUE, FALSE);
+    scrollList = newCDKScroll (cdkscreen, CENTER, CENTER, RIGHT, 20, 70, "Context selection", itemlist, idx, TRUE, A_REVERSE, TRUE, FALSE);
 
 
     /* Is the scrolling list null? */
@@ -2035,35 +2098,9 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
         return;
     }
 
-    // if (CDKparamNumber (&params, 'c'))
-    // {
-    //    setCDKScrollItems (scrollList, (CDK_CSTRING2) item, count, TRUE);
-    // }
-#if 0
-    drawCDKScroll (scrollList, 1);
-
-    setCDKScrollPosition (scrollList, 10);
-    drawCDKScroll (scrollList, 1);
-    sleep (3);
-
-    setCDKScrollPosition (scrollList, 20);
-    drawCDKScroll (scrollList, 1);
-    sleep (3);
-
-    setCDKScrollPosition (scrollList, 30);
-    drawCDKScroll (scrollList, 1);
-    sleep (3);
-
-    setCDKScrollPosition (scrollList, 70);
-    drawCDKScroll (scrollList, 1);
-    sleep (3);
-#endif
-//   bindCDKObject (vSCROLL, scrollList, 'a', addItemCB, NULL);
-//bindCDKObject (vSCROLL, scrollList, 'i', insItemCB, NULL);
-//  bindCDKObject (vSCROLL, scrollList, 'd', delItemCB, NULL);
+    setCDKScrollPosition (scrollList, initial_position);
 
     /* Activate the scrolling list. */
-
     selection = activateCDKScroll (scrollList, 0);
 
     /* Determine how the widget was exited. */
@@ -2078,13 +2115,14 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
     {
         //char *theItem = chtype2Char (scrollList->item[selection]);
 
+        // Iterate through the list to set the correct Context.
         idx = 0;
-        for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
+        for (it = ContextList.begin(); it != ContextList.end(); it++)
         {
             if (idx == scrollList->currentItem)
             {
-                Playlist = it;
-                TContext Context = *Playlist;
+                PlaylistPosition = it;
+                TContext Context = **PlaylistPosition;
                 Context.Init();
 
                 break;
@@ -2092,32 +2130,17 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
             idx++;
 
         }
-
-
-//freeChar (theItem);
-#if 0
-        char *theItem = chtype2Char (scrollList->item[selection]);
-        mesg[0] = "<C>You selected the following file";
-        sprintf (temp, "<C>%.*s", (int)(sizeof (temp) - 20), theItem);
-        mesg[1] = temp;
-        mesg[2] = "<C>Press any key to continue.";
-        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
-        freeChar (theItem);
-#endif
     }
 
     /* Clean up. */
     CDKfreeStrings (item);
+    free(itemlist);
     destroyCDKScroll (scrollList);
     destroyCDKScreen (cdkscreen);
     endCDK ();
 
-
-
-
-
+    // Show the main screen back.
     win_context_select_menu.Hide();
-
     win_midi_in.Show();
     win_midi_out.Show();
     win_context_prev.Show();
@@ -2126,126 +2149,10 @@ void SelectContextInPlaylist (std::list<TContext>& ContextList)
     win_debug_messages.Show();
     win_context_usage.Show();
     win_context_user_specific.Show();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-
-
-
-
-    /* *INDENT-EQLS* */
-    CDKSCREEN *cdkscreen = 0;
-    CDKLABEL *infoBox    = 0;
-    CDKMENU *menu        = 0;
-    int submenusize[2], menuloc[2];
-    const char *mesg[5];
-    char temp[256];
-    int selection;
-
-    win_context_select_menu.Show();
-    cdkscreen = initCDKScreen (win_context_select_menu.GetRef());
-
-    /* Set up the menu. */
-    menulist[0][0] = "By playlist      ";
-    unsigned idx = 0;
-    std::list<TContext>::iterator it;
-    for (it = PlaylistData.begin(); it != PlaylistData.end(); it++)
-    {
-        idx++;
-        TContext Context = *it;
-        char * pMenuStr = (char *)malloc(Context.SongName.size()+1);
-        strcpy(pMenuStr, Context.SongName.c_str());
-        menulist[0][idx] = pMenuStr;
-    }
-    submenusize[0] = idx +1;
-
-    menulist[1][0] = "By song name      ";
-    idx = 0;
-    for (it = PlaylistData_BySongName.begin(); it != PlaylistData_BySongName.end(); it++)
-    {
-        idx++;
-        TContext Context = *it;
-        char * pMenuStr = (char *) malloc(Context.SongName.size()+1);
-        strcpy(pMenuStr, Context.SongName.c_str());
-        menulist[1][idx] = pMenuStr;
-    }
-    submenusize[1] = idx+1;
-
-
-//    submenusize[2] = 3;
-
-    menuloc[0] = LEFT;
-    menuloc[1] = LEFT;
-
-    /* Create the label window. */
-    mesg[0] = "                                          ";
-    mesg[1] = "                                          ";
-    mesg[2] = "                                          ";
-    mesg[3] = "                                          ";
-//    infoBox = newCDKLabel (cdkscreen, CENTER, CENTER,
-    //                         (CDK_CSTRING2) mesg, 4,
-    //                       TRUE, TRUE);
-
-    /* Create the menu. */
-    menu = newCDKMenu (cdkscreen, menulist, 2, submenusize, menuloc,
-                       TOP, A_UNDERLINE, A_REVERSE);
-
-    /* Create the post process function. */
-//    setCDKMenuPostProcess (menu, displayCallback, infoBox);
-
-    /* Draw the CDK screen. */
-    refreshCDKScreen (cdkscreen);
-
-    /* Activate the menu. */
-    selection = activateCDKMenu (menu, 0);
-
-    /* Determine how the user exited from the widget. */
-    if (menu->exitType == vEARLY_EXIT)
-    {
-        // You hit escape. No menu item was selected.
-    }
-    else if (menu->exitType == vNORMAL)
-    {
-        // You selected menu #%d, submenu #%d",
-        selection / 100,
-                  selection % 100);
-        mesg[0] = temp;
-        mesg[1] = "",
-                  mesg[2] = "<C>Press any key to continue.";
-        popupLabel (cdkscreen, (CDK_CSTRING2) mesg, 3);
-    }
-
-    /* Clean up. */
-    destroyCDKMenu (menu);
-    destroyCDKLabel (infoBox);
-
-    endCDK ();
-    win_context_select_menu.Hide();
-
-#endif
-
 }
 
 
+// Display a metronome on the User Specific window.
 void * threadMetronome (void * pParam)
 {
     const int PulseDuration = 100;
@@ -2253,7 +2160,7 @@ void * threadMetronome (void * pParam)
     while (1)
     {
         // Get current Base Tempo of the song
-        Context = *Playlist;
+        Context = **PlaylistPosition;
         float Tempo = Context.BaseTempo;
         if (Tempo < 30) Tempo = 30;
         if (Tempo > 200) Tempo = 200;
@@ -2279,8 +2186,7 @@ int main(int argc, char** argv)
 
     InitializePlaylist();
 
-
-    initscr();                      /* Start curses mode            */
+    initscr();
     curs_set(0);
     term_lines = LINES;
     term_cols = COLS;
@@ -2326,9 +2232,7 @@ int main(int argc, char** argv)
     refresh();
 
 
-
     pthread_t thread1;
-    // Create midi automaton thread
     const char *message1 = "";
     int iret1;
     iret1 = pthread_create(&thread1, NULL, threadMidiAutomaton, (void*) message1);
@@ -2351,8 +2255,6 @@ int main(int argc, char** argv)
     }
 
 
-    // ContextSelection_Playlist();
-
     pthread_t thread3;
     int iret3;
     iret3 = pthread_create(&thread3, NULL, threadMetronome, NULL);
@@ -2364,14 +2266,9 @@ int main(int argc, char** argv)
 
 
     threadKeyboard(0);
-    while(1) //(ch = getch()) != KEY_ESC)
+    while(1)
     {
         sleep(1);
 
     }
-
-
-
-
 }
-
