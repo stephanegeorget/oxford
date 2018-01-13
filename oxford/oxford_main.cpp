@@ -25,7 +25,14 @@ char device_in_str[] = "hw:1,0,0"; // obtained with amidi -l
 char device_out_str[] = "hw:1,0,0"; // obtained with amidi -l
 #define MIDI_SEQUENCER_NAME "20:0" // obtained with pmidi -l
 
-
+// This is a ncurses cdk panel, with a boxed window on it, that can't
+// be touched, and a "free text" window inside the boxed window.
+// It makes it easy to manage showing (and hiding, thanks panel), of
+// text, including automatically scrolling it, _inside_ a nice clean
+// window with a box.
+// To get a reference to the inner window (on which to display text), for instance
+// with wprinw, use ::GetRef(). E.g.: wprintw(MyBoxedWindow.GetRef(), "Hello World!\n");
+// Of course, call ::Init(...) beforehand.
 class TBoxedWindow
 {
 private:
@@ -1315,7 +1322,14 @@ void Stop(void)
 
 }
 
+namespace HighwayToHell
+{
+//en sol
 
+
+
+
+}
 
 namespace MickaelJackson
 {
@@ -1355,37 +1369,40 @@ void Partial_On(int NoteNumber)
     TMidiControlChange cc2(3,0x42, 127);
     TMidiControlChange cc3(4,0x42, 127);
 
-    ExecuteAfterTimeout(Partial_Off, 1700, NULL);
+//    ExecuteAfterTimeout(Partial_Off, 1700, NULL);
 }
 
 
 void Chord1_On(void)
 {
-    Partial_On(55);
+    Partial_On(50);
 }
 
 void Chord1_Off(void)
 {
+    Partial_Off(NULL);
 }
 
 
 void Chord2_On(void)
 {
-    Partial_On(52);
+    Partial_On(47);
 }
 
 void Chord2_Off(void)
 {
+    Partial_Off(NULL);
 }
 
 void Chord3_On(void)
 {
-    Partial_On(50);
+    Partial_On(45);
 }
 
 
 void Chord3_Off(void)
 {
+    Partial_Off(NULL);
 }
 
 }

@@ -294,12 +294,12 @@ s,@ECHO_T@,,;t t
 s,@PATH_SEPARATOR@,:,;t t
 s,@DEFS@,-DHAVE_CONFIG_H,;t t
 s,@LIBS@,-lncurses ,;t t
-s,@build@,x86_64-pc-linux-gnu,;t t
-s,@build_cpu@,x86_64,;t t
+s,@build@,i686-pc-linux-gnu,;t t
+s,@build_cpu@,i686,;t t
 s,@build_vendor@,pc,;t t
 s,@build_os@,linux-gnu,;t t
-s,@host@,x86_64-pc-linux-gnu,;t t
-s,@host_cpu@,x86_64,;t t
+s,@host@,i686-pc-linux-gnu,;t t
+s,@host_cpu@,i686,;t t
 s,@host_vendor@,pc,;t t
 s,@host_os@,linux-gnu,;t t
 s,@VERSION@,6:1:4,;t t
@@ -310,7 +310,7 @@ s,@PACKAGE@,cdk,;t t
 s,@top_builddir@,.,;t t
 s,@CC@,gcc,;t t
 s,@CFLAGS@,-g -O2,;t t
-s,@LDFLAGS@,-L/lib64 ,;t t
+s,@LDFLAGS@,-L/lib ,;t t
 s,@CPPFLAGS@, -D_GNU_SOURCE -D_DEFAULT_SOURCE,;t t
 s,@ac_ct_CC@,gcc,;t t
 s,@EXEEXT@,,;t t
@@ -329,10 +329,10 @@ s,@AR@,ar,;t t
 s,@ac_ct_AR@,ar,;t t
 s,@SET_MAKE@,,;t t
 s,@cf_cv_makeflags@,,;t t
-s,@CTAGS@,,;t t
-s,@ETAGS@,,;t t
-s,@MAKE_LOWER_TAGS@,#,;t t
-s,@MAKE_UPPER_TAGS@,#,;t t
+s,@CTAGS@,ctags,;t t
+s,@ETAGS@,etags,;t t
+s,@MAKE_LOWER_TAGS@,,;t t
+s,@MAKE_UPPER_TAGS@,,;t t
 s,@ECHO_LT@,,;t t
 s,@ECHO_LD@,,;t t
 s,@RULE_CC@,,;t t
@@ -343,8 +343,8 @@ s,@LIB_PREFIX@,lib,;t t
 s,@MAN_TAG@,3,;t t
 s,@MANSECT@,3,;t t
 s,@EXTRA_CFLAGS@,,;t t
-s,@PKG_CONFIG@,none,;t t
-s,@ac_pt_PKG_CONFIG@,none,;t t
+s,@PKG_CONFIG@,/usr/bin/pkg-config,;t t
+s,@ac_pt_PKG_CONFIG@,/usr/bin/pkg-config,;t t
 s,@cf_ldd_prog@,ldd,;t t
 s,@EXTRA_LDFLAGS@,,;t t
 s,@ABI_VERSION@,6.1.4,;t t
