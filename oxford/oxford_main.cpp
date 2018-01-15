@@ -18,12 +18,24 @@
 #include <algorithm>
 #include <cdk.h>
 #include <panel.h>
+#include <array>
 
 int stop = 0;
-snd_rawmidi_t *handle_in = 0, *handle_out = 0;
-char device_in_str[] = "hw:1,0,0"; // obtained with amidi -l
-char device_out_str[] = "hw:1,0,0"; // obtained with amidi -l
-#define MIDI_SEQUENCER_NAME "20:0" // obtained with pmidi -l
+// Array of two pointers to a snd_rawmidi_t
+// Position 0 for the first port of the midisport,
+// Position 1 for the second port of the midisport.
+// E.g. handle_midi_in[0] gets us a handle for the first midi port.
+// Initialize with zero = invalid pointers.
+std::array<snd_rawmidi_t*,2> handle_midi_hw_in = {0, 0};
+// Same for the midisport midi outputs (two of them).
+std::array<snd_rawmidi_t*,2> handle_midi_hw_out = {0, 0};
+
+// Array which holds the string name of the hardware device,
+// one for the first midi port (IN1/OUT1) and second for the
+// second midi port (IN2/OUT2).
+std::array<std::string, 2> name_midi_hw = {"hw:1,0,0", "hw:1,0,1"}; // obtained with amidi -l
+
+std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
 
 // This is a ncurses cdk panel, with a boxed window on it, that can't
 // be touched, and a "free text" window inside the boxed window.
@@ -434,14 +446,16 @@ void ContextNextRelease(void)
 
 // Talk to ALSA and open a midi port in RAW mode, for data going IN.
 // (into the computer, into this program)
-void StartRawMidiIn(void)
+// There are two physical IN ports on the midisport, called: 0 and 1,
+// that must be passed as a parameter.
+void StartRawMidiIn(int portnum)
 {
-    if (handle_in == 0)
+    if (handle_midi_hw_in[portnum] == 0)
     {
-        int err = snd_rawmidi_open(&handle_in, NULL, device_in_str, 0);
+        int err = snd_rawmidi_open(&handle_midi_hw_in[portnum], NULL, name_midi_hw[portnum].c_str(), 0);
         if (err)
         {
-            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", device_in_str, err);
+            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw[portnum].c_str(), err);
         }
     }
 }
@@ -449,41 +463,42 @@ void StartRawMidiIn(void)
 
 // Talk to ALSA and open a midi port in RAW mode, for data going OUT.
 // (from this program, out of the computer, to the expander, to the Rack Eleven, etc.)
-void StartRawMidiOut(void)
+// There are two physical IN ports on the midisport, called: 0 and 1,
+// that must be passed as a parameter.
+void StartRawMidiOut(int portnum)
 {
-    if (handle_out == 0)
+    if (handle_midi_hw_out[portnum] == 0)
     {
-        int err = snd_rawmidi_open(NULL, &handle_out, device_out_str, 0);
+        int err = snd_rawmidi_open(NULL, &handle_midi_hw_out[portnum], name_midi_hw[portnum].c_str(), 0);
         if (err)
         {
-            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", device_out_str, err);
+            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw[portnum].c_str(), err);
         }
     }
 }
 
 
-// Close the RAW midi IN port
-void StopRawMidiIn(void)
+// Close the RAW midi IN port, for port "portnum" (0 or 1)
+void StopRawMidiIn(int portnum)
 {
-    if (handle_in != 0)
+    if (handle_midi_hw_in[portnum] != 0)
     {
-        snd_rawmidi_drain(handle_in);
-        snd_rawmidi_close(handle_in);
-        handle_in = 0;
+        snd_rawmidi_drain(handle_midi_hw_in[portnum]);
+        snd_rawmidi_close(handle_midi_hw_in[portnum]);
+        handle_midi_hw_in[portnum] = 0;
     }
 
 }
 
-// Close the RAW midi OUT port
-void StopRawMidiOut(void)
+// Close the RAW midi OUT port, for port "portnum" (0 or 1)
+void StopRawMidiOut(int portnum)
 {
-    if(handle_out != 0)
+    if(handle_midi_hw_out[portnum] != 0)
     {
-        snd_rawmidi_drain(handle_out);
-        snd_rawmidi_close(handle_out);
-        handle_out = 0;
+        snd_rawmidi_drain(handle_midi_hw_out[portnum]);
+        snd_rawmidi_close(handle_midi_hw_out[portnum]);
+        handle_midi_hw_out[portnum] = 0;
     }
-
 }
 
 
@@ -606,13 +621,14 @@ class TMidiNoteOnEvent
 public:
     unsigned char NoteOnField = 9; // See MIDI specifications
     unsigned char charArray[3];
+    int PortNumber = 0;
 
     void sendToMidi(void)
     {
         wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-        if (handle_out != 0)
+        if (handle_midi_hw_out[PortNumber] != 0)
         {
-            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
         }
     }
 
@@ -621,16 +637,30 @@ public:
     TMidiNoteOnEvent(unsigned int Channel, unsigned int NoteNumber,
                      unsigned int Velocity);
 
+TMidiNoteOnEvent(unsigned int Channel,
+                                   unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param);
+
     void Init(unsigned int Channel, unsigned int NoteNumber,
               unsigned int Velocity);
+
+
+                  void Init(unsigned int Channel, unsigned int NoteNumber,
+              unsigned int Velocity, int PortNumber_param);
 
 };
 
 TMidiNoteOnEvent::TMidiNoteOnEvent(unsigned int Channel,
                                    unsigned int NoteNumber, unsigned int Velocity)
 {
-    Init(Channel, NoteNumber, Velocity);
+    Init(Channel, NoteNumber, Velocity, 0);
 }
+
+TMidiNoteOnEvent::TMidiNoteOnEvent(unsigned int Channel,
+                                   unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param)
+{
+    Init(Channel, NoteNumber, Velocity, PortNumber_param);
+}
+
 
 void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
                             unsigned int Velocity)
@@ -649,6 +679,16 @@ void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
     sendToMidi();
 
 }
+
+
+void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
+                            unsigned int Velocity, int PortNumber_param)
+
+                            {
+                                PortNumber = PortNumber_param;
+                                Init(Channel, NoteNumber, Velocity);
+
+                            }
 
 TMidiNoteOnEvent::TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
 {
@@ -673,13 +713,14 @@ class TMidiProgramChange
 private:
     unsigned char MidiFunctionID = 0xC; // See MIDI specifications
     unsigned char charArray[2];
+    int PortNumber = 0;
 
     void sendToMidi(void)
     {
         wprintw(win_midi_out.GetRef(), "%i\n%i\n", (int) charArray[0], (int) charArray[1]);
-        if(handle_out != 0)
+        if(handle_midi_hw_out[PortNumber] != 0)
         {
-            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
         }
     }
     ;
@@ -688,6 +729,13 @@ public:
 
     TMidiProgramChange(unsigned char Channel, unsigned char Program)
     {
+        TMidiProgramChange(Channel, Program, 0);
+    }
+
+    TMidiProgramChange(unsigned char Channel, unsigned char Program, int PortNumber_param)
+    {
+        PortNumber = PortNumber_param;
+
         if (Channel < 1)
             Channel = 1;
         if (Channel > 16)
@@ -707,13 +755,14 @@ class TMidiControlChange
 private:
     unsigned char MidiFunctionID = 0xB;
     unsigned char charArray[3];
+    int PortNumber = 0;
 
     void sendToMidi(void)
     {
-        if (handle_out != 0)
+        if (handle_midi_hw_out[PortNumber] != 0)
         {
             wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-            snd_rawmidi_write(handle_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
         }
     }
     ;
@@ -723,6 +772,13 @@ public:
     TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
                        unsigned char ControllerValue)
     {
+        TMidiControlChange(Channel, ControlNumber, ControllerValue, 0);
+    }
+
+        TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
+                       unsigned char ControllerValue, int PortNumber_param)
+    {
+        PortNumber = PortNumber_param;
         if (Channel < 1)
             Channel = 1;
         if (Channel > 16)
@@ -1341,6 +1397,7 @@ void Init(void)
     TMidiProgramChange pc1(2, 92);
     TMidiProgramChange pc2(3, 101);
     TMidiProgramChange pc3(4, 89);
+//    TMidiProgramChange pc4(1, 4, 1);
 
 
 
@@ -1413,7 +1470,7 @@ void Chord3_Off(void)
 
 
 extern "C" void showlist(void);
-extern "C" int main_TODO(int argc, char **argv, int Tempo);
+extern "C" int main_TODO(int argc, char const **argv, int Tempo);
 extern "C" void seq_midi_tempo_direct(int Tempo);
 extern "C" void pmidiStop(void);
 
@@ -1436,7 +1493,7 @@ void StopSequencer(void)
 
         sleep(1);
 
-        StartRawMidiOut();
+        StartRawMidiOut(0);
         AllSoundsOff();
     }
 }
@@ -1446,7 +1503,7 @@ void * ThreadSequencerFunction (void * params)
 {
 
 
-    StopRawMidiOut();
+    StopRawMidiOut(0);
 
     SequencerRunning = 1;
     showlist();
@@ -1454,12 +1511,12 @@ void * ThreadSequencerFunction (void * params)
     int argc = 4;
     char str10[] = "fakename";
     char str11[] = "-p";
-    char str12[] = MIDI_SEQUENCER_NAME;
+    char const * str12 = midi_sequencer_name.c_str();
     char * str13 = (char*) params;
-    char * (argv1[4]) =
+    char const * (argv1[4]) =
     { str10, str11, str12, str13 };
     main_TODO(argc, argv1, Tempo);
-    StartRawMidiOut();
+    StartRawMidiOut(0);
 
     thread_sequencer = NULL;
 
@@ -1545,39 +1602,21 @@ void *threadMidiAutomaton(void * ptr)
 {
     int err;
     int thru = 0;
-    int verbose = 1;
-
     int fd_in = -1, fd_out = -1;
 
-    if (verbose)
-    {
         wprintw(win_debug_messages.GetRef(), "Using: \n");
-        wprintw(win_debug_messages.GetRef(), "Input: ");
-        if (device_in_str)
-        {
-            wprintw(win_debug_messages.GetRef(), "device %s\n", device_in_str);
-        }
-        else
-        {
-            wprintw(win_debug_messages.GetRef(), "NONE\n");
-        }
-        wprintw(win_debug_messages.GetRef(), "Output: ");
-        if (device_out_str)
-        {
-            wprintw(win_debug_messages.GetRef(), "device %s\n", device_out_str);
-        }
-        else
-        {
-            wprintw(win_debug_messages.GetRef(), "NONE\n");
-        }
-    }
+        wprintw(win_debug_messages.GetRef(), "Input & output: ");
+        wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[0]);
+        wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[1]);
 
-    StartRawMidiIn();
-    StartRawMidiOut();
+    StartRawMidiIn(0);
+    StartRawMidiOut(0);
+    StartRawMidiIn(1);
+    StartRawMidiOut(1);
 //    signal(SIGINT,sighandler);
     if (!thru)
     {
-        if (handle_in)
+        if (handle_midi_hw_in[0])
         {
             unsigned char ch;
             unsigned int rxNote, rxVolume, rxControllerNumber,
@@ -1598,10 +1637,7 @@ void *threadMidiAutomaton(void * ptr)
 
             while (!stop)
             {
-                if (verbose)
-                {
                     wprintw(win_midi_in.GetRef(), "0x%02x", ch);
-                }
 
                 switch (stateMachine)
                 {
@@ -1610,7 +1646,7 @@ void *threadMidiAutomaton(void * ptr)
                     break;
 
                 case smWaitMidiChar1:
-                    snd_rawmidi_read(handle_in, &ch, 1);
+                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
                     if (ch == 0x91)
                         stateMachine = smWaitMidiNoteChar2;
                     if (ch == 0xb0)
@@ -1618,7 +1654,7 @@ void *threadMidiAutomaton(void * ptr)
                     break;
 
                 case smWaitMidiNoteChar2:
-                    snd_rawmidi_read(handle_in, &ch, 1);
+                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
                     if (ch >= 1 && ch <= 8)
                     {
                         stateMachine = smWaitMidiNoteChar3;
@@ -1633,13 +1669,13 @@ void *threadMidiAutomaton(void * ptr)
                     break;
 
                 case smWaitMidiNoteChar3:
-                    snd_rawmidi_read(handle_in, &ch, 1);
+                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
                     rxVolume = ch;
                     stateMachine = smProcessNoteEvent;
                     break;
 
                 case smWaitMidiControllerChangeChar2:
-                    snd_rawmidi_read(handle_in, &ch, 1);
+                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
                     if (ch >= 0 && ch <= 119)
                     {
                         stateMachine = smWaitMidiControllerChangeChar3;
@@ -1654,7 +1690,7 @@ void *threadMidiAutomaton(void * ptr)
                     break;
 
                 case smWaitMidiControllerChangeChar3:
-                    snd_rawmidi_read(handle_in, &ch, 1);
+                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
                     stateMachine = smProcessControllerChange;
                     rxControllerValue = ch;
                     wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
@@ -1719,8 +1755,10 @@ void *threadMidiAutomaton(void * ptr)
 
     wprintw(win_debug_messages.GetRef(), "Closing\n");
 
-    StopRawMidiIn();
-    StopRawMidiOut();
+    StopRawMidiIn(0);
+    StopRawMidiOut(0);
+    StopRawMidiIn(1);
+    StopRawMidiOut(1);
 
     if (fd_in != -1)
     {
