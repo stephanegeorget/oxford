@@ -19,6 +19,7 @@
 #include <cdk.h>
 #include <panel.h>
 #include <array>
+#include <thread>
 
 int stop = 0;
 // Array of two pointers to a snd_rawmidi_t
@@ -531,13 +532,12 @@ typedef struct
 
 // Thread used to support the functionality of function ExecuteAfterTimeout.
 #pragma reentrant
-void * ExecuteAfterTimeout_Thread(void * pMessage)
+void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
 {
-    waitMilliseconds(((TExecuteAfterTimeoutStruct*) pMessage)->Delay_ms);
-
-    // call pFunction(pFuncParam)
-    (((TExecuteAfterTimeoutStruct *) pMessage)->pFunction)( ((TExecuteAfterTimeoutStruct *) pMessage)->pFuncParam );
-    free(pMessage);
+    // Delay execution
+    waitMilliseconds(Message.Delay_ms);
+    // Call "pFunction(pFuncParam)"
+    (Message.pFunction)( Message.pFuncParam );
 }
 
 // This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
@@ -546,21 +546,12 @@ void * ExecuteAfterTimeout_Thread(void * pMessage)
 #pragma reentrant
 void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
 {
-    pthread_t thread;
-    TExecuteAfterTimeoutStruct * pExecuteAfterTimeoutStruct;
-    pExecuteAfterTimeoutStruct = (TExecuteAfterTimeoutStruct *) malloc(
-                                     sizeof(TExecuteAfterTimeoutStruct));
-    pExecuteAfterTimeoutStruct->Delay_ms = Timeout_ms;
-    pExecuteAfterTimeoutStruct->pFunction = pFunc;
+    TExecuteAfterTimeoutStruct ExecuteAfterTimeoutStruct;
+    ExecuteAfterTimeoutStruct.Delay_ms = Timeout_ms;
+    ExecuteAfterTimeoutStruct.pFunction = pFunc;
 
-    int iret1;
-    iret1 = pthread_create(&thread, NULL, ExecuteAfterTimeout_Thread,
-                           (void*) pExecuteAfterTimeoutStruct);
-    if (iret1)
-    {
-        wprintw(win_debug_messages.GetRef(), "Error - pthread_create() return code: %d\n", iret1);
-        exit(EXIT_FAILURE);
-    }
+    std::thread Thread(ExecuteAfterTimeout_Thread, ExecuteAfterTimeoutStruct);
+    Thread.detach();
 }
 
 
@@ -608,7 +599,6 @@ typedef struct
     unsigned char Velocity;
     unsigned char Channel;
     unsigned int DurationMS;
-    pthread_t thread; // handle all the Midi Note ON and OFF from a dedicated (short-lived) thread.
 } TPlayNoteMsg;
 
 
@@ -795,36 +785,25 @@ public:
 
 
 // Thread used by PlayNote() to keep track of time, for each note.
-void * playNoteThread(void * msg)
+void playNoteThread(TPlayNoteMsg msg)
 {
-    TMidiNoteOnEvent MidiNoteOnEvent((TPlayNoteMsg *) msg);
-    waitMilliseconds(((TPlayNoteMsg*) msg)->DurationMS);
+    TMidiNoteOnEvent MidiNoteOnEvent(&msg);
+    waitMilliseconds(msg.DurationMS);
     wprintw(win_debug_messages.GetRef(), "playNoteThread\n");
-    ((TPlayNoteMsg *) msg)->Velocity = 0;
-    TMidiNoteOffEvent MidiNoteOffEvent((TPlayNoteMsg *) msg);
-
-    delete ((TPlayNoteMsg *) msg);
-    return 0;
+    msg.Velocity = 0;
+    TMidiNoteOffEvent MidiNoteOffEvent(&msg);
 }
 
 // Useful function that plays a note, on a specific MIDI channel, Note Number, Duration in milliseconds, and Velocity.
 void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int DurationMS_param, int Velocity_param)
 {
-    TPlayNoteMsg * PlayNoteMsg = new TPlayNoteMsg;
-    PlayNoteMsg->Channel = Channel_param;
-    PlayNoteMsg->DurationMS = DurationMS_param;
-    PlayNoteMsg->NoteNumber = NoteNumber_param;
-    PlayNoteMsg->Velocity = Velocity_param;
-
-    int iret;
-    pthread_t thread;
-    iret = pthread_create(&thread, NULL, playNoteThread, (void*) PlayNoteMsg);
-    PlayNoteMsg->thread = thread;
-    if (iret)
-    {
-        wprintw(win_debug_messages.GetRef(), "Error - pthread_create() return code: %d\n", iret);
-        exit(EXIT_FAILURE);
-    }
+    TPlayNoteMsg PlayNoteMsg;
+    PlayNoteMsg.Channel = Channel_param;
+    PlayNoteMsg.DurationMS = DurationMS_param;
+    PlayNoteMsg.NoteNumber = NoteNumber_param;
+    PlayNoteMsg.Velocity = Velocity_param;
+    std::thread Thread(playNoteThread, PlayNoteMsg);
+    Thread.detach();
 }
 
 
@@ -864,14 +843,12 @@ int getkey()
 
 
 // Scan keyboard for events, and process keypresses accordingly.
-void * threadKeyboard(void * ptr)
+void threadKeyboard(void)
 {
     char *message;
     char noteInScale;
     int octave = 2;
     int program = 1;
-    message = (char *) ptr;
-    wprintw(win_debug_messages.GetRef(), "%s \n", message);
 
     while (1)
     {
@@ -1598,7 +1575,7 @@ void ChangeTempo(int Value)
 
 // Inspect MIDI IN for events, and dispatch then accordingly as Control Change events,
 // midi notes assigned to pedals of the pedalboard, or other.
-void *threadMidiAutomaton(void * ptr)
+void threadMidiAutomaton(void)
 {
     int err;
     int thru = 0;
@@ -1768,7 +1745,6 @@ void *threadMidiAutomaton(void * ptr)
     {
         close(fd_out);
     }
-    return 0;
 }
 
 
@@ -1790,6 +1766,7 @@ void InitializePlaylist(void)
 
     cJustAGigolo.Author = "Louis Prima";
     cJustAGigolo.SongName = "Just a gigolo";
+    cJustAGigolo.BaseTempo = 124;
 
     cSuperstition.Author = "Stevie Wonder";
     cSuperstition.SongName = "Superstition";
@@ -1797,11 +1774,12 @@ void InitializePlaylist(void)
 
     cStandByMe.Author = "Ben E. King";
     cStandByMe.SongName = "Stand by me";
-    cStandByMe.BaseTempo = 120;
+    cStandByMe.BaseTempo = 110;
 
 
     cGetBack.Author = "Beatles";
     cGetBack.SongName = "Get back";
+    cGetBack.BaseTempo = 115;
 
 
     cAllShookUp.Author = "Elvis Presley";
@@ -1817,15 +1795,18 @@ void InitializePlaylist(void)
 
     cUnchainMyHeart.Author = "Joe Cooker";
     cUnchainMyHeart.SongName = "Unchain my heart";
+    cUnchainMyHeart.BaseTempo = 120;
 
     cFaith.Author = "George Michael";
     cFaith.SongName = "Faith";
 
     cIsntSheLovely.Author = "Stevie Wonder";
     cIsntSheLovely.SongName = "Isn't she lovely";
+    cIsntSheLovely.BaseTempo = 120;
 
     cJammin.Author = "Bob Marley";
     cJammin.SongName = "Jammin'";
+    cJammin.BaseTempo = cIsntSheLovely.BaseTempo;
 
     cRehab.Author = "Amy Winehouse";
     cRehab.SongName = "Rehab";
@@ -1845,7 +1826,7 @@ void InitializePlaylist(void)
 
     cMasterBlaster.Author = "Stevie Wonder";
     cMasterBlaster.SongName = "Master Blaster";
-    cMasterBlaster.BaseTempo = 130;
+    cMasterBlaster.BaseTempo = 131;
 
 
     cAuxChampsElysees.Author = "";
@@ -1857,15 +1838,19 @@ void InitializePlaylist(void)
 
     cMonAmantDeSaintJean.Author = "";
     cMonAmantDeSaintJean.SongName = "Mon amant de St. Jean";
+    cMonAmantDeSaintJean.BaseTempo = 240;
 
     cGetLucky.Author = "Daft Punk";
     cGetLucky.SongName = "Get lucky";
+    cGetLucky.BaseTempo = 113;
 
     cIllusion.Author = "";
     cIllusion.SongName = "Illusion";
+    cIllusion.BaseTempo = cGetLucky.BaseTempo;
 
     cDockOfTheBay.Author = "Otis Redding";
     cDockOfTheBay.SongName = "Dock of the bay";
+    cDockOfTheBay.BaseTempo = 103;
 
     cLockedOutOfHeaven.Author = "Bruno Mars";
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
@@ -1878,12 +1863,15 @@ void InitializePlaylist(void)
 
     cLesFillesDesForges.Author = "";
     cLesFillesDesForges.SongName = "Les filles des forges";
+    cLesFillesDesForges.BaseTempo = 150;
 
     cThatsAllRight.Author = "Elvis Presley";
     cThatsAllRight.SongName = "That's all right";
+    cThatsAllRight.BaseTempo = 163;
 
     cJohnnyBeGood.Author = "";
     cJohnnyBeGood.SongName = "Johnny be good";
+    cJohnnyBeGood.BaseTempo = 165;
 
     cBebopALula.Author = "Elvis Presley";
     cBebopALula.SongName = "Bebop a lula";
@@ -1912,16 +1900,18 @@ void InitializePlaylist(void)
 
     cHotelCalifornia.Author = "Eagles";
     cHotelCalifornia.SongName = "Hotel california";
+    cHotelCalifornia.BaseTempo = 135;
 
     cRaggamuffin.Author = "Selah Sue";
     cRaggamuffin.SongName = "Raggamuffin";
 
     cManDown.Author = "Rihanna";
     cManDown.SongName = "Man Down";
-    cManDown.BaseTempo = 155;
+    cManDown.BaseTempo = 145;
 
     cShouldIStay.Author = "The Clash";
     cShouldIStay.SongName = "Should I stay";
+    cShouldIStay.BaseTempo = 118;
 
     cMercy.Author = "Duffy";
     cMercy.SongName = "Mercy";
@@ -2029,7 +2019,7 @@ void InitializePlaylist(void)
 
 
 // Redraw screen 5 times a second.
-void * threadRedraw(void * pMessage)
+void threadRedraw(void)
 {
     TContext Context;
     while(1)
@@ -2208,7 +2198,7 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
 
 
 // Display a metronome on the User Specific window.
-void * threadMetronome (void * pParam)
+void threadMetronome (void)
 {
     const int PulseDuration = 100;
     TContext Context;
@@ -2286,41 +2276,19 @@ int main(int argc, char** argv)
     printw(":by artist");
     refresh();
 
+    // Create thread that scans midi messages
+    std::thread thread1(threadMidiAutomaton);
 
-    pthread_t thread1;
-    const char *message1 = "";
-    int iret1;
-    iret1 = pthread_create(&thread1, NULL, threadMidiAutomaton, (void*) message1);
-    if (iret1)
-    {
-        fprintf(stderr, "threadMidiAutomaton Error - pthread_create() return code: %d\n", iret1);
-        exit(EXIT_FAILURE);
-    }
-
-    pthread_t thread2;
     // Create task that redraws screen at fixed intervals
-    const char *message2 = "";
-    int iret2;
-    iret2 = pthread_create(&thread2, NULL, threadRedraw,
-                           (void*) message2);
-    if (iret2)
-    {
-        fprintf(stderr, "threadRedraw Error - pthread_create() return code: %d\n", iret2);
-        exit(EXIT_FAILURE);
-    }
+    std::thread thread2(threadRedraw);
 
+    // Create the thread that refreshes the metronome
+    std::thread thread3(threadMetronome);
 
-    pthread_t thread3;
-    int iret3;
-    iret3 = pthread_create(&thread3, NULL, threadMetronome, NULL);
-    if(iret3)
-    {
-        fprintf(stderr, "Could not spawn metronome thread, return code: %d\n", iret3);
-        exit(EXIT_FAILURE);
-    }
+    // Create thread that scans the keyboard
+    std::thread thread4(threadKeyboard);
 
-
-    threadKeyboard(0);
+    // Do nothing
     while(1)
     {
         sleep(1);
