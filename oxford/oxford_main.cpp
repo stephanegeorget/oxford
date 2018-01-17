@@ -20,6 +20,7 @@
 #include <panel.h>
 #include <array>
 #include <thread>
+#include <mutex>
 
 int stop = 0;
 // Array of two pointers to a snd_rawmidi_t
@@ -38,6 +39,11 @@ std::array<std::string, 2> name_midi_hw = {"hw:1,0,0", "hw:1,0,1"}; // obtained 
 
 std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
 
+// Mutex used to prevent ncurses refresh routines from being called from
+// concurrent threads.
+std::mutex ncurses_mutex;
+
+
 // This is a ncurses cdk panel, with a boxed window on it, that can't
 // be touched, and a "free text" window inside the boxed window.
 // It makes it easy to manage showing (and hiding, thanks panel), of
@@ -49,13 +55,14 @@ std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
 class TBoxedWindow
 {
 private:
-    PANEL * Panel;
+    PANEL * Panel; // Panel is the cdk object that allows showing/hiding parts of the screen.
     WINDOW * BoxedWindow; // outer window, shown with a box, prevent writing on that
     WINDOW * SubWindow; // inner space of the window, usable to display text
 public:
     TBoxedWindow(void) {};
     void Init(char* name, int height, int width, int starty, int startx)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         BoxedWindow = newwin(height, width, starty, startx);
         Panel = new_panel(BoxedWindow);
         box(BoxedWindow, 0, 0);
@@ -67,6 +74,7 @@ public:
 
     void Show(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         show_panel(Panel);
         update_panels();
         doupdate();
@@ -74,6 +82,7 @@ public:
 
     void Hide(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         hide_panel(Panel);
         update_panels();
         doupdate();
@@ -81,11 +90,13 @@ public:
 
     WINDOW * GetRef(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         return SubWindow;
     }
 
     void Refresh(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         if (!panel_hidden(Panel))
         {
             touchwin(BoxedWindow);
@@ -96,10 +107,12 @@ public:
 
     void PutOnTop(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         top_panel(Panel);
     }
     void Erase(void)
     {
+        std::lock_guard<std::mutex> lock(ncurses_mutex);
         wclear(SubWindow);
     }
 };
@@ -327,6 +340,8 @@ std::list<TContext *>::iterator PlaylistPosition;
 
 // Here, the actual TContext objects are instanciated. One for each context, which
 // more or less represents one for each *song* in the playlist, in the band/musical sense.
+TContext cFirstContext;
+TContext cRigUp;
 TContext cAveMaria;
 TContext cCapitaineFlam;
 TContext cWildThoughts;
@@ -1573,6 +1588,54 @@ void ChangeTempo(int Value)
 }
 
 
+namespace RigUp
+{
+
+    void Init(void)
+    {
+    // For a reason that eludes me, changing the variation of the part
+    // must be sent twice...
+    // We want to select the Sine Wave (program 81, variation 8)
+    TMidiProgramChange pc(2, 81);
+    TMidiControlChange cc(2, 0, 8);
+    TMidiProgramChange pc1(2, 81);
+    TMidiControlChange cc1(2, 0, 8);
+
+
+    }
+
+    void WhiteNoiseUniform(void)
+    {
+        system("aplay ./wav/whitenoise_gaussian_distribution.wav &");
+    }
+
+    void WhiteNoiseGaussian(void)
+    {
+        system("aplay ./wav/whitenoise_uniform_distribution.wav &");
+    }
+
+    int CurrentNote = 0;
+    void SineWaveOn(void)
+    {
+        TMidiNoteOnEvent no(2, CurrentNote, 100);
+    }
+
+
+    void SineWaveOff(void)
+    {
+        TMidiNoteOffEvent no(2, CurrentNote, 0);
+    }
+
+    void SineWavePitch(int ccValue)
+    {
+        SineWaveOff();
+        CurrentNote = ccValue;
+        SineWaveOn();
+    }
+
+}
+
+
 // Inspect MIDI IN for events, and dispatch then accordingly as Control Change events,
 // midi notes assigned to pedals of the pedalboard, or other.
 void threadMidiAutomaton(void)
@@ -1754,9 +1817,23 @@ void threadMidiAutomaton(void)
 // or to alter the order of the playlist.
 void InitializePlaylist(void)
 {
+    cFirstContext.Author = "---";
+    cFirstContext.SongName = "---";
+
+    cRigUp.Author = "_";
+    cRigUp.SetInitFunc(RigUp::Init);
+    cRigUp.SongName = "OXFORD RIG UP";
+    cRigUp.Comments = "Miscellaneous tools for band rigup";
+    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, RigUp::WhiteNoiseUniform, NULL, "White noise, uniform"));
+    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, RigUp::WhiteNoiseGaussian, NULL, "White noise, gaussian"));
+    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, RigUp::SineWaveOn, NULL, "Sine Wave ON"));
+    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, RigUp::SineWaveOff, NULL, "Sine Wave OFF"));
+    cRigUp.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, RigUp::SineWavePitch, "Adjust sine wave pitch"));
+
 
     cFlyMeToTheMoon.Author = "Count Basie";
     cFlyMeToTheMoon.SongName = "Fly me to the moon";
+    cRigUp.BaseTempo = 0;
 
     cAllOfMe.Author = "John Legend";
     cAllOfMe.SongName = "All of me";
@@ -1953,6 +2030,8 @@ void InitializePlaylist(void)
 
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
+    PlaylistData.push_back(&cFirstContext); // Always keep that one in first
+    PlaylistData.push_back(&cRigUp);
     PlaylistData.push_back(&cFlyMeToTheMoon);
     PlaylistData.push_back(&cAllOfMe);
     PlaylistData.push_back(&cCryMeARiver);

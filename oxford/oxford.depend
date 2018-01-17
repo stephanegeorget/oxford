@@ -17,7 +17,7 @@
 	<setjmp.h>
 	"libintl.h"
 
-1516056608 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+1516230880 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -35,6 +35,8 @@
 	<cdk.h>
 	<panel.h>
 	<array>
+	<thread>
+	<mutex>
 
 1515684050 source:/home/stephane/Documents/devel/oxford/oxford_main.cpp
 	<stdio.h>
