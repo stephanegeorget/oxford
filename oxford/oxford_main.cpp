@@ -1,6 +1,14 @@
 // use amidi -l to list midi hardware devices
 // don't forget to link with asound, pthread, cdk (sometimes called libcdk), and panel
 // use pmidi -l to list midi devices for pmidi, which is for midi file playback
+// you probably must build cdk locally, get in the cdk folder, ./configure, then make,
+// and make sure that code blocks links with the library generated in ???
+// run ldconfig as root
+// you must also have the aubio library; go to aubio, then ./waf configure, ./waf build
+// ./waf install is not really needed, just have codeblocks link with the aubio library
+// generated in: build/source/libaubio.so
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1454,6 +1462,18 @@ void Chord3_Off(void)
     Partial_Off(NULL);
 }
 
+
+
+void Chord4_On(void)
+{
+    Partial_On(48);
+}
+
+void Chord4_Off(void)
+{
+    Partial_Off(NULL);
+}
+
 }
 
 
@@ -2026,6 +2046,7 @@ void InitializePlaylist(void)
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MickaelJackson::BeatIt::Chord1_On, MickaelJackson::BeatIt::Chord1_Off, "Chord 1"));
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MickaelJackson::BeatIt::Chord2_On, MickaelJackson::BeatIt::Chord2_Off, "Chord 2"));
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3"));
+    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MickaelJackson::BeatIt::Chord4_On, MickaelJackson::BeatIt::Chord4_Off, "Chord 4"));
 
 
     // PLAYLIST ORDER IS DEFINED HERE:
@@ -2275,12 +2296,18 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
     win_context_user_specific.Show();
 }
 
+extern float PCMInputTempoConfidence;
+extern float PCMInputTempoValue;
 
 // Display a metronome on the User Specific window.
 void threadMetronome (void)
 {
     const int PulseDuration = 100;
     TContext Context;
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_GREEN, COLOR_BLACK);
+
     while (1)
     {
         // Get current Base Tempo of the song
@@ -2291,17 +2318,26 @@ void threadMetronome (void)
         // Compute wait time from the tempo
         unsigned long int delay_ms = 60000.0 / Tempo - PulseDuration;
         // Display metronome
+        wattron(win_context_user_specific.GetRef(), COLOR_PAIR(1));
         wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
-        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "TEMPO:%03d",(int)Tempo);
+        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
         win_context_user_specific.Refresh();
         waitMilliseconds(PulseDuration);
         wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
-        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "TEMPO:%03d",(int)Tempo);
+        mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
+        if (PCMInputTempoConfidence < 0.13)
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(2));
+        }
+        else
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(3));
+        }
+        mvwprintw(win_context_user_specific.GetRef(), 1, 0, "CURRENT TEMPO:%03d (%02.2f)",(int) PCMInputTempoValue, PCMInputTempoConfidence);
         win_context_user_specific.Refresh();
         waitMilliseconds(delay_ms);
     }
 }
-
 
 
 int main(int argc, char** argv)
@@ -2367,6 +2403,11 @@ int main(int argc, char** argv)
     // Create thread that scans the keyboard
     std::thread thread4(threadKeyboard);
 
+
+
+
+extern int extract_tempo ();
+    extract_tempo();
     // Do nothing
     while(1)
     {

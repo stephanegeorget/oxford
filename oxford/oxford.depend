@@ -17,7 +17,7 @@
 	<setjmp.h>
 	"libintl.h"
 
-1516230880 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
+1516488043 source:/home/stephane/oxford/devel/oxford/oxford_main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<ctype.h>
@@ -625,4 +625,170 @@
 	<binding.h>
 	<cdkscreen.h>
 	<cdk_objs.h>
+
+1516488687 source:/home/stephane/oxford/devel/oxford/tempo_extraction.cpp
+	<stdio.h>
+	<stdlib.h>
+	<alsa/asoundlib.h>
+	<aubio.h>
+	<time.h>
+	<math.h>
+	<assert.h>
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/aubio.h
+	<aubio/aubio.h>
+	<aubio/aubio.h>
+	<aubio/aubio.h>
+	"types.h"
+	"fvec.h"
+	"cvec.h"
+	"lvec.h"
+	"fmat.h"
+	"musicutils.h"
+	"vecutils.h"
+	"temporal/resampler.h"
+	"temporal/filter.h"
+	"temporal/biquad.h"
+	"temporal/a_weighting.h"
+	"temporal/c_weighting.h"
+	"spectral/fft.h"
+	"spectral/phasevoc.h"
+	"spectral/filterbank.h"
+	"spectral/filterbank_mel.h"
+	"spectral/mfcc.h"
+	"spectral/specdesc.h"
+	"spectral/awhitening.h"
+	"spectral/tss.h"
+	"pitch/pitch.h"
+	"onset/onset.h"
+	"tempo/tempo.h"
+	"notes/notes.h"
+	"io/source.h"
+	"io/sink.h"
+	"synth/sampler.h"
+	"synth/wavetable.h"
+	"utils/parameter.h"
+	"utils/log.h"
+	"mathutils.h"
+	"io/source_sndfile.h"
+	"io/source_apple_audio.h"
+	"io/source_avcodec.h"
+	"io/source_wavread.h"
+	"io/sink_sndfile.h"
+	"io/sink_apple_audio.h"
+	"io/sink_wavwrite.h"
+	"io/audio_unit.h"
+	"onset/peakpicker.h"
+	"pitch/pitchmcomb.h"
+	"pitch/pitchyin.h"
+	"pitch/pitchyinfft.h"
+	"pitch/pitchyinfast.h"
+	"pitch/pitchschmitt.h"
+	"pitch/pitchfcomb.h"
+	"pitch/pitchspecacf.h"
+	"tempo/beattracking.h"
+	"utils/scale.h"
+	"utils/hist.h"
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/types.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/fvec.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/cvec.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/lvec.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/fmat.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/musicutils.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/vecutils.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/temporal/resampler.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/temporal/filter.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/temporal/biquad.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/temporal/a_weighting.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/temporal/c_weighting.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/fft.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/phasevoc.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/filterbank.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/filterbank_mel.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/mfcc.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/specdesc.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/awhitening.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/spectral/tss.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitch.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/onset/onset.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/tempo/tempo.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/notes/notes.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/source.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/sink.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/synth/sampler.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/synth/wavetable.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/utils/parameter.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/utils/log.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/mathutils.h
+	"fvec.h"
+	"musicutils.h"
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/source_sndfile.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/source_apple_audio.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/source_avcodec.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/source_wavread.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/sink_sndfile.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/sink_apple_audio.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/sink_wavwrite.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/io/audio_unit.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/onset/peakpicker.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchmcomb.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchyin.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchyinfft.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchyinfast.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchschmitt.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchfcomb.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/pitch/pitchspecacf.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/tempo/beattracking.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/utils/scale.h
+
+1516193062 /home/stephane/oxford/devel/oxford/aubio-560fc50/src/utils/hist.h
 
