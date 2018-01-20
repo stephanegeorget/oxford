@@ -2303,10 +2303,17 @@ extern float PCMInputTempoValue;
 void threadMetronome (void)
 {
     const int PulseDuration = 100;
+    // Interval of confidence of live tempo above which suggestions are made.
+    // below that level, suggestions are not made.
+    const float ConfidenceThreshold = 0.13;
     TContext Context;
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
     init_pair(2, COLOR_RED, COLOR_BLACK);
     init_pair(3, COLOR_GREEN, COLOR_BLACK);
+    init_pair(4, COLOR_RED, COLOR_WHITE);
+    init_pair(5, COLOR_BLUE, COLOR_WHITE);
+    init_pair(6, COLOR_BLACK, COLOR_GREEN);
+
 
     while (1)
     {
@@ -2325,7 +2332,7 @@ void threadMetronome (void)
         waitMilliseconds(PulseDuration);
         wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
         mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
-        if (PCMInputTempoConfidence < 0.13)
+        if (PCMInputTempoConfidence < ConfidenceThreshold)
         {
             wattron(win_context_user_specific.GetRef(), COLOR_PAIR(2));
         }
@@ -2334,6 +2341,29 @@ void threadMetronome (void)
             wattron(win_context_user_specific.GetRef(), COLOR_PAIR(3));
         }
         mvwprintw(win_context_user_specific.GetRef(), 1, 0, "CURRENT TEMPO:%03d (%02.2f)",(int) PCMInputTempoValue, PCMInputTempoConfidence);
+        float DeltaTempo = PCMInputTempoValue - Tempo;
+        if (PCMInputTempoConfidence > ConfidenceThreshold && DeltaTempo < -2)
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(4));
+            mvwprintw(win_context_user_specific.GetRef(), 2, 0, "SPEED UP  BY %03d BPM", -(int)DeltaTempo);
+        }
+        else if (PCMInputTempoConfidence > ConfidenceThreshold && DeltaTempo > 2)
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(5));
+            mvwprintw(win_context_user_specific.GetRef(), 2, 0, "SLOW DOWN BY %03d BPM", (int)DeltaTempo);
+        }
+        else if (PCMInputTempoConfidence > ConfidenceThreshold)
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(6));
+            mvwprintw(win_context_user_specific.GetRef(), 2, 0, "TEMPO IS ABOUT RIGHT");
+        }
+        else if (PCMInputTempoConfidence < ConfidenceThreshold)
+        {
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(2));
+            mvwprintw(win_context_user_specific.GetRef(), 2, 0, "********************");
+        }
+
+
         win_context_user_specific.Refresh();
         waitMilliseconds(delay_ms);
     }
