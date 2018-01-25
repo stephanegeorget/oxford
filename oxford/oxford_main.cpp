@@ -397,6 +397,7 @@ TContext cRaggamuffin;
 TContext cManDown;
 TContext cShouldIStay;
 TContext cMercy;
+TContext cLady;
 
 
 // This function is needed to sort lists of elements.
@@ -1655,6 +1656,44 @@ namespace RigUp
 
 }
 
+namespace Modjo
+{
+namespace Lady
+{
+    void Init(void)
+    {
+        // Rack 11 bank change: select user-defined
+        // Manual page 124.
+        // Midi channel 1, Control number 32, Value 0, on Midisport port B
+        // (going to rack eleven)
+        TMidiControlChange cc(1, 32, 0, 1);
+        TMidiProgramChange pc(1, 104, 1);
+    }
+
+    bool SoloON = false;
+    void Solo_On_Off(void)
+    {
+        // Toggle solo flag
+        SoloON = !SoloON;
+        if (SoloON)
+        {
+            TMidiControlChange cc(1, 25, 127, 1);
+
+        }
+        else
+        {
+            TMidiControlChange cc(1, 25, 0, 1);
+
+        }
+
+    }
+
+
+
+}
+
+
+}
 
 // Inspect MIDI IN for events, and dispatch then accordingly as Control Change events,
 // midi notes assigned to pedals of the pedalboard, or other.
@@ -2048,6 +2087,12 @@ void InitializePlaylist(void)
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3"));
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MickaelJackson::BeatIt::Chord4_On, MickaelJackson::BeatIt::Chord4_Off, "Chord 4"));
 
+    cLady.Author = "Modjo";
+    cLady.SongName = "Lady (Hear me tonight)";
+    cLady.BaseTempo = 122;
+    cLady.SetInitFunc(Modjo::Lady::Init);
+    cLady.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)"));
+
 
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
@@ -2100,6 +2145,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cWildThoughts);
     PlaylistData.push_back(&cGangstaParadise);
     PlaylistData.push_back(&cBeatIt);
+    PlaylistData.push_back(&cLady);
 
 
     // Set the current active context here.
