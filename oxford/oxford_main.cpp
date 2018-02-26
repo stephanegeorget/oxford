@@ -997,6 +997,12 @@ void threadKeyboard(void)
             SelectContextInPlaylist(PlaylistData_ByAuthor, true);
             break;
 
+           case 'w':
+        // List all Contexts (i.e. songs) alphabetically by author
+          system("aplay ./wav/FXCarpenterLaserBig.wav &");
+            break;
+
+
         }
     }
 
@@ -1433,7 +1439,7 @@ void Partial_On(int NoteNumber)
 
 void Chord1_On(void)
 {
-    Partial_On(50);
+    Partial_On(50-1);
 }
 
 void Chord1_Off(void)
@@ -1444,7 +1450,7 @@ void Chord1_Off(void)
 
 void Chord2_On(void)
 {
-    Partial_On(47);
+    Partial_On(47-1);
 }
 
 void Chord2_Off(void)
@@ -1454,7 +1460,7 @@ void Chord2_Off(void)
 
 void Chord3_On(void)
 {
-    Partial_On(45);
+    Partial_On(45-1);
 }
 
 
@@ -1467,7 +1473,7 @@ void Chord3_Off(void)
 
 void Chord4_On(void)
 {
-    Partial_On(48);
+    Partial_On(48-1);
 }
 
 void Chord4_Off(void)
@@ -1671,18 +1677,24 @@ namespace Lady
     }
 
     bool SoloON = false;
+
+    // Solo means: MOD + FX2
+    // Note: MOD works best with C1 CHOR VIB, medium depth, sync on beat, assuming tempo is right
+    //       FX2 works best with: graphic EQ, cut 100Hz, boost 800 and 2k
     void Solo_On_Off(void)
     {
         // Toggle solo flag
         SoloON = !SoloON;
         if (SoloON)
         {
-            TMidiControlChange cc(1, 25, 127, 1);
+            TMidiControlChange cc(1, 50, 127, 1);
+            TMidiControlChange cc2(1, 86, 127, 1);
 
         }
         else
         {
-            TMidiControlChange cc(1, 25, 0, 1);
+            TMidiControlChange cc(1, 50, 0, 1);
+            TMidiControlChange cc2(1, 86, 0, 1);
 
         }
 
@@ -2081,6 +2093,8 @@ void InitializePlaylist(void)
 
     cBeatIt.Author = "Mickael Jackson";
     cBeatIt.SongName = "Beat It";
+    cBeatIt.Comments = "In C# -- C#, B, C#, B, A, B, C#, B";
+    cBeatIt.BaseTempo = 137;
     cBeatIt.SetInitFunc(MickaelJackson::BeatIt::Init);
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MickaelJackson::BeatIt::Chord1_On, MickaelJackson::BeatIt::Chord1_Off, "Chord 1"));
     cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MickaelJackson::BeatIt::Chord2_On, MickaelJackson::BeatIt::Chord2_Off, "Chord 2"));
@@ -2093,6 +2107,10 @@ void InitializePlaylist(void)
     cLady.SetInitFunc(Modjo::Lady::Init);
     cLady.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)"));
 
+ //   cILoveRocknRoll = "I love Rock'n'Roll";
+  //  cIloveRocknRoll.BaseTempo = 91;
+
+  //cIWantAHighwayToHell = "I want a highway to hell"
 
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
