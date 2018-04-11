@@ -2501,7 +2501,7 @@ int main(int argc, char** argv)
 
 
 extern int extract_tempo ();
-    extract_tempo();
+//    extract_tempo();
     // Do nothing
     while(1)
     {
