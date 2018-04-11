@@ -144,11 +144,29 @@ void ContextPreviousPress(void);
 void ContextPreviousRelease(void);
 void ContextNextPress(void);
 void ContextNextRelease(void);
+namespace ElevenRack
+{
+void DistON(void);
+void DistOFF(void);
+void DistToggle(void);
+void Init(void);
+void ModON(void);
+void ModOFF(void);
+void ModToggle(void);
+void WahON(void);
+void WahOFF(void);
+void WahToggle(void);
+void WahSetValue(int);
+}
+
+
+
+
 
 
 // A pedal, from the pedalboard (Behringer FCB1010), with analog action
 // (i.e. can take a range of positions between two bounds).
-// Such a pedal must be programmed (from the FCS1010) to send Midi Control Change
+// Such a pedal must be programmed (from the FCB1010) to send Midi Control Change
 // events on a particular "Controller Number".
 // When this program receives CC events from ControllerNumber, the OnChange callback
 // function is called.
@@ -282,6 +300,16 @@ public:
         // PlaylistData. In short, Pedal 6 goes back one song, Pedal 7 goes to the next song.
         PedalsDigital.push_back(TPedalDigital(6, ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song"));
         PedalsDigital.push_back(TPedalDigital(7, ContextNextPress, ContextNextRelease, "Playlist: next song"));
+
+        // Let's also reserve more pedals to control the Rack Eleven:
+        // Pedal 8 for distortion
+        // Pedal 9 for mod
+        // Pedal 10 for wah
+        // Analog pedal 2 for wah value
+        PedalsDigital.push_back(TPedalDigital(8, ElevenRack::DistToggle, NULL, "11R DIST"));
+        PedalsDigital.push_back(TPedalDigital(9, ElevenRack::ModToggle, NULL, "11R MOD"));
+        PedalsDigital.push_back(TPedalDigital(10, ElevenRack::WahToggle, NULL, "11R WAH"));
+        PedalsAnalog.push_back(TPedalAnalog(2, ElevenRack::WahSetValue, "11R WAH VAL"));
     }
 };
 
@@ -307,8 +335,11 @@ public:
     TPedalboard Pedalboard;
     void Init(void)
     {
+        // Upon a context change, always first re-initialize the Eleven Rack
+        ElevenRack::Init();
         if(InitFunc != NULL)
         {
+            // Then call the user-defined initialization function
             InitFunc();
         }
     }
@@ -1668,12 +1699,7 @@ namespace Lady
 {
     void Init(void)
     {
-        // Rack 11 bank change: select user-defined
-        // Manual page 124.
-        // Midi channel 1, Control number 32, Value 0, on Midisport port B
-        // (going to rack eleven)
-        TMidiControlChange cc(1, 32, 0, 1);
-        TMidiProgramChange pc(1, 104, 1);
+        // Do nothing - Eleven Rack is always initialized when changing context.
     }
 
     bool SoloON = false;
@@ -1704,6 +1730,113 @@ namespace Lady
 
 }
 
+
+}
+
+namespace ElevenRack
+{
+
+void DistOFF(void)
+{
+    // Midi channel 1, controller number 25, value 0, send to Midisport port B
+    TMidiControlChange cc(1, 25, 0, 1);
+}
+
+void DistON(void)
+{
+    TMidiControlChange cc(1, 25, 127, 1);
+}
+
+void DistToggle(void)
+{
+    static unsigned int flag; // static => initialized at 0 by compiler
+    if(flag == 0)
+    {
+        flag = 1;
+        DistON();
+    }
+    else
+    {
+        flag = 0;
+        DistOFF();
+    }
+}
+
+
+void ModOFF(void)
+{
+    // Midi channel 1, controller number 25, value 0, send to Midisport port B
+    TMidiControlChange cc(1, 50, 0, 1);
+}
+
+void ModON(void)
+{
+    TMidiControlChange cc(1, 50, 127, 1);
+}
+
+void ModToggle(void)
+{
+    static unsigned int flag; // static => initialized at 0 by compiler
+    if(flag == 0)
+    {
+        flag = 1;
+        ModON();
+    }
+    else
+    {
+        flag = 0;
+        ModOFF();
+    }
+}
+
+
+
+
+void WahOFF(void)
+{
+    // Midi channel 1, controller number 25, value 0, send to Midisport port B
+    TMidiControlChange cc(1, 43, 0, 1);
+}
+
+void WahON(void)
+{
+    TMidiControlChange cc(1, 43, 127, 1);
+}
+
+void WahToggle(void)
+{
+    static unsigned int flag; // static => initialized at 0 by compiler
+    if(flag == 0)
+    {
+        flag = 1;
+        WahON();
+    }
+    else
+    {
+        flag = 0;
+        WahOFF();
+    }
+}
+
+
+void WahSetValue(int Val)
+{
+    TMidiControlChange cc(1, 4, Val, 1);
+}
+
+void Init(void)
+{
+    // Rack 11 bank change: select user-defined
+    // Manual page 124.
+    // Midi channel 1, Control number 32, Value 0, on Midisport port B
+    // (going to rack eleven)
+    TMidiControlChange cc(1, 32, 0, 1);
+    TMidiProgramChange pc(1, 104, 1);
+
+    DistOFF();
+    ModOFF();
+    WahOFF();
+}
 
 }
 
@@ -1766,7 +1899,7 @@ void threadMidiAutomaton(void)
 
                 case smWaitMidiNoteChar2:
                     snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    if (ch >= 1 && ch <= 8)
+                    if (ch >= 1 && ch <= 10)
                     {
                         stateMachine = smWaitMidiNoteChar3;
                         rxNote = ch;
@@ -2171,7 +2304,7 @@ void InitializePlaylist(void)
     // Note that std::list cannot be accessed randomly.
     PlaylistPosition = PlaylistData.begin();
     TContext Context = **PlaylistPosition;
-    Context.Init(); // The .Init() function must be called manually. I tried to overload the assignment operator but did not find a good way to do it.
+    // Context.Init(); // The .Init() function must be called manually. I tried to overload the assignment operator but did not find a good way to do it.
 
 
     // These so-called Playlists are a bit fictive and only a copy of the original playlist, but sorted by author or by song name.
