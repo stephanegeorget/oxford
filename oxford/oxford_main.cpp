@@ -1,5 +1,11 @@
+// Assuming that ALSA is used throughout.
+//
+// The USB midiman MidiSport 2x2 hardware requires midisport-firmware: install it with
+// apt-get intstall midisport-firmware
+//
 // use amidi -l to list midi hardware devices
 // don't forget to link with asound, pthread, cdk (sometimes called libcdk), and panel
+//
 // use pmidi -l to list midi devices for pmidi, which is for midi file playback
 // you probably must build cdk locally, get in the cdk folder, ./configure, then make,
 // and make sure that code blocks links with the library generated in ???
@@ -2570,7 +2576,7 @@ void threadMetronome (void)
 int main(int argc, char** argv)
 {
     int term_lines, term_cols;
-
+#if 0
     InitializePlaylist();
 
     initscr();
@@ -2631,10 +2637,11 @@ int main(int argc, char** argv)
     std::thread thread4(threadKeyboard);
 
 
-
+#endif
 
 extern int extract_tempo ();
-//    extract_tempo();
+
+    extract_tempo();
     // Do nothing
     while(1)
     {

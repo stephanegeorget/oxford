@@ -38,6 +38,9 @@
 float PCMInputTempoValue;
 float PCMInputTempoConfidence;
 
+#include <sys/asoundlib.h>
+const char *snd_strerror( int errnum );
+const char * errorchar;
 
 int extract_tempo ()
 {
@@ -53,7 +56,9 @@ int extract_tempo ()
     snd_pcm_hw_params_t *hw_params;
     snd_pcm_format_t format = SND_PCM_FORMAT_S16_LE;
 
-    if ((err = snd_pcm_open (&capture_handle, PCM_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0) exit (1);
+    if ((err = snd_pcm_open (&capture_handle, PCM_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0) ;//exit (1);
+    errorchar = snd_strerror(err);
+    printf(snd_strerror(err));
     if ((err = snd_pcm_hw_params_malloc (&hw_params)) < 0) exit (2);
     if ((err = snd_pcm_hw_params_any (capture_handle, hw_params)) < 0) exit (3);
     if ((err = snd_pcm_hw_params_set_access (capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) exit (4);

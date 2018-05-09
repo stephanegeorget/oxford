@@ -42,14 +42,8 @@
 #define HAVE_VPRINTF 1
 
 
-
-
-
-
-
 #include <stdio.h>
 #include <stdarg.h>
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -63,18 +57,6 @@
 #else
 #include <sys/asoundlib.h>
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*
@@ -135,36 +117,6 @@
 
 struct rootElement *midi_read(FILE *fp);
 struct rootElement *midi_read_file(char *name);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* GLIB - Library of useful routines for C programming
  * Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -255,26 +207,11 @@ typedef unsigned int guint32;
 #endif
 
 
-#ifdef NATIVE_WIN32
-
-/* On native Win32, directory separator is the backslash, and search path
- * separator is the semicolon.
- */
-#define G_DIR_SEPARATOR '\\'
-#define G_DIR_SEPARATOR_S "\\"
-#define G_SEARCHPATH_SEPARATOR ';'
-#define G_SEARCHPATH_SEPARATOR_S ";"
-
-#else  /* !NATIVE_WIN32 */
-
-/* Unix */
 
 #define G_DIR_SEPARATOR '/'
 #define G_DIR_SEPARATOR_S "/"
 #define G_SEARCHPATH_SEPARATOR ':'
 #define G_SEARCHPATH_SEPARATOR_S ":"
-
-#endif /* !NATIVE_WIN32 */
 
 #ifdef __cplusplus
 extern "C" {
@@ -1688,7 +1625,6 @@ void	 g_string_sprintfa  (GString	 *string,
 			     const gchar *format,
 			     ...) G_GNUC_PRINTF (2, 3);
 
-
 /* Resizable arrays, remove fills any cleared spot and shortens the
  * array, while preserving the order. remove_fast will distort the
  * order by moving the last element to the position of the removed
@@ -1764,37 +1700,6 @@ GByteArray* g_byte_array_remove_index_fast (GByteArray	 *array,
 					    guint	  index);
 
 #endif /* __G_LIB_H__ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  *
@@ -2050,19 +1955,6 @@ struct element *md_check_cast(struct element *el, int type);
 #define MD_TYPE_MAP 18
 #define MD_TYPE_CONTROL 19
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  *
  * except.m - XXX
@@ -2095,31 +1987,6 @@ extern struct except *debugError;	/* Debugging 'shouldn't happen' errors */
 void except(struct except *e, char *message, ...);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * intl.h - Internationalisation for melys
  *
@@ -2148,26 +2015,6 @@ void except(struct except *e, char *message, ...);
 #define N_(_STRING) _STRING
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  * File: md.h
@@ -2223,19 +2070,6 @@ void md_sequence_end(struct sequenceState *seq);
 unsigned long md_sequence_end_time(struct sequenceState *seq);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * File: seqlib.h
  *
@@ -2260,12 +2094,6 @@ unsigned long md_sequence_end_time(struct sequenceState *seq);
  *
  *
  */
-//#if HAVE_ALSA_ASOUNDLIB_H
-//#include <alsa/asoundlib.h>
-//#else
-//#include <sys/asoundlib.h>
-//#endif
-
 typedef struct seq_context seq_context_t;
 
 seq_context_t *seq_create_context();
@@ -2306,28 +2134,6 @@ void seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo);
 void seq_midi_sysex(seq_context_t *ctxp, snd_seq_event_t *ep, int status,
         unsigned char *data, int length);
 void seq_midi_echo(seq_context_t *ctxp, unsigned long time);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*
@@ -2371,39 +2177,6 @@ struct seq_context {
 	GSList *ctlist;		/* Context list if a main context */
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  *
  * File: elements.m - Operation on all elements
@@ -2419,13 +2192,6 @@ struct seq_context {
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-//#include "md.h"
 
 static void md_container_init(struct containerElement *e);
 
@@ -2851,9 +2617,6 @@ md_check_cast(struct element *el, int type)
 
 }
 
-
-
-
 /*
  *
  * except.m - error handling code
@@ -2869,16 +2632,6 @@ md_check_cast(struct element *el, int type)
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#include <stdarg.h>
-//#include "stdio.h"
-
 
 static struct except format;
 static struct except io;
@@ -2914,12 +2667,6 @@ except(struct except *e, char *message, ...)
 }
 
 
-
-
-
-
-
-
 /*
  * File: glib.c Replacements for glib functions used by pmidi
  *
@@ -2937,8 +2684,6 @@ except(struct except *e, char *message, ...)
  * Code is derived from garray.c which is copyright:
  * Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald
  */
-
-//#include "glib.h"
 
 /*
  * There is no need to use this file, linking against glib is preferable
@@ -3119,12 +2864,6 @@ g_array_append_vals(GArray *farray, gconstpointer data, guint len)
 }
 
 
-
-
-
-
-
-
 /*
  * File: mdutil.m - Utility routines for manipulating MD
  *
@@ -3139,14 +2878,6 @@ g_array_append_vals(GArray *farray, gconstpointer data, guint len)
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#include "md.h"
 
 /*
  * Given a container c then md_walk iterates through all
@@ -3320,19 +3051,6 @@ md_sequence_end_time(struct sequenceState *seq)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  *
  * File: midiread.m - Read in a midi file.
@@ -3348,15 +3066,6 @@ md_sequence_end_time(struct sequenceState *seq)
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#include <stdio.h>
-//#include "midi.h"
 
 /*
  * This structure is used to keep track of the state while
@@ -3961,29 +3670,6 @@ skip_chunk(struct midistate *msp)
  *
  */
 
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#if HAVE_ALSA_ASOUNDLIB_H
-//#include <alsa/asoundlib.h>
-//#else
-//#include <sys/asoundlib.h>
-//#endif
-
-//#include <stdio.h>
-//#include "seqlib.h"
-//#include "md.h"
-//#include "midi.h"
-//#include <stdlib.h>
-//#include <unistd.h>
-//#include <getopt.h>
-//#include <string.h>
-//#include <errno.h>
-//#include <signal.h>
-
 /*
  * Play a midi file
  *	pmidi [-p client:port,... ] [-l] [-d delay] file ...
@@ -4230,9 +3916,6 @@ playfile(seq_context_t *ctxp, char *filename)
 	seq = md_sequence_init(root);
 	while ((el = md_sequence_next(seq)) != NULL) {
 		play(ctxp, el);
-
-	//snd_seq_event_input(seq_handle(ctxp), &ep);
-
 	}
 
 
@@ -4250,7 +3933,7 @@ playfile(seq_context_t *ctxp, char *filename)
 
 	/* Wait for all the events to be played */
 	snd_seq_event_input(seq_handle(ctxp), &ep);
-//}
+
 	/* Wait some extra time to allow for note to decay etc */
 	sleep(delay);
 	seq_stop_timer(ctxp);
@@ -4436,13 +4119,6 @@ signal_handler(int sig)
 }
 
 
-
-
-
-
-
-
-
 /*
  * File: seqlib.m - Interface to the alsa sequencer library.
  *
@@ -4457,19 +4133,6 @@ signal_handler(int sig)
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#include <stdio.h>
-//#include <errno.h>
-//#include <string.h>
-//#include "seqlib.h"
-//#include "seqpriv.h"
-
 static void set_channel(snd_seq_event_t *ep, int chan);
 
 /*
@@ -4823,12 +4486,6 @@ set_channel(snd_seq_event_t *ep, int chan)
 }
 
 
-
-
-
-
-
-
 /*
  * File: seqmidi.m - convert to the sequencer events
  *
@@ -4843,16 +4500,6 @@ set_channel(snd_seq_event_t *ep, int chan)
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
-
-//#include "glib.h"
-//#include "elements.h"
-//#include "except.h"
-//#include "intl.h"
-
-//#include <string.h>
-//#include "seqlib.h"
-//#include "seqpriv.h"
 
 /*
  * Initialize a midi event from the context. The source and
@@ -5131,102 +4778,25 @@ seq_midi_echo(seq_context_t *ctxp, unsigned long time)
 void
 seq_midi_tempo_direct(int Tempo)
 {
-
-/*
-	snd_seq_event_t ep;
-	ep.type = SND_SEQ_EVENT_TEMPO;
-
-	ep.data.queue.queue = ctxp->queue;
-	ep.data.queue.param.value = tempo;
-	ep.dest.client = SND_SEQ_CLIENT_SYSTEM;
-	ep.dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
-
-	snd_seq_ev_set_direct(&ep);
-	seq_write(ctxp, &ep);
-*/
-
-//int change_tempo(snd_seq_t *handle, int q, unsigned int tempo)
-//{
-
-/*
-        snd_seq_event_t ev;
-        snd_seq_ev_clear(&ev);
-        ev.dest.client = SND_SEQ_CLIENT_SYSTEM;
-        ev.dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
-        ev.source.client = ctxp->client; //my_client_id;
-        ev.source.port = ctxp->port_count; //my_port_id;
-        ev.queue = SND_SEQ_QUEUE_DIRECT; // no scheduling
-        ev.data.queue.queue = ctxp->queue; //q;        // affected queue id
-        ev.data.queue.param.value = tempo;    // new tempo in microsec.
-
-//snd_seq_change_queue_tempo(ctxp->handle, ctxp->queue, tempo, NULL);
-        int k = snd_seq_event_output(ctxp->handle, &ev);
-
-//}
-printf("K=%i", k);
-*/
-//seq_midi_tempo(seq_context_t *ctxp, snd_seq_event_t *ep, int tempo)
-//seq_control_timer(ctxp, 0);
     // 500000 is 120BPM by default with the 96PPQ
     float micro_tempo = 500000.0 / Tempo * 120.0 ;
     snd_seq_event_t epvar;
-
     snd_seq_event_t * ep = &epvar;
-
-//  	seq_midi_event_init(ctxp, &ep, ep->element_time, ep->device_channel);
 	seq_midi_event_init(ctxp, ep, 0, 1);
-
-
 	ep->type = SND_SEQ_EVENT_TEMPO;
 	ep->data.queue.queue = ctxp->queue;
 	ep->data.queue.param.value = micro_tempo;
 	ep->dest.client = SND_SEQ_CLIENT_SYSTEM;
 	ep->dest.port = SND_SEQ_PORT_SYSTEM_TIMER;
-
-snd_seq_ev_set_direct(ep);
-
-//	seq_write(ctxp, ep);
-
+    snd_seq_ev_set_direct(ep);
 	snd_seq_event_output_direct(ctxp->handle, ep);
-
-//	snd_seq_continue_queue(ctxp->handle, ctxp->queue, 0);
-
-//	snd_seq_drain_output(ctxp->handle);
-
-
-
-//snd_seq_change_queue_tempo(ctxp->queue, )
 }
 
 void pmidiStop(void)
 {
-//    seq_control_timer(ctxp, SND_SEQ_EVENT_STOP);
-snd_seq_free_queue(ctxp->handle, ctxp->queue);
-
-// snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
-
+    snd_seq_free_queue(ctxp->handle, ctxp->queue);
     seq_free_context(ctxp);
-
 	/* Restore signal handler */
 	signal(SIGINT, SIG_DFL);
 
 }
-
-/*
-void
-seq_control_timer(seq_context_t *ctxp, int onoff)
-{
-
-	if (onoff == SND_SEQ_EVENT_START)
-		snd_seq_start_queue(ctxp->handle, ctxp->queue, 0);
-	else
-		snd_seq_stop_queue(ctxp->handle, ctxp->queue, 0);
-
-#ifdef USE_DRAIN
-	snd_seq_drain_output(ctxp->handle);
-#else
-	snd_seq_flush_output(ctxp->handle);
-#endif
-
-*/
-
