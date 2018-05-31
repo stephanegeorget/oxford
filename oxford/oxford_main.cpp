@@ -1347,6 +1347,36 @@ void Starship2(void)
 }
 
 
+namespace BrunoMars
+{
+namespace LockedOutOfHeaven
+{
+	void Yeah(void)
+	{
+	    system("aplay ./wav/yeah_001.wav &");
+	}
+	
+	void Hooh(void)
+	{
+		system("aplay ./wav/hooh_echo_001.wav &");
+	}
+
+	void Alarm(void)
+	{
+		system("aplay ./wav/alarm_001.wav &");
+	}
+	
+	void Cuica(void)
+	{
+		system("aplay ./wav/cuica_001.wav &");
+	}
+}
+}
+
+
+
+
+
 namespace Gansta_s_Paradise
 {
 struct timeval tv1, tv2;
@@ -1967,7 +1997,6 @@ void threadMidiAutomaton(void)
                             }
                         }
                     }
-
                 }
 
 
@@ -2142,6 +2171,12 @@ void InitializePlaylist(void)
     cLockedOutOfHeaven.Author = "Bruno Mars";
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
     cLockedOutOfHeaven.BaseTempo = 140;
+    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, NULL, "Yeah"));
+    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
+    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
+    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
+
+    
 
     cWhatsUp.Author = "4 Non Blondes";
     cWhatsUp.SongName = "What's up";
