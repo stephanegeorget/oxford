@@ -1355,17 +1355,17 @@ namespace LockedOutOfHeaven
 	{
 	    system("aplay ./wav/yeah_001.wav &");
 	}
-	
+
 	void Hooh(void)
 	{
 		system("aplay ./wav/hooh_echo_001.wav &");
 	}
 
-	void Alarm(void)
+	void Siren(void)
 	{
 		system("aplay ./wav/alarm_001.wav &");
 	}
-	
+
 	void Cuica(void)
 	{
 		system("aplay ./wav/cuica_001.wav &");
@@ -2171,12 +2171,12 @@ void InitializePlaylist(void)
     cLockedOutOfHeaven.Author = "Bruno Mars";
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
     cLockedOutOfHeaven.BaseTempo = 140;
-    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, NULL, "Yeah"));
-    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
-    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
-    cLockedOutOfHeaven.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, NULL, "Yeah"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
 
-    
+
 
     cWhatsUp.Author = "4 Non Blondes";
     cWhatsUp.SongName = "What's up";
@@ -2611,7 +2611,7 @@ void threadMetronome (void)
 int main(int argc, char** argv)
 {
     int term_lines, term_cols;
-#if 0
+#if 1
     InitializePlaylist();
 
     initscr();
@@ -2676,7 +2676,7 @@ int main(int argc, char** argv)
 
 extern int extract_tempo ();
 
-    extract_tempo();
+    //extract_tempo();
     // Do nothing
     while(1)
     {
