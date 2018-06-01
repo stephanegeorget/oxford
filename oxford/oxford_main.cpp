@@ -2171,7 +2171,7 @@ void InitializePlaylist(void)
     cLockedOutOfHeaven.Author = "Bruno Mars";
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
     cLockedOutOfHeaven.BaseTempo = 140;
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, NULL, "Yeah"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, BrunoMars::LockedOutOfHeaven::Yeah, "Yeah x8 + Hooh"));
     cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
     cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
     cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
