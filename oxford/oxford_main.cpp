@@ -35,6 +35,7 @@
 #include <array>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 int stop = 0;
 // Array of two pointers to a snd_rawmidi_t
@@ -1051,7 +1052,7 @@ void threadKeyboard(void)
 // Returns interpolated value at x from parallel arrays ( xData, yData )
 // Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
 // boolean argument extrapolate determines behaviour beyond ends of array (if needed)
-double interpolate( vector<double> &xData, vector<double> &yData, double x, bool extrapolate )
+double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate )
 {
     int size = xData.size();
 
@@ -1070,9 +1071,9 @@ double interpolate( vector<double> &xData, vector<double> &yData, double x, bool
         if ( x < xL ) yR = yL;
         if ( x > xR ) yL = yR;
     }
-    
+
     double dydx = ( yR - yL ) / ( xR - xL );                                    // gradient
-    
+
     return yL + dydx * ( x - xL );                                              // linear interpolation
 }
 
@@ -1083,28 +1084,41 @@ namespace AroundTheWorld
 {
     void LowPassFilter(int val)
     {
-        vector<double> xData113 = { 1, 1      , 127/5*1, 127/5*2, 127/5*3, 127/5*4, 127 };
-        vector<double> yData113 = { 0, 0      , 127    , 127    , 127    , 127    , 127 };
-        TMidiControlChange cc113(1, 113, interpolate(xData, yData, false), 1); // last ,1: send to 11R
-        
-        vector<double> xData114 = { 1, 127/5*1, 127/5*2, 127 };
-        vector<double> yData114 = { 0, 0      , 1      , 1   };
-        TMidiControlChange cc114(1, 114, interpolate(xData, yData, false), 1); // last ,1: send to 11R
-        
-        vector<double> xData115 = { 1, 127/5*2, 127/5*3, 127 };
-        vector<double> yData115 = { 0, 0      , 1      , 1   };
-        TMidiControlChange cc115(1, 115, interpolate(xData, yData, false), 1); // last ,1: send to 11R
-        
-        vector<double> xData96 = { 1, 127/5*3, 127/5*4, 127 };
-        vector<double> yData96 = { 0, 0      , 1      , 1   };
-        TMidiControlChange cc96(1, 97, interpolate(xData, yData, false), 1); // last ,1: send to 11R
-        
-        vector<double> xData97 = { 1, 127/5*4, 127/5*5, 127 };
-        vector<double> yData97 = { 0, 0      , 1      , 1   };
-        TMidiControlChange cc97(1, 97, interpolate(xData, yData, false), 1); // last ,1: send to 11R
-        
+        using std::vector;
+        vector<double> xData113 = { 0   , 127/5*1, 127/5*2, 127/5*3, 127/5*4,  120 };
+        vector<double> yData113 = { 100 , 100    , 80     , 60     , 40     ,  64  };
+        TMidiControlChange cc113(1, 113, interpolate(xData113, yData113, val, false), 1); // last ,1: send to 11R
+
+        vector<double> xData114 = { 0, 127/5*1, 127/5*2, 127 };
+        vector<double> yData114 = { 0, 0      , 64    , 64 };
+        TMidiControlChange cc114(1, 114, interpolate(xData114, yData114, val, false), 1); // last ,1: send to 11R
+
+        vector<double> xData115 = { 0, 127/5*2, 127/5*3, 127 };
+        vector<double> yData115 = { 0, 0      , 64    , 64 };
+        TMidiControlChange cc115(1, 115, interpolate(xData115, yData115, val, false), 1); // last ,1: send to 11R
+
+        vector<double> xData96 = { 0, 127/5*3, 127/5*4, 127 };
+        vector<double> yData96 = { 0, 0      , 64    , 64 };
+        TMidiControlChange cc96(1, 96, interpolate(xData96, yData96, val, false), 1); // last ,1: send to 11R
+
+        vector<double> xData97 = { 0, 127/5*4, 127/5*5, 127 };
+        vector<double> yData97 = { 0, 0      , 64    , 64 };
+        TMidiControlChange cc97(1, 97, interpolate(xData97, yData97, val, false), 1); // last ,1: send to 11R
+
 
     }
+
+    void LoPassFilterEnable(void)
+    {
+        // channel 1, control 86 (FX2), value 127 (please turn ON), send to midisport out B (to 11R)
+        TMidiControlChange cc(1, 86, 127, 1);
+    }
+
+    void LoPassFilterDisable(void)
+    {
+        TMidiControlChange cc(1, 86, 0, 1);
+    }
+
 }
 }
 namespace Rihanna
@@ -2221,8 +2235,10 @@ void InitializePlaylist(void)
     cAroundTheWorld.SongName = "Around The World";
     cAroundTheWorld.BaseTempo = 113;
     cAroundTheWorld.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, DaftPunk::AroundTheWorld::LowPassFilter, "Low Pass Filter"));
-    
-    
+    cAroundTheWorld.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, DaftPunk::AroundTheWorld::LoPassFilterEnable, NULL, "LowPass ON"));
+    cAroundTheWorld.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, DaftPunk::AroundTheWorld::LoPassFilterDisable, NULL, "LowPass OFF"));
+    cAroundTheWorld.SetInitFunc(DaftPunk::AroundTheWorld::LoPassFilterEnable);
+
     cGetLucky.Author = "Daft Punk";
     cGetLucky.SongName = "Get lucky";
     cGetLucky.BaseTempo = 113;
