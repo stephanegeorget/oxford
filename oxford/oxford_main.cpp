@@ -413,6 +413,7 @@ TContext cMasterBlaster;
 TContext cAuxChampsElysees;
 TContext cProudMary;
 TContext cMonAmantDeSaintJean;
+TContext cAroundTheWorld;
 TContext cGetLucky;
 TContext cIllusion;
 TContext cDockOfTheBay;
@@ -1046,6 +1047,66 @@ void threadKeyboard(void)
 }
 
 
+//http://www.cplusplus.com/forum/general/216928/
+// Returns interpolated value at x from parallel arrays ( xData, yData )
+// Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
+// boolean argument extrapolate determines behaviour beyond ends of array (if needed)
+double interpolate( vector<double> &xData, vector<double> &yData, double x, bool extrapolate )
+{
+    int size = xData.size();
+
+    int i = 0;                                                                  // find left end of interval for interpolation
+    if ( x >= xData[size - 2] )                                                 // special case: beyond right end
+    {
+        i = size - 2;
+    }
+    else
+    {
+        while ( x > xData[i+1] ) i++;
+    }
+    double xL = xData[i], yL = yData[i], xR = xData[i+1], yR = yData[i+1];      // points on either side (unless beyond ends)
+    if ( !extrapolate )                                                         // if beyond ends of array and not extrapolating
+    {
+        if ( x < xL ) yR = yL;
+        if ( x > xR ) yL = yR;
+    }
+    
+    double dydx = ( yR - yL ) / ( xR - xL );                                    // gradient
+    
+    return yL + dydx * ( x - xL );                                              // linear interpolation
+}
+
+
+namespace DaftPunk
+{
+namespace AroundTheWorld
+{
+    void LowPassFilter(int val)
+    {
+        vector<double> xData113 = { 1, 1      , 127/5*1, 127/5*2, 127/5*3, 127/5*4, 127 };
+        vector<double> yData113 = { 0, 0      , 127    , 127    , 127    , 127    , 127 };
+        TMidiControlChange cc113(1, 113, interpolate(xData, yData, false), 1); // last ,1: send to 11R
+        
+        vector<double> xData114 = { 1, 127/5*1, 127/5*2, 127 };
+        vector<double> yData114 = { 0, 0      , 1      , 1   };
+        TMidiControlChange cc114(1, 114, interpolate(xData, yData, false), 1); // last ,1: send to 11R
+        
+        vector<double> xData115 = { 1, 127/5*2, 127/5*3, 127 };
+        vector<double> yData115 = { 0, 0      , 1      , 1   };
+        TMidiControlChange cc115(1, 115, interpolate(xData, yData, false), 1); // last ,1: send to 11R
+        
+        vector<double> xData96 = { 1, 127/5*3, 127/5*4, 127 };
+        vector<double> yData96 = { 0, 0      , 1      , 1   };
+        TMidiControlChange cc96(1, 97, interpolate(xData, yData, false), 1); // last ,1: send to 11R
+        
+        vector<double> xData97 = { 1, 127/5*4, 127/5*5, 127 };
+        vector<double> yData97 = { 0, 0      , 1      , 1   };
+        TMidiControlChange cc97(1, 97, interpolate(xData, yData, false), 1); // last ,1: send to 11R
+        
+
+    }
+}
+}
 namespace Rihanna
 {
 namespace WildThoughts
@@ -2156,6 +2217,12 @@ void InitializePlaylist(void)
     cMonAmantDeSaintJean.SongName = "Mon amant de St. Jean";
     cMonAmantDeSaintJean.BaseTempo = 240;
 
+    cAroundTheWorld.Author = "Daft Punk";
+    cAroundTheWorld.SongName = "Around The World";
+    cAroundTheWorld.BaseTempo = 113;
+    cAroundTheWorld.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, DaftPunk::AroundTheWorld::LowPassFilter, "Low Pass Filter"));
+    
+    
     cGetLucky.Author = "Daft Punk";
     cGetLucky.SongName = "Get lucky";
     cGetLucky.BaseTempo = 113;
@@ -2311,6 +2378,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cAuxChampsElysees);
     PlaylistData.push_back(&cProudMary);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
+    PlaylistData.push_back(&cAroundTheWorld);
     PlaylistData.push_back(&cGetLucky);
     PlaylistData.push_back(&cIllusion);
     PlaylistData.push_back(&cDockOfTheBay);
