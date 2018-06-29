@@ -1,4 +1,6 @@
 // Assuming that ALSA is used throughout.
+// Make sure you have installed libasound2-dev, to get the headers
+// Make sure you also have ncurses: libncurses5-dev libncursesw5-dev
 //
 // The USB midiman MidiSport 2x2 hardware requires midisport-firmware: install it with
 // apt-get intstall midisport-firmware
@@ -36,6 +38,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <map>
 
 int stop = 0;
 // Array of two pointers to a snd_rawmidi_t
@@ -165,6 +168,148 @@ void WahOFF(void);
 void WahToggle(void);
 void WahSetValue(int);
 }
+
+
+#include <linux/input.h>
+#undef _INPUT_EVENT_CODES_H
+#include <linux/input-event-codes.h>
+namespace Keyboard
+{
+
+static const char *const evval[3] =
+{
+    "RELEASED",
+    "PRESSED ",
+    "REPEATED"
+};
+
+static struct input_event ev;
+static ssize_t n;
+static int fd;
+typedef void (*TKeyboardCallbackFunction)(void *);
+typedef struct
+{
+    TKeyboardCallbackFunction pf;
+    void * arg;
+} T_pf_arg;
+
+/**
+Map a certain set of keypresses to a set of function pointer along with an argument.
+That will be called when the key is pressed.
+*/
+static std::map<int,T_pf_arg> map_pressed;
+/**
+Same when a key is released.
+*/
+static std::map<int,T_pf_arg> map_released;
+/**
+Maps all the key presses to a boolean, can be true (key is pressed)
+or false (key is released).
+*/
+static std::map<int,bool> map_keys;
+
+
+
+const char *dev = "/dev/input/event0";
+
+void KeyboardThread(void)
+{
+    while (1)
+    {
+        n = read(fd, &ev, sizeof ev);
+        if (n == (ssize_t)-1)
+        {
+            if (errno == EINTR)
+                continue;
+            else
+            {
+                printf("Keyboard code can't be interpreted\n");
+                continue;
+            }
+        }
+        else if (n != sizeof ev)
+        {
+            printf("Keyboard code can't be interpreted\n");
+            continue;
+            break;
+        }
+
+        if (ev.type == EV_KEY && ev.value >= 0 && ev.value <= 2)
+        {
+            //printf("%s 0x%04x (%d)\n", evval[ev.value], (int)ev.code, (int)ev.code);
+
+            switch (ev.value)
+            {
+            case 0: // Key released
+                map_keys[ev.code] = false;
+                if (map_released.find(ev.code) !=  map_released.end())
+                {
+                    map_released[ev.code].pf(map_released[ev.code].arg);
+                }
+                break;
+
+            case 1: // Key pressed
+                map_keys[ev.code] = true;
+                if (map_pressed.find(ev.code) !=  map_pressed.end())
+                {
+                    map_pressed[ev.code].pf(map_pressed[ev.code].arg);
+                }
+                break;
+
+            case 2: // Autorepeat
+
+                // do nothing
+                break;
+            }
+        }
+    }
+}
+
+void Initialize(void)
+{
+    fd = open(dev, O_RDONLY);
+    if (fd == -1)
+    {
+        fprintf(stdout, "Cannot open %s: %s.\n", dev, strerror(errno));
+        exit(10);
+    }
+
+    // create separate thread for the keyboard scan
+    std::thread t(KeyboardThread);
+    t.detach();
+    // ok now KeyboardThread is running as a separate thread
+}
+
+/**
+Register a function to be called when a certain key is pressed.
+The function is passed as a pointer to function. The function prototype
+of the function F should be void F(void *)
+*/
+void RegisterEventCallbackPressed(int key_value_param, TKeyboardCallbackFunction pfun_param, void * arg_param)
+{
+    T_pf_arg pf_arg;
+    pf_arg.arg = arg_param;
+    pf_arg.pf = pfun_param;
+    map_pressed[key_value_param] = pf_arg;
+}
+void RegisterEventCallbackReleased(int key_value_param, TKeyboardCallbackFunction pfun_param, void * arg_param)
+{
+    T_pf_arg pf_arg;
+    pf_arg.arg = arg_param;
+    pf_arg.pf = pfun_param;
+    map_released[key_value_param] = pf_arg;
+}
+
+
+
+
+
+}
+
+
+
+
+
 
 
 
@@ -690,14 +835,14 @@ public:
     TMidiNoteOnEvent(unsigned int Channel, unsigned int NoteNumber,
                      unsigned int Velocity);
 
-TMidiNoteOnEvent(unsigned int Channel,
-                                   unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param);
+    TMidiNoteOnEvent(unsigned int Channel,
+                     unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param);
 
     void Init(unsigned int Channel, unsigned int NoteNumber,
               unsigned int Velocity);
 
 
-                  void Init(unsigned int Channel, unsigned int NoteNumber,
+    void Init(unsigned int Channel, unsigned int NoteNumber,
               unsigned int Velocity, int PortNumber_param);
 
 };
@@ -737,11 +882,11 @@ void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
 void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
                             unsigned int Velocity, int PortNumber_param)
 
-                            {
-                                PortNumber = PortNumber_param;
-                                Init(Channel, NoteNumber, Velocity);
+{
+    PortNumber = PortNumber_param;
+    Init(Channel, NoteNumber, Velocity);
 
-                            }
+}
 
 TMidiNoteOnEvent::TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
 {
@@ -828,7 +973,7 @@ public:
         TMidiControlChange(Channel, ControlNumber, ControllerValue, 0);
     }
 
-        TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
+    TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
                        unsigned char ControllerValue, int PortNumber_param)
     {
         PortNumber = PortNumber_param;
@@ -877,176 +1022,166 @@ void midiPlay(int octave, unsigned char noteInScale)
 }
 
 
-
-int getkey()
+/**
+Overload function for midiPlay, which takes a pointer to void parameter
+*/
+void midiPlay_wrapper(void * pVoid)
 {
-    int character;
-    struct termios orig_term_attr;
-    struct termios new_term_attr;
 
-    waitMilliseconds(1);
-
-    /* set the terminal to raw mode */
-    tcgetattr(fileno(stdin), &orig_term_attr);
-    memcpy(&new_term_attr, &orig_term_attr, sizeof(struct termios));
-    new_term_attr.c_lflag &= ~(ECHO | ICANON);
-    new_term_attr.c_cc[VTIME] = 0;
-    new_term_attr.c_cc[VMIN] = 0;
-    tcsetattr(fileno(stdin), TCSANOW, &new_term_attr);
-
-    /* read a character from the stdin stream without blocking */
-    /*   returns EOF (-1) if no character is available */
-    character = fgetc(stdin);
-
-    /* restore the original terminal attributes */
-    tcsetattr(fileno(stdin), TCSANOW, &orig_term_attr);
-
-    return character;
 }
 
+
+
+void SelectContextInPlaylist(std::list<TContext*> &ContextList, bool);
+void SelectContextInPlaylist(std::list<TContext*> &ContextList);
+void SelectContextInPlaylist(std::list<TContext*> &ContextList);
+
+namespace MiniSynth
+{
+char noteInScale;
+int octave = 2;
+int program = 1;
+
+void StartNote(void * pVoid)
+{
+    int noteInScale = (long int) pVoid;
+    TMidiNoteOnEvent NoteOn(2, octave *12 + noteInScale, 100);
+}
+
+void StopNote(void * pVoid)
+{
+    int noteInScale = (long int) pVoid;
+    TMidiNoteOnEvent NoteOff(2, octave *12 + noteInScale, 100);
+}
+
+void OctaveLess(void * pVoid)
+{
+    octave--;
+    wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
+}
+
+void OctaveMore(void * pVoid)
+{
+    octave++;
+    wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
+}
+
+void ProgramLess(void * pVoid)
+{
+    program--;
+    wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
+    {
+        TMidiProgramChange PC1(2, program);
+    }
+}
+
+void ProgramMore(void * pVoid)
+{
+    program++;
+    wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
+    {
+        TMidiProgramChange PC2(2, program);
+    }
+}
+
+void Space(void * pVoid)
+{
+    SelectContextInPlaylist(PlaylistData, false);
+}
+
+void B(void* pVoid)
+{
+    SelectContextInPlaylist(PlaylistData_BySongName, false);
+}
+
+void N(void * pVoid)
+{
+    SelectContextInPlaylist(PlaylistData_ByAuthor, true);
+}
+
+void Z(void * pVoid)
+{
+    system("aplay ./wav/FXCarpenterLaserBig.wav &");
+}
 
 // Scan keyboard for events, and process keypresses accordingly.
 void threadKeyboard(void)
 {
     char *message;
-    char noteInScale;
-    int octave = 2;
-    int program = 1;
+
+
+    // create all the notes in
+    Keyboard::RegisterEventCallbackPressed(KEY_Q, StartNote, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_2, StartNote, (void *)1);
+    Keyboard::RegisterEventCallbackPressed(KEY_W, StartNote, (void *)2);
+    Keyboard::RegisterEventCallbackPressed(KEY_3, StartNote, (void *)3);
+    Keyboard::RegisterEventCallbackPressed(KEY_E, StartNote, (void *)4);
+    Keyboard::RegisterEventCallbackPressed(KEY_4, StartNote, (void *)5);
+    Keyboard::RegisterEventCallbackPressed(KEY_R, StartNote, (void *)6);
+    Keyboard::RegisterEventCallbackPressed(KEY_T, StartNote, (void *)7);
+    Keyboard::RegisterEventCallbackPressed(KEY_6, StartNote, (void *)8);
+    Keyboard::RegisterEventCallbackPressed(KEY_Y, StartNote, (void *)9);
+    Keyboard::RegisterEventCallbackPressed(KEY_7, StartNote, (void *)10);
+    Keyboard::RegisterEventCallbackPressed(KEY_U, StartNote, (void *)11);
+    Keyboard::RegisterEventCallbackPressed(KEY_I, StartNote, (void *)12);
+    Keyboard::RegisterEventCallbackPressed(KEY_9, StartNote, (void *)13);
+    Keyboard::RegisterEventCallbackPressed(KEY_O, StartNote, (void *)14);
+    Keyboard::RegisterEventCallbackPressed(KEY_0, StartNote, (void *)15);
+    Keyboard::RegisterEventCallbackPressed(KEY_P, StartNote, (void *)16);
+    Keyboard::RegisterEventCallbackPressed(KEY_MINUS, StartNote, (void *)17);
+    Keyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)18);
+    Keyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)19);
+    Keyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)20);
+
+
+
+    Keyboard::RegisterEventCallbackReleased(KEY_Q, StopNote, 0);
+    Keyboard::RegisterEventCallbackReleased(KEY_2, StopNote, (void *)1);
+    Keyboard::RegisterEventCallbackReleased(KEY_W, StopNote, (void *)2);
+    Keyboard::RegisterEventCallbackReleased(KEY_3, StopNote, (void *)3);
+    Keyboard::RegisterEventCallbackReleased(KEY_E, StartNote, (void *)4);
+    Keyboard::RegisterEventCallbackReleased(KEY_4, StartNote, (void *)5);
+    Keyboard::RegisterEventCallbackReleased(KEY_R, StartNote, (void *)6);
+    Keyboard::RegisterEventCallbackReleased(KEY_T, StartNote, (void *)7);
+    Keyboard::RegisterEventCallbackReleased(KEY_6, StartNote, (void *)8);
+    Keyboard::RegisterEventCallbackReleased(KEY_Y, StartNote, (void *)9);
+    Keyboard::RegisterEventCallbackReleased(KEY_7, StartNote, (void *)10);
+    Keyboard::RegisterEventCallbackReleased(KEY_U, StartNote, (void *)11);
+    Keyboard::RegisterEventCallbackReleased(KEY_I, StartNote, (void *)12);
+    Keyboard::RegisterEventCallbackReleased(KEY_9, StartNote, (void *)13);
+    Keyboard::RegisterEventCallbackReleased(KEY_O, StartNote, (void *)14);
+    Keyboard::RegisterEventCallbackReleased(KEY_0, StartNote, (void *)15);
+    Keyboard::RegisterEventCallbackReleased(KEY_P, StartNote, (void *)16);
+    Keyboard::RegisterEventCallbackReleased(KEY_MINUS, StartNote, (void *)17);
+    Keyboard::RegisterEventCallbackReleased(KEY_LEFTBRACE, StartNote, (void *)18);
+    Keyboard::RegisterEventCallbackReleased(KEY_EQUAL, StartNote, (void *)19);
+    Keyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StartNote, (void *)20);
+
+
+    Keyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_F4, ProgramMore, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_Z, Z, 0);
+
+//    kbd_callbacks[KEY_A] =
 
     while (1)
     {
-        int ch = getkey();
+        int ch = -1;
         if (ch == -1)
         {
-            waitMilliseconds(10);
+            waitMilliseconds(100);
             continue;
         }
-        switch (ch)
-        {
-        case ')':
-            octave--;
-            wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
-            break;
-        case '=':
-            octave++;
-            wprintw(win_debug_messages.GetRef(), "Octave %i\n", octave);
-            break;
-
-        case 195:
-            program--;
-            wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
-            {
-                TMidiProgramChange PC1(2, program);
-            }
-            break;
-        case '*':
-            program++;
-            wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
-            {
-                TMidiProgramChange PC2(2, program);
-            }
-            break;
-
-        case 'a':
-            noteInScale = 0;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'é':
-            noteInScale = 1;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'z':
-            noteInScale = 2;
-            midiPlay(octave, noteInScale);
-            break;
-        case '"':
-            noteInScale = 3;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'e':
-            noteInScale = 4;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'r':
-            noteInScale = 5;
-            midiPlay(octave, noteInScale);
-            break;
-        case '(':
-            noteInScale = 6;
-            midiPlay(octave, noteInScale);
-            break;
-        case 't':
-            noteInScale = 7;
-            midiPlay(octave, noteInScale);
-            break;
-        case '-':
-            noteInScale = 8;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'y':
-            noteInScale = 9;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'è':
-            noteInScale = 10;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'u':
-            noteInScale = 11;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'i':
-            noteInScale = 12;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'ç':
-            noteInScale = 13;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'o':
-            noteInScale = 14;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'à':
-            noteInScale = 15;
-            midiPlay(octave, noteInScale);
-            break;
-        case 'p':
-            noteInScale = 16;
-            midiPlay(octave, noteInScale);
-            break;
-
-
-
-        case ' ':
-        // List all Contexts (i.e. songs) by original playlist order
-            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList, bool);
-            SelectContextInPlaylist(PlaylistData, false);
-            break;
-
-        case 'b':
-        // List all Contexts (i.e. songs) alphabetically by song name
-            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList);
-            SelectContextInPlaylist(PlaylistData_BySongName, false);
-            break;
-
-        case 'n':
-        // List all Contexts (i.e. songs) alphabetically by author
-            extern void SelectContextInPlaylist(std::list<TContext*> &ContextList);
-            SelectContextInPlaylist(PlaylistData_ByAuthor, true);
-            break;
-
-           case 'w':
-        // List all Contexts (i.e. songs) alphabetically by author
-          system("aplay ./wav/FXCarpenterLaserBig.wav &");
-            break;
-
-
-        }
     }
-
 }
 
+
+}
 
 //http://www.cplusplus.com/forum/general/216928/
 // Returns interpolated value at x from parallel arrays ( xData, yData )
@@ -1082,42 +1217,42 @@ namespace DaftPunk
 {
 namespace AroundTheWorld
 {
-    void LowPassFilter(int val)
-    {
-        using std::vector;
-        vector<double> xData113 = { 0   , 127/5*1, 127/5*2, 127/5*3, 127/5*4,  120 };
-        vector<double> yData113 = { 100 , 100    , 80     , 60     , 40     ,  64  };
-        TMidiControlChange cc113(1, 113, interpolate(xData113, yData113, val, false), 1); // last ,1: send to 11R
+void LowPassFilter(int val)
+{
+    using std::vector;
+    vector<double> xData113 = { 0, 127/5*1, 127/5*2, 127/5*3, 127/5*4,  120 };
+    vector<double> yData113 = { 100, 100, 80, 60, 40,  64  };
+    TMidiControlChange cc113(1, 113, interpolate(xData113, yData113, val, false), 1); // last ,1: send to 11R
 
-        vector<double> xData114 = { 0, 127/5*1, 127/5*2, 127 };
-        vector<double> yData114 = { 0, 0      , 64    , 64 };
-        TMidiControlChange cc114(1, 114, interpolate(xData114, yData114, val, false), 1); // last ,1: send to 11R
+    vector<double> xData114 = { 0, 127/5*1, 127/5*2, 127 };
+    vector<double> yData114 = { 0, 0, 64, 64 };
+    TMidiControlChange cc114(1, 114, interpolate(xData114, yData114, val, false), 1); // last ,1: send to 11R
 
-        vector<double> xData115 = { 0, 127/5*2, 127/5*3, 127 };
-        vector<double> yData115 = { 0, 0      , 64    , 64 };
-        TMidiControlChange cc115(1, 115, interpolate(xData115, yData115, val, false), 1); // last ,1: send to 11R
+    vector<double> xData115 = { 0, 127/5*2, 127/5*3, 127 };
+    vector<double> yData115 = { 0, 0, 64, 64 };
+    TMidiControlChange cc115(1, 115, interpolate(xData115, yData115, val, false), 1); // last ,1: send to 11R
 
-        vector<double> xData96 = { 0, 127/5*3, 127/5*4, 127 };
-        vector<double> yData96 = { 0, 0      , 64    , 64 };
-        TMidiControlChange cc96(1, 96, interpolate(xData96, yData96, val, false), 1); // last ,1: send to 11R
+    vector<double> xData96 = { 0, 127/5*3, 127/5*4, 127 };
+    vector<double> yData96 = { 0, 0, 64, 64 };
+    TMidiControlChange cc96(1, 96, interpolate(xData96, yData96, val, false), 1); // last ,1: send to 11R
 
-        vector<double> xData97 = { 0, 127/5*4, 127/5*5, 127 };
-        vector<double> yData97 = { 0, 0      , 64    , 64 };
-        TMidiControlChange cc97(1, 97, interpolate(xData97, yData97, val, false), 1); // last ,1: send to 11R
+    vector<double> xData97 = { 0, 127/5*4, 127/5*5, 127 };
+    vector<double> yData97 = { 0, 0, 64, 64 };
+    TMidiControlChange cc97(1, 97, interpolate(xData97, yData97, val, false), 1); // last ,1: send to 11R
 
 
-    }
+}
 
-    void LoPassFilterEnable(void)
-    {
-        // channel 1, control 86 (FX2), value 127 (please turn ON), send to midisport out B (to 11R)
-        TMidiControlChange cc(1, 86, 127, 1);
-    }
+void LoPassFilterEnable(void)
+{
+    // channel 1, control 86 (FX2), value 127 (please turn ON), send to midisport out B (to 11R)
+    TMidiControlChange cc(1, 86, 127, 1);
+}
 
-    void LoPassFilterDisable(void)
-    {
-        TMidiControlChange cc(1, 86, 0, 1);
-    }
+void LoPassFilterDisable(void)
+{
+    TMidiControlChange cc(1, 86, 0, 1);
+}
 
 }
 }
@@ -1426,25 +1561,25 @@ namespace BrunoMars
 {
 namespace LockedOutOfHeaven
 {
-	void Yeah(void)
-	{
-	    system("aplay ./wav/yeah_001.wav &");
-	}
+void Yeah(void)
+{
+    system("aplay ./wav/yeah_001.wav &");
+}
 
-	void Hooh(void)
-	{
-		system("aplay ./wav/hooh_echo_001.wav &");
-	}
+void Hooh(void)
+{
+    system("aplay ./wav/hooh_echo_001.wav &");
+}
 
-	void Siren(void)
-	{
-		system("aplay ./wav/alarm_001.wav &");
-	}
+void Siren(void)
+{
+    system("aplay ./wav/alarm_001.wav &");
+}
 
-	void Cuica(void)
-	{
-		system("aplay ./wav/cuica_001.wav &");
-	}
+void Cuica(void)
+{
+    system("aplay ./wav/cuica_001.wav &");
+}
 }
 }
 
@@ -1760,8 +1895,8 @@ void ChangeTempo(int Value)
 namespace RigUp
 {
 
-    void Init(void)
-    {
+void Init(void)
+{
     // For a reason that eludes me, changing the variation of the part
     // must be sent twice...
     // We want to select the Sine Wave (program 81, variation 8)
@@ -1771,36 +1906,36 @@ namespace RigUp
     TMidiControlChange cc1(2, 0, 8);
 
 
-    }
+}
 
-    void WhiteNoiseUniform(void)
-    {
-        system("aplay ./wav/whitenoise_gaussian_distribution.wav &");
-    }
+void WhiteNoiseUniform(void)
+{
+    system("aplay ./wav/whitenoise_gaussian_distribution.wav &");
+}
 
-    void WhiteNoiseGaussian(void)
-    {
-        system("aplay ./wav/whitenoise_uniform_distribution.wav &");
-    }
+void WhiteNoiseGaussian(void)
+{
+    system("aplay ./wav/whitenoise_uniform_distribution.wav &");
+}
 
-    int CurrentNote = 0;
-    void SineWaveOn(void)
-    {
-        TMidiNoteOnEvent no(2, CurrentNote, 100);
-    }
+int CurrentNote = 0;
+void SineWaveOn(void)
+{
+    TMidiNoteOnEvent no(2, CurrentNote, 100);
+}
 
 
-    void SineWaveOff(void)
-    {
-        TMidiNoteOffEvent no(2, CurrentNote, 0);
-    }
+void SineWaveOff(void)
+{
+    TMidiNoteOffEvent no(2, CurrentNote, 0);
+}
 
-    void SineWavePitch(int ccValue)
-    {
-        SineWaveOff();
-        CurrentNote = ccValue;
-        SineWaveOn();
-    }
+void SineWavePitch(int ccValue)
+{
+    SineWaveOff();
+    CurrentNote = ccValue;
+    SineWaveOn();
+}
 
 }
 
@@ -1808,34 +1943,34 @@ namespace Modjo
 {
 namespace Lady
 {
-    void Init(void)
+void Init(void)
+{
+    // Do nothing - Eleven Rack is always initialized when changing context.
+}
+
+bool SoloON = false;
+
+// Solo means: MOD + FX2
+// Note: MOD works best with C1 CHOR VIB, medium depth, sync on beat, assuming tempo is right
+//       FX2 works best with: graphic EQ, cut 100Hz, boost 800 and 2k
+void Solo_On_Off(void)
+{
+    // Toggle solo flag
+    SoloON = !SoloON;
+    if (SoloON)
     {
-        // Do nothing - Eleven Rack is always initialized when changing context.
-    }
-
-    bool SoloON = false;
-
-    // Solo means: MOD + FX2
-    // Note: MOD works best with C1 CHOR VIB, medium depth, sync on beat, assuming tempo is right
-    //       FX2 works best with: graphic EQ, cut 100Hz, boost 800 and 2k
-    void Solo_On_Off(void)
-    {
-        // Toggle solo flag
-        SoloON = !SoloON;
-        if (SoloON)
-        {
-            TMidiControlChange cc(1, 50, 127, 1);
-            TMidiControlChange cc2(1, 86, 127, 1);
-
-        }
-        else
-        {
-            TMidiControlChange cc(1, 50, 0, 1);
-            TMidiControlChange cc2(1, 86, 0, 1);
-
-        }
+        TMidiControlChange cc(1, 50, 127, 1);
+        TMidiControlChange cc2(1, 86, 127, 1);
 
     }
+    else
+    {
+        TMidiControlChange cc(1, 50, 0, 1);
+        TMidiControlChange cc2(1, 86, 0, 1);
+
+    }
+
+}
 
 
 
@@ -1959,10 +2094,10 @@ void threadMidiAutomaton(void)
     int thru = 0;
     int fd_in = -1, fd_out = -1;
 
-        wprintw(win_debug_messages.GetRef(), "Using: \n");
-        wprintw(win_debug_messages.GetRef(), "Input & output: ");
-        wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[0]);
-        wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[1]);
+    wprintw(win_debug_messages.GetRef(), "Using: \n");
+    wprintw(win_debug_messages.GetRef(), "Input & output: ");
+    wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[0]);
+    wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[1]);
 
     StartRawMidiIn(0);
     StartRawMidiOut(0);
@@ -1992,7 +2127,7 @@ void threadMidiAutomaton(void)
 
             while (!stop)
             {
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                wprintw(win_midi_in.GetRef(), "0x%02x", ch);
 
                 switch (stateMachine)
                 {
@@ -2364,10 +2499,10 @@ void InitializePlaylist(void)
     cLady.SetInitFunc(Modjo::Lady::Init);
     cLady.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)"));
 
- //   cILoveRocknRoll = "I love Rock'n'Roll";
-  //  cIloveRocknRoll.BaseTempo = 91;
+//   cILoveRocknRoll = "I love Rock'n'Roll";
+    //  cIloveRocknRoll.BaseTempo = 91;
 
-  //cIWantAHighwayToHell = "I want a highway to hell"
+    //cIWantAHighwayToHell = "I want a highway to hell"
 
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
@@ -2752,13 +2887,15 @@ int main(int argc, char** argv)
     // Create the thread that refreshes the metronome
     std::thread thread3(threadMetronome);
 
+    Keyboard::Initialize();
+
     // Create thread that scans the keyboard
-    std::thread thread4(threadKeyboard);
+    std::thread thread4(MiniSynth::threadKeyboard);
 
 
 #endif
 
-extern int extract_tempo ();
+    extern int extract_tempo ();
 
     //extract_tempo();
     // Do nothing

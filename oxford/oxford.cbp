@@ -38,7 +38,7 @@
 			<Add library="pthread" />
 			<Add library="asound" />
 			<Add library="ncurses" />
-			<Add library="libcdk" />
+			<Add library="cdk" />
 			<Add library="panel" />
 			<Add library="aubio" />
 			<Add directory="cdk-5.0-20171209" />
@@ -52,6 +52,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
