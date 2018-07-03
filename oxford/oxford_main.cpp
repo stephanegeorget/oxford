@@ -39,6 +39,7 @@
 #include <mutex>
 #include <vector>
 #include <map>
+#include <locale>
 
 int stop = 0;
 // Array of two pointers to a snd_rawmidi_t
@@ -60,6 +61,8 @@ std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
 // Mutex used to prevent ncurses refresh routines from being called from
 // concurrent threads.
 std::mutex ncurses_mutex;
+
+
 
 
 // This is a ncurses cdk panel, with a boxed window on it, that can't
@@ -146,6 +149,203 @@ TBoxedWindow win_context_next;
 TBoxedWindow win_context_usage;
 TBoxedWindow win_context_user_specific;
 TBoxedWindow win_context_select_menu;
+TBoxedWindow win_big_message;
+
+
+
+
+
+
+//       |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |
+char raster[] =
+    "         #    # #  # #   ###  #   #   ##     #    ##   ##   # # #   #                         #  ###     #   ###  ####     #  #####   ##  #####  ###   ###                  #       #      ###   ###   ###  ####   #### ####  ##### #####  #### #   #  ####     # #   # #     #   # #   #  ###  ####   ###  ####   #### ##### #   # #   # #   # #   # #   # ##### "\
+    "         #    # # ##### # #      #   #       #   #       #   ###    #                        #  #   #   ##  #   #     #   ##  #      #        # #   # #   #    #     #    ##  #####  ##       # # ### #   # #   # #     #   # #     #     #     #   #   #       # #  #  #     ## ## ##  # #   # #   # #   # #   # #       #   #   # #   # #   #  # #   # #     #  "\
+    "         #         # #   ###    #     # #        #       #  ##### #####        ###          #   # # #    #     #   ###   # #  ####  ####   ###   ###   ####             ##            ##    ##  # # # ##### ####  #     #   # ###   ###   #  ## #####   #   #   # ###   #     # # # # # # #   # ####  # # # ####   ###    #   #   # #   # # # #   #     #     #   "\
+    "                  #####   # #  #     # #         #       #   ###    #                      #    #   #    #    #       # #####     # #   #   #   #   #     #    #     #    ##  #####  ##         # ### #   # #   # #     #   # #     #     #   # #   #   #   #   # #  #  #     #   # #  ## #   # #     #  #  #   #     #   #   #   #  # #  #####  # #    #    #    "\
+    "         #         # #   ###  #   #   # #         ##   ##   # # #   #      #          #   #      ###    ### ##### ####     #  ####   ###   #     ###   ###          #       #       #       #    ###  #   # #####  #### ####  ##### #      ###  #   #  ####  ###  #   # ##### #   # #   #  ###  #      ## # #   # ####    #    ###    #    # #  #   #   #   ##### "\
+    "                                                                          #                                                                                                                                                                                                                                                                                       ";
+//   000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111112222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222333333333333333333333333333333333333333333333333333333333333
+//   000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555
+//   012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+
+
+/** Everything needed to print Big Character banners */
+class TBanner
+{
+public:
+    TBanner(void) {};
+    void Init(int lines, int columns, int pos_y, int pos_x, int display_time_ms_param)
+    {
+        pBoxedWindow = new(TBoxedWindow);
+        pBoxedWindow->Init("", lines, columns, pos_y, pos_x);
+        canvas_width = columns -3;
+        canvas = new(char[canvas_width*canvas_height]);
+        char_displayed_on_canvas = canvas_width / char_width;
+        display_time_ms = display_time_ms_param;
+        std::thread t(BannerThread, this);
+        t.detach();
+        pBoxedWindow->Hide();
+    };
+
+    std::mutex m;
+    void SetMessage(std::string message_param)
+    {
+        // Avoid concurrency issues
+        std::lock_guard<std::mutex> lock(m);
+        // Change whole string to UPPER characters
+        message = StringToUpper(message_param);
+        // Prepend and append spaces
+        message.insert(0, "   ");
+        message.insert(message.end(), 3, ' ');
+        message_size = message.size();
+        offset_max = (message_size - char_displayed_on_canvas) * char_width;
+        if (offset_max <= 0)
+        {
+            offset_max = 1;
+        }
+        offset = 0;
+        pBoxedWindow->Show();
+    }
+
+private:
+    TBoxedWindow * pBoxedWindow;
+    static int const char_width = 6;
+    static int const char_height = 6;
+    int canvas_width;
+    static int const canvas_height = 6;
+    char * canvas;
+    static int const raster_chars = 59;
+    static int const raster_width = char_width * raster_chars;
+    static int const raster_height = char_height;
+    static int const raster_sizeof = raster_height * raster_width;
+    int char_displayed_on_canvas;
+    std::thread::id BannerThreadID;
+    std::string message;
+    int message_size;
+    int offset_max;
+    int display_time_ms;
+    int offset;
+
+    std::string StringToUpper(std::string strToConvert)
+    {
+        std::transform(strToConvert.begin(), strToConvert.end(), strToConvert.begin(), ::toupper);
+
+        return strToConvert;
+    }
+
+    void BannerProcess(void)
+    {
+        // Avoid concurrency issues
+        std::lock_guard<std::mutex> lock(m);
+
+        if (offset <= offset_max)
+        {
+            print_big();
+            offset++;
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(display_time_ms));
+            pBoxedWindow->Hide();
+        }
+    }
+
+    static void BannerThread(TBanner * pBanner)
+    {
+        while(1)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(40));
+            pBanner->BannerProcess();
+        }
+    }
+
+
+    void print_big(void)
+    {
+
+        init_pair(7, COLOR_YELLOW, COLOR_BLUE);
+        int i=0;
+
+        wattron(pBoxedWindow->GetRef(), COLOR_PAIR(7));
+
+        mvwprintw(pBoxedWindow->GetRef(), 0, 0, "");
+        for (unsigned int lin = 0; lin < canvas_height; lin++)
+        {
+            for (unsigned int col = 0+offset; col < canvas_width+offset; col++)
+            {
+                int teststring_index = col / char_width;
+                //printf("%i   ", teststring_index);
+                teststring_index %= message_size;
+                int character_to_print_ascii = message[teststring_index];
+                int character_to_print_rasterindex = character_to_print_ascii - 32;
+                character_to_print_rasterindex %= raster_chars;
+                int dot_to_print_index = character_to_print_rasterindex * char_width + col%char_width + lin * raster_width;
+                if (dot_to_print_index < 0) dot_to_print_index = 0;
+                if (dot_to_print_index >= raster_sizeof -1 ) dot_to_print_index = raster_sizeof -1;
+                int dot_to_print = raster[dot_to_print_index];
+
+                if (dot_to_print == ' ')
+                {
+                    wattroff(pBoxedWindow->GetRef(), A_REVERSE);
+                }
+                else
+                {
+                    wattron(pBoxedWindow->GetRef(), A_REVERSE);
+                }
+                //wprintw(win_big_message.GetRef(), "%c", (char) dot_to_print);
+                wprintw(pBoxedWindow->GetRef(), " ");
+            }
+            if (lin != canvas_height -1)
+            {
+                wprintw(pBoxedWindow->GetRef(), "\n");
+            }
+        }
+        pBoxedWindow->Refresh();
+    }
+
+
+
+};
+
+TBanner Banner;
+
+void test_bigchar(void)
+{
+    Banner.Init(9,80, 0, 0, 800);
+    Banner.SetMessage("   abcdefghijklmnopqrstuvwxyz0123456789    ");
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // I try to avoid the use of function prototypes and headers,
@@ -621,7 +821,6 @@ void ContextPreviousPress(void)
         TContext Context = **PlaylistPosition;
         Context.Init();
     }
-
 }
 
 // ... and when you release the pedal.
@@ -2852,6 +3051,7 @@ int main(int argc, char** argv)
     keypad(stdscr, TRUE);           /* I need that nifty F1         */
 
 
+
     win_midi_in.Init("IN", term_lines -3, 6, 3, term_cols-6-6);
     win_midi_out.Init("OUT", term_lines -3, 6, 3, term_cols-6);
     win_context_prev.Init("CONTEXT PREV", 3, 0.33*term_cols, 0, 0);
@@ -2877,6 +3077,17 @@ int main(int argc, char** argv)
     attroff(A_BOLD | A_REVERSE);
     printw(":by artist");
     refresh();
+
+    //TBanner Banner();
+    test_bigchar();
+//    win_big_message.Init("", 8, term_cols, 0, 0);
+
+//    bigchar::test_bigchar();
+
+
+
+
+
 
     // Create thread that scans midi messages
     std::thread thread1(threadMidiAutomaton);
