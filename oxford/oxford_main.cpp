@@ -1239,17 +1239,18 @@ namespace MiniSynth
 char noteInScale;
 int octave = 2;
 int program = 1;
+int channel = 2;
 
 void StartNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOnEvent NoteOn(2, octave *12 + noteInScale, 100);
+    TMidiNoteOnEvent NoteOn(channel, octave *12 + noteInScale, 100);
 }
 
 void StopNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOnEvent NoteOff(2, octave *12 + noteInScale, 100);
+    TMidiNoteOnEvent NoteOff(channel, octave *12 + noteInScale, 100);
 }
 
 void OctaveLess(void * pVoid)
@@ -1269,7 +1270,7 @@ void ProgramLess(void * pVoid)
     program--;
     wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
     {
-        TMidiProgramChange PC1(2, program);
+        TMidiProgramChange PC1(channel, program);
     }
 }
 
@@ -1278,8 +1279,19 @@ void ProgramMore(void * pVoid)
     program++;
     wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
     {
-        TMidiProgramChange PC2(2, program);
+        TMidiProgramChange PC2(channel, program);
     }
+}
+
+
+void ChannelLess(void * pVoid)
+{
+    channel--;
+}
+
+void ChannelMore(void * pVoid)
+{
+    channel++;
 }
 
 void Space(void * pVoid)
@@ -1337,29 +1349,32 @@ void threadKeyboard(void)
     Keyboard::RegisterEventCallbackReleased(KEY_2, StopNote, (void *)1);
     Keyboard::RegisterEventCallbackReleased(KEY_W, StopNote, (void *)2);
     Keyboard::RegisterEventCallbackReleased(KEY_3, StopNote, (void *)3);
-    Keyboard::RegisterEventCallbackReleased(KEY_E, StartNote, (void *)4);
-    Keyboard::RegisterEventCallbackReleased(KEY_4, StartNote, (void *)5);
-    Keyboard::RegisterEventCallbackReleased(KEY_R, StartNote, (void *)6);
-    Keyboard::RegisterEventCallbackReleased(KEY_T, StartNote, (void *)7);
-    Keyboard::RegisterEventCallbackReleased(KEY_6, StartNote, (void *)8);
-    Keyboard::RegisterEventCallbackReleased(KEY_Y, StartNote, (void *)9);
-    Keyboard::RegisterEventCallbackReleased(KEY_7, StartNote, (void *)10);
-    Keyboard::RegisterEventCallbackReleased(KEY_U, StartNote, (void *)11);
-    Keyboard::RegisterEventCallbackReleased(KEY_I, StartNote, (void *)12);
-    Keyboard::RegisterEventCallbackReleased(KEY_9, StartNote, (void *)13);
-    Keyboard::RegisterEventCallbackReleased(KEY_O, StartNote, (void *)14);
-    Keyboard::RegisterEventCallbackReleased(KEY_0, StartNote, (void *)15);
-    Keyboard::RegisterEventCallbackReleased(KEY_P, StartNote, (void *)16);
-    Keyboard::RegisterEventCallbackReleased(KEY_MINUS, StartNote, (void *)17);
-    Keyboard::RegisterEventCallbackReleased(KEY_LEFTBRACE, StartNote, (void *)18);
-    Keyboard::RegisterEventCallbackReleased(KEY_EQUAL, StartNote, (void *)19);
-    Keyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StartNote, (void *)20);
+    Keyboard::RegisterEventCallbackReleased(KEY_E, StopNote, (void *)4);
+    Keyboard::RegisterEventCallbackReleased(KEY_4, StopNote, (void *)5);
+    Keyboard::RegisterEventCallbackReleased(KEY_R, StopNote, (void *)6);
+    Keyboard::RegisterEventCallbackReleased(KEY_T, StopNote, (void *)7);
+    Keyboard::RegisterEventCallbackReleased(KEY_6, StopNote, (void *)8);
+    Keyboard::RegisterEventCallbackReleased(KEY_Y, StopNote, (void *)9);
+    Keyboard::RegisterEventCallbackReleased(KEY_7, StopNote, (void *)10);
+    Keyboard::RegisterEventCallbackReleased(KEY_U, StopNote, (void *)11);
+    Keyboard::RegisterEventCallbackReleased(KEY_I, StopNote, (void *)12);
+    Keyboard::RegisterEventCallbackReleased(KEY_9, StopNote, (void *)13);
+    Keyboard::RegisterEventCallbackReleased(KEY_O, StopNote, (void *)14);
+    Keyboard::RegisterEventCallbackReleased(KEY_0, StopNote, (void *)15);
+    Keyboard::RegisterEventCallbackReleased(KEY_P, StopNote, (void *)16);
+    Keyboard::RegisterEventCallbackReleased(KEY_MINUS, StopNote, (void *)17);
+    Keyboard::RegisterEventCallbackReleased(KEY_LEFTBRACE, StopNote, (void *)18);
+    Keyboard::RegisterEventCallbackReleased(KEY_EQUAL, StopNote, (void *)19);
+    Keyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StopNote, (void *)20);
 
 
     Keyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
     Keyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
     Keyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
     Keyboard::RegisterEventCallbackPressed(KEY_F4, ProgramMore, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_F5, ChannelLess, 0);
+    Keyboard::RegisterEventCallbackPressed(KEY_F6, ChannelMore, 0);
+
     Keyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
     Keyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
     Keyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
