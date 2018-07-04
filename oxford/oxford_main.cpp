@@ -344,7 +344,7 @@ private:
     void print_big(void)
     {
 
-        init_pair(7, COLOR_YELLOW, COLOR_BLUE);
+        init_pair(7, COLOR_WHITE, COLOR_BLUE);
         int i=0;
 
         wattron(pBoxedWindow->GetRef(), COLOR_PAIR(7));
@@ -3099,7 +3099,7 @@ int main(int argc, char** argv)
     refresh();
 
     // Initialize this banner at the full terminal width
-    Banner.Init(term_cols, 0, 0, 800);
+    Banner.Init(term_cols, term_lines/2 -4, 0, 800);
     Banner.SetMessage("OXFORD - LE GROUPE");
 
     // Create thread that scans midi messages
