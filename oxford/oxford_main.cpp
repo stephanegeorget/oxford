@@ -1250,7 +1250,7 @@ void StartNote(void * pVoid)
 void StopNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOnEvent NoteOff(channel, octave *12 + noteInScale, 100);
+    TMidiNoteOffEvent NoteOff(channel, octave *12 + noteInScale, 100);
 }
 
 void OctaveLess(void * pVoid)
@@ -1287,11 +1287,14 @@ void ProgramMore(void * pVoid)
 void ChannelLess(void * pVoid)
 {
     channel--;
+    wprintw(win_debug_messages.GetRef(), "Channel %i\n", channel);
 }
 
 void ChannelMore(void * pVoid)
 {
     channel++;
+    wprintw(win_debug_messages.GetRef(), "Channel %i\n", channel);
+
 }
 
 void Space(void * pVoid)
