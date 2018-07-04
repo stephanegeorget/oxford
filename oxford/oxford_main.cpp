@@ -1250,7 +1250,7 @@ void StartNote(void * pVoid)
 void StopNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOffEvent NoteOff(channel, octave *12 + noteInScale, 100);
+    TMidiNoteOffEvent NoteOff(channel, octave *12 + noteInScale, 0);
 }
 
 void OctaveLess(void * pVoid)
