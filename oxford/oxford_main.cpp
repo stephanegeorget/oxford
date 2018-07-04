@@ -156,6 +156,73 @@ TBoxedWindow win_big_message;
 
 
 
+
+
+
+// Wait "milliseconds" milliseconds.
+#pragma reentrant
+void waitMilliseconds(int milliseconds)
+{
+    long int nanoseconds = milliseconds * 1000000;
+    long int seconds = round(nanoseconds / 1000000000);
+    nanoseconds = nanoseconds % 1000000000;
+    struct timespec tsp =
+    { seconds, nanoseconds };
+    struct timespec rem;
+start_wait:
+    if (nanosleep(&tsp, &rem) != 0)
+    {
+        tsp = rem;
+        goto start_wait;
+    }
+}
+
+
+// Intermediate structure used to communicate information to a spawned thread.
+typedef struct
+{
+    void (*pFunction)(void *);
+    unsigned long int Delay_ms;
+    void * pFuncParam;
+} TExecuteAfterTimeoutStruct;
+
+// Thread used to support the functionality of function ExecuteAfterTimeout.
+#pragma reentrant
+void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
+{
+    // Delay execution
+    waitMilliseconds(Message.Delay_ms);
+    // Call "pFunction(pFuncParam)"
+    (Message.pFunction)( Message.pFuncParam );
+}
+
+// This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
+// that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
+// Then the thread disappears.
+#pragma reentrant
+void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
+{
+    TExecuteAfterTimeoutStruct ExecuteAfterTimeoutStruct;
+    ExecuteAfterTimeoutStruct.Delay_ms = Timeout_ms;
+    ExecuteAfterTimeoutStruct.pFunction = pFunc;
+    ExecuteAfterTimeoutStruct.pFuncParam = pFuncParam;
+
+    std::thread Thread(ExecuteAfterTimeout_Thread, ExecuteAfterTimeoutStruct);
+    Thread.detach();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 //       |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |
 char raster[] =
     "         #    # #  # #   ###  #   #   ##     #    ##   ##   # # #   #                         #  ###     #   ###  ####     #  #####   ##  #####  ###   ###                  #       #      ###   ###   ###  ####   #### ####  ##### #####  #### #   #  ####     # #   # #     #   # #   #  ###  ####   ###  ####   #### ##### #   # #   # #   # #   # #   # ##### "\
@@ -174,11 +241,13 @@ class TBanner
 {
 public:
     TBanner(void) {};
-    void Init(int lines, int columns, int pos_y, int pos_x, int display_time_ms_param)
+    void Init(int columns, int pos_y, int pos_x, int display_time_ms_param)
     {
         pBoxedWindow = new(TBoxedWindow);
-        pBoxedWindow->Init("", lines, columns, pos_y, pos_x);
-        canvas_width = columns -3;
+        pBoxedWindow->Init("", char_height +1 +1, columns, pos_y, pos_x);
+        // -1 for the right side window, -1 for the left side window, and
+        // we're just "flush".
+        canvas_width = columns -2;
         canvas = new(char[canvas_width*canvas_height]);
         char_displayed_on_canvas = canvas_width / char_width;
         display_time_ms = display_time_ms_param;
@@ -187,7 +256,6 @@ public:
         pBoxedWindow->Hide();
     };
 
-    std::mutex m;
     void SetMessage(std::string message_param)
     {
         // Avoid concurrency issues
@@ -205,9 +273,15 @@ public:
         }
         offset = 0;
         pBoxedWindow->Show();
+        ExecuteAfterTimeout(PutBannerOnTop, 100, pBoxedWindow);
+        /*void * pVoid = pBoxedWindow;
+               TBoxedWindow * pBoxedWindow_local;
+        pBoxedWindow_local  = reinterpret_cast<TBoxedWindow*>(pVoid);
+        pBoxedWindow_local->PutOnTop();*/
     }
 
 private:
+    std::mutex m;
     TBoxedWindow * pBoxedWindow;
     static int const char_width = 6;
     static int const char_height = 6;
@@ -225,6 +299,13 @@ private:
     int offset_max;
     int display_time_ms;
     int offset;
+
+    static void PutBannerOnTop(void* pVoid)
+    {
+        TBoxedWindow * pBoxedWindow_local;
+        pBoxedWindow_local  = reinterpret_cast<TBoxedWindow*>(pVoid);
+        pBoxedWindow_local->PutOnTop();
+    }
 
     std::string StringToUpper(std::string strToConvert)
     {
@@ -292,13 +373,17 @@ private:
                 {
                     wattron(pBoxedWindow->GetRef(), A_REVERSE);
                 }
-                //wprintw(win_big_message.GetRef(), "%c", (char) dot_to_print);
-                wprintw(pBoxedWindow->GetRef(), " ");
+                // Do not put the last character in the bottom right corner, to prevent
+                // scrolling up and losing the first line.
+                if(col != canvas_width+offset-1 || lin != canvas_height-1)
+                {
+                    wprintw(pBoxedWindow->GetRef(), " ");
+                }
             }
-            if (lin != canvas_height -1)
-            {
-                wprintw(pBoxedWindow->GetRef(), "\n");
-            }
+            // In theory, a Carriage Return could be done here for each end of line, except the last line.
+            // But in our case, the usable window width is exactly matching the raster width.
+            // So going to the next line is done automatically as part of the "line is full => next character
+            // goes to next line" by ncurses.
         }
         pBoxedWindow->Refresh();
     }
@@ -307,45 +392,10 @@ private:
 
 };
 
+
+// This is the main banner object. Call its member function "SetMessage" to
+// temporarily display a message in very large characters on the screen.
 TBanner Banner;
-
-void test_bigchar(void)
-{
-    Banner.Init(9,80, 0, 0, 800);
-    Banner.SetMessage("   abcdefghijklmnopqrstuvwxyz0123456789    ");
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // I try to avoid the use of function prototypes and headers,
@@ -694,6 +744,7 @@ public:
             // Then call the user-defined initialization function
             InitFunc();
         }
+        Banner.SetMessage(SongName);
     }
     void SetInitFunc( void (*InitFunc_param)(void))
     {
@@ -907,58 +958,6 @@ void StopRawMidiOut(int portnum)
         snd_rawmidi_close(handle_midi_hw_out[portnum]);
         handle_midi_hw_out[portnum] = 0;
     }
-}
-
-
-// Wait "milliseconds" milliseconds.
-#pragma reentrant
-void waitMilliseconds(int milliseconds)
-{
-    long int nanoseconds = milliseconds * 1000000;
-    long int seconds = round(nanoseconds / 1000000000);
-    nanoseconds = nanoseconds % 1000000000;
-    struct timespec tsp =
-    { seconds, nanoseconds };
-    struct timespec rem;
-start_wait:
-    if (nanosleep(&tsp, &rem) != 0)
-    {
-        tsp = rem;
-        goto start_wait;
-    }
-}
-
-
-// Intermediate structure used to communicate information to a spawned thread.
-typedef struct
-{
-    void (*pFunction)(void *);
-    unsigned long int Delay_ms;
-    void * pFuncParam;
-} TExecuteAfterTimeoutStruct;
-
-// Thread used to support the functionality of function ExecuteAfterTimeout.
-#pragma reentrant
-void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
-{
-    // Delay execution
-    waitMilliseconds(Message.Delay_ms);
-    // Call "pFunction(pFuncParam)"
-    (Message.pFunction)( Message.pFuncParam );
-}
-
-// This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
-// that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
-// Then the thread disappears.
-#pragma reentrant
-void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
-{
-    TExecuteAfterTimeoutStruct ExecuteAfterTimeoutStruct;
-    ExecuteAfterTimeoutStruct.Delay_ms = Timeout_ms;
-    ExecuteAfterTimeoutStruct.pFunction = pFunc;
-
-    std::thread Thread(ExecuteAfterTimeout_Thread, ExecuteAfterTimeoutStruct);
-    Thread.detach();
 }
 
 
@@ -2185,11 +2184,13 @@ void DistOFF(void)
 {
     // Midi channel 1, controller number 25, value 0, send to Midisport port B
     TMidiControlChange cc(1, 25, 0, 1);
+    Banner.SetMessage("Dist OFF");
 }
 
 void DistON(void)
 {
     TMidiControlChange cc(1, 25, 127, 1);
+    Banner.SetMessage("Dist ON");
 }
 
 void DistToggle(void)
@@ -2212,11 +2213,13 @@ void ModOFF(void)
 {
     // Midi channel 1, controller number 25, value 0, send to Midisport port B
     TMidiControlChange cc(1, 50, 0, 1);
+    Banner.SetMessage("Mod OFF");
 }
 
 void ModON(void)
 {
     TMidiControlChange cc(1, 50, 127, 1);
+    Banner.SetMessage("Mod ON");
 }
 
 void ModToggle(void)
@@ -2241,11 +2244,13 @@ void WahOFF(void)
 {
     // Midi channel 1, controller number 25, value 0, send to Midisport port B
     TMidiControlChange cc(1, 43, 0, 1);
+    Banner.SetMessage("WAH OFF");
 }
 
 void WahON(void)
 {
     TMidiControlChange cc(1, 43, 127, 1);
+    Banner.SetMessage("WAH ON");
 }
 
 void WahToggle(void)
@@ -3078,16 +3083,9 @@ int main(int argc, char** argv)
     printw(":by artist");
     refresh();
 
-    //TBanner Banner();
-    test_bigchar();
-//    win_big_message.Init("", 8, term_cols, 0, 0);
-
-//    bigchar::test_bigchar();
-
-
-
-
-
+    // Initialize this banner at the full terminal width
+    Banner.Init(term_cols, 0, 0, 800);
+    Banner.SetMessage("OXFORD - LE GROUPE");
 
     // Create thread that scans midi messages
     std::thread thread1(threadMidiAutomaton);
