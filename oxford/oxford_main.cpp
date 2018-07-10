@@ -833,6 +833,12 @@ TContext cManDown;
 TContext cShouldIStay;
 TContext cMercy;
 TContext cLady;
+TContext cLesCitesDOr;
+TContext cHuman;
+TContext cNewYorkAvecToi;
+TContext cBillieJean;
+TContext cILoveRockNRoll;
+TContext cHighwayToHell;
 
 
 // This function is needed to sort lists of elements.
@@ -2721,6 +2727,27 @@ void InitializePlaylist(void)
     cLady.SetInitFunc(Modjo::Lady::Init);
     cLady.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)"));
 
+    cLesCitesDOr.Author = "Unknown";
+    cLesCitesDOr.SongName = "Les mysterieuses cites d'or";
+    cLesCitesDOr.BaseTempo = 30;
+
+
+    cHuman.Author = "Rag'n'Bone Man";
+    cHuman.SongName = "Human (I'm only)";
+
+
+    cNewYorkAvecToi.Author = "Telephone";
+    cNewYorkAvecToi.SongName = "New-York Avec Toi";
+
+    cBillieJean.Author = "Mickael Jackson";
+    cBillieJean.SongName = "Billie Jean";
+
+    cILoveRockNRoll.Author = "Unknown";
+    cILoveRockNRoll.SongName = "I Love Rock'n'Roll";
+
+    cHighwayToHell.Author = "AC/DC";
+    cHighwayToHell.SongName = "Highway To Hell";
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -2730,51 +2757,61 @@ void InitializePlaylist(void)
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
-    PlaylistData.push_back(&cFlyMeToTheMoon);
-    PlaylistData.push_back(&cAllOfMe);
-    PlaylistData.push_back(&cCryMeARiver);
-    PlaylistData.push_back(&cJustAGigolo);
-    PlaylistData.push_back(&cSuperstition);
-    PlaylistData.push_back(&cStandByMe);
-    PlaylistData.push_back(&cGetBack);
-    PlaylistData.push_back(&cAllShookUp);
+    PlaylistData.push_back(&cLockedOutOfHeaven);
     PlaylistData.push_back(&cBackToBlack);
-    PlaylistData.push_back(&cUnchainMyHeart);
-    PlaylistData.push_back(&cFaith);
-    PlaylistData.push_back(&cIsntSheLovely);
-    PlaylistData.push_back(&cJammin);
-    PlaylistData.push_back(&cRehab);
-    PlaylistData.push_back(&cIFeelGood);
-    PlaylistData.push_back(&cPapasGotABrandNewBag);
-    PlaylistData.push_back(&cLongTrainRunning);
-    PlaylistData.push_back(&cMasterBlaster);
-    PlaylistData.push_back(&cAuxChampsElysees);
     PlaylistData.push_back(&cProudMary);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
-    PlaylistData.push_back(&cAroundTheWorld);
-    PlaylistData.push_back(&cGetLucky);
-    PlaylistData.push_back(&cIllusion);
-    PlaylistData.push_back(&cDockOfTheBay);
-    PlaylistData.push_back(&cLockedOutOfHeaven);
-    PlaylistData.push_back(&cWhatsUp);
-    PlaylistData.push_back(&cLesFillesDesForges);
+    PlaylistData.push_back(&cLongTrainRunning);
+    PlaylistData.push_back(&cGetBack);
     PlaylistData.push_back(&cThatsAllRight);
-    PlaylistData.push_back(&cJohnnyBeGood);
-    PlaylistData.push_back(&cBebopALula);
+    PlaylistData.push_back(&cWhatsUp);
+    PlaylistData.push_back(&cLesCitesDOr);
+    PlaylistData.push_back(&cHuman);
+    PlaylistData.push_back(&cNewYorkAvecToi);
+
     PlaylistData.push_back(&cUptownFunk);
     PlaylistData.push_back(&cLeFreak);
     PlaylistData.push_back(&cRappersDelight);
     PlaylistData.push_back(&cMachistador);
     PlaylistData.push_back(&cAnotherOneBiteTheDust);
     PlaylistData.push_back(&cWot);
+    PlaylistData.push_back(&cManDown);
+    PlaylistData.push_back(&cBillieJean);
+    PlaylistData.push_back(&cILoveRockNRoll);
+    PlaylistData.push_back(&cCapitaineFlam);
+    PlaylistData.push_back(&cAllShookUp);
+    PlaylistData.push_back(&cUnchainMyHeart);
+    PlaylistData.push_back(&cIsntSheLovely);
+    PlaylistData.push_back(&cRehab);
+    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cGetLucky);
+    PlaylistData.push_back(&cJammin);
+    PlaylistData.push_back(&cLesFillesDesForges);
     PlaylistData.push_back(&cKnockOnWood);
+    PlaylistData.push_back(&cShouldIStay);
+    PlaylistData.push_back(&cHighwayToHell);
+    PlaylistData.push_back(&cMercy);
+
+
+
+    PlaylistData.push_back(&cFlyMeToTheMoon);
+    PlaylistData.push_back(&cAllOfMe);
+    PlaylistData.push_back(&cCryMeARiver);
+    PlaylistData.push_back(&cJustAGigolo);
+    PlaylistData.push_back(&cSuperstition);
+    PlaylistData.push_back(&cStandByMe);
+    PlaylistData.push_back(&cFaith);
+    PlaylistData.push_back(&cPapasGotABrandNewBag);
+    PlaylistData.push_back(&cMasterBlaster);
+    PlaylistData.push_back(&cAuxChampsElysees);
+    PlaylistData.push_back(&cAroundTheWorld);
+    PlaylistData.push_back(&cIllusion);
+    PlaylistData.push_back(&cDockOfTheBay);
+    PlaylistData.push_back(&cJohnnyBeGood);
+    PlaylistData.push_back(&cBebopALula);
     PlaylistData.push_back(&cHotelCalifornia);
     PlaylistData.push_back(&cRaggamuffin);
-    PlaylistData.push_back(&cManDown);
-    PlaylistData.push_back(&cShouldIStay);
-    PlaylistData.push_back(&cMercy);
     PlaylistData.push_back(&cAveMaria);
-    PlaylistData.push_back(&cCapitaineFlam);
     PlaylistData.push_back(&cWildThoughts);
     PlaylistData.push_back(&cGangstaParadise);
     PlaylistData.push_back(&cBeatIt);
