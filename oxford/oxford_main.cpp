@@ -1,3 +1,12 @@
+// Hardware:
+// [[OBSOLETE]] Roland Sound Canvas == connected to ==   MidiSport port A Out
+// Roland XV5080 Midi In 1          == connected to ==   MidiSport port A Out
+// Eleven Rack (11R) Midi In        == connected to ==   MidiSport port B Out
+// Behringer FCB1010 Midi Out       == connected to ==   MidiSport port A In
+// Keyboard Midi Out                == connected to ==   MidiSport port B In
+// MidiSport USB                    == connected to ==   Raspberry Pi USB
+
+
 // Assuming that ALSA is used throughout.
 // Make sure you have installed libasound2-dev, to get the headers
 // Make sure you also have ncurses: libncurses5-dev libncursesw5-dev
@@ -12,9 +21,11 @@
 // you probably must build cdk locally, get in the cdk folder, ./configure, then make,
 // and make sure that code blocks links with the library generated in ???
 // run ldconfig as root
-// you must also have the aubio library; go to aubio, then ./waf configure, ./waf build
-// ./waf install is not really needed, just have codeblocks link with the aubio library
-// generated in: build/source/libaubio.so
+// you must also have the aubio library; go to aubio, then type make.
+// Navigate to the library and type ldconfig $(pwd) to add that path to the library search.
+// [[OOLLDD: ./waf configure, ./waf build, ./waf install is not really needed,
+//  just have codeblocks link with the aubio library generated in: build/source/libaubio.so]]
+
 
 
 
@@ -42,21 +53,15 @@
 #include <locale>
 
 int stop = 0;
-// Array of two pointers to a snd_rawmidi_t
-// Position 0 for the first port of the midisport,
-// Position 1 for the second port of the midisport.
-// E.g. handle_midi_in[0] gets us a handle for the first midi port.
-// Initialize with zero = invalid pointers.
-std::array<snd_rawmidi_t*,2> handle_midi_hw_in = {0, 0};
-// Same for the midisport midi outputs (two of them).
-std::array<snd_rawmidi_t*,2> handle_midi_hw_out = {0, 0};
-
-// Array which holds the string name of the hardware device,
-// one for the first midi port (IN1/OUT1) and second for the
-// second midi port (IN2/OUT2).
-std::array<std::string, 2> name_midi_hw = {"hw:1,0,0", "hw:1,0,1"}; // obtained with amidi -l
 
 std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
+
+// String name of the hardware device for the first midi port (IN1/OUT1)
+// obtained with amidi -l
+const std::string name_midi_hw_MIDISPORT_A = "hw:1,0,0";
+// String name of the hardware device for the first midi port (IN2/OUT2)
+// obtained with amidi -l
+const std::string name_midi_hw_MIDISPORT_B = "hw:1,0,1";
 
 // Mutex used to prevent ncurses refresh routines from being called from
 // concurrent threads.
@@ -459,7 +464,10 @@ or false (key is released).
 static std::map<int,bool> map_keys;
 
 
-
+// This is the Linux device that gets raw keyboard information.
+// Default is "/dev/input/event0" but it may change depending on Linux distribution
+// This program does not sense key presses through the terminal, it gets them straight
+// from the keyboard.
 const char *dev = "/dev/input/event0";
 
 void KeyboardThread(void)
@@ -839,6 +847,14 @@ TContext cNewYorkAvecToi;
 TContext cBillieJean;
 TContext cILoveRockNRoll;
 TContext cHighwayToHell;
+TContext c25years;
+TContext cAllumerLeFeu;
+TContext cChandelier;
+TContext cAllInYou;
+TContext cThisGirl;
+TContext cEncoreUnMatin;
+TContext cQuandLaMusiqueEstBonne;
+TContext cDumbo;
 
 
 // This function is needed to sort lists of elements.
@@ -903,67 +919,10 @@ void ContextNextPress(void)
     }
 }
 
+// What happens when the ContextNext pedal is released
 void ContextNextRelease(void)
 {
-    // And in that case, do nothing.
-}
-
-
-// Talk to ALSA and open a midi port in RAW mode, for data going IN.
-// (into the computer, into this program)
-// There are two physical IN ports on the midisport, called: 0 and 1,
-// that must be passed as a parameter.
-void StartRawMidiIn(int portnum)
-{
-    if (handle_midi_hw_in[portnum] == 0)
-    {
-        int err = snd_rawmidi_open(&handle_midi_hw_in[portnum], NULL, name_midi_hw[portnum].c_str(), 0);
-        if (err)
-        {
-            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw[portnum].c_str(), err);
-        }
-    }
-}
-
-
-// Talk to ALSA and open a midi port in RAW mode, for data going OUT.
-// (from this program, out of the computer, to the expander, to the Rack Eleven, etc.)
-// There are two physical IN ports on the midisport, called: 0 and 1,
-// that must be passed as a parameter.
-void StartRawMidiOut(int portnum)
-{
-    if (handle_midi_hw_out[portnum] == 0)
-    {
-        int err = snd_rawmidi_open(NULL, &handle_midi_hw_out[portnum], name_midi_hw[portnum].c_str(), 0);
-        if (err)
-        {
-            wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw[portnum].c_str(), err);
-        }
-    }
-}
-
-
-// Close the RAW midi IN port, for port "portnum" (0 or 1)
-void StopRawMidiIn(int portnum)
-{
-    if (handle_midi_hw_in[portnum] != 0)
-    {
-        snd_rawmidi_drain(handle_midi_hw_in[portnum]);
-        snd_rawmidi_close(handle_midi_hw_in[portnum]);
-        handle_midi_hw_in[portnum] = 0;
-    }
-
-}
-
-// Close the RAW midi OUT port, for port "portnum" (0 or 1)
-void StopRawMidiOut(int portnum)
-{
-    if(handle_midi_hw_out[portnum] != 0)
-    {
-        snd_rawmidi_drain(handle_midi_hw_out[portnum]);
-        snd_rawmidi_close(handle_midi_hw_out[portnum]);
-        handle_midi_hw_out[portnum] = 0;
-    }
+    // In that case, do nothing.
 }
 
 
@@ -1014,196 +973,430 @@ typedef struct
 } TPlayNoteMsg;
 
 
-// This class sends a Note ON event on MIDI channel managed by handle_out.
-// Example: TMidiNoteOnEvent NoteOnEvent(2, 60, 100);
-// The real stuff happends upon the object instanciation. Optionally, one can send the message again
-// after by calling NoteOnEvent.sendToMidi(), but that would send it a second time.
-class TMidiNoteOnEvent
-{
-public:
-    unsigned char NoteOnField = 9; // See MIDI specifications
-    unsigned char charArray[3];
-    int PortNumber = 0;
 
-    void sendToMidi(void)
+
+
+
+
+
+
+// This class runs a state machine capable of processing MIDI input.
+// It instantiates a thread on its own (that runs the state machine).
+// A defined MIDI IN port must be assigned to it upon initialization.
+// Callback functions must be set up to process:
+// - Note events
+// - Controller Change events
+class TMIDI_Port
+{
+
+public:
+    TMIDI_Port(void) {};
+
+    typedef void (*THookProcessNoteONEvent)(unsigned int rxNote_param, unsigned int rxVolume_param);
+    // Hook function called whenever a controller change event is received
+    typedef void (*THookProcessControllerChangeEvent)(unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
+
+    void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
     {
-        wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-        if (handle_midi_hw_out[PortNumber] != 0)
+        name_midi_hw = name_midi_hw_param;
+        HookProcessNoteONEvent = HookProcessNoteONEvent_param;
+        HookProcessControllerChangeEvent = HookProcessControllerChangeEvent_param;
+        // Spawn new thread that takes care of processing MIDI packets
+        if (ThreadNativeHandle == 0)
         {
-            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
+            // Pass "this" object as an argument to the thread CAN_DriverInterruptFake.
+            // It will
+            std::thread tmp_thread(StateMachineThread, this);
+            // Please note that access to the so-called "native handle" is possible only
+            // **BEFORE** we detach the thread. There are other ways to identify a Linux thread,
+            // but the native handle is the only one that will work for us here. This is why it
+            // is "captured" in the member variable ThreadNativeHandle, for further use later on.
+            ThreadNativeHandle = tmp_thread.native_handle();
+            tmp_thread.detach();
+            // tmp_thread is thrown away when going out of scope, but StateMachineThread() will continue spinning as a thread.
+        }
+        else
+        {
+            // That thread needs to be spawned only once. If we come here, it probably
+            // had been initialized by a previous call to Init().
+            wprintw(win_debug_messages.GetRef(), "TProcessMidiInput::Init() called too often\n");
+        }
+
+    }
+    /*
+        snd_rawmidi_t * GetHandle_MIDI_In(void)
+        {
+            return handle_midi_hw_in;
+        }
+
+        snd_rawmidi_t * GetHandle_MIDI_Out(void)
+        {
+            return handle_midi_hw_out;
+        }
+    */
+
+    // Send Note On Event on midi channel Channel (1-16), note number NoteNumber (0-127),
+    // velocity Velocity (0-127).
+    void SendNoteOnEvent(unsigned int Channel, unsigned int NoteNumber,
+                         unsigned int Velocity)
+    {
+        // This function sends a Note ON event
+        // Example: SendNoteOnEvent(2, 60, 100);
+        unsigned char NoteOnField = 9; // See MIDI specifications
+        unsigned char charArray[3];
+
+        if (Channel < 1)
+        {
+            Channel = 1;
+        }
+        if (Channel > 16)
+        {
+            Channel = 16;
+        }
+
+        charArray[0] = (NoteOnField << 4) + ((Channel - 1) & 0x0F);
+        charArray[1] = NoteNumber & 0x7F;
+        charArray[2] = Velocity;
+        wprintw(win_debug_messages.GetRef(), "Note ON number: %i\n", (int) charArray[1]);
+
+        wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
+        if (handle_midi_hw_out != 0)
+        {
+            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
-    TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg);
 
-    TMidiNoteOnEvent(unsigned int Channel, unsigned int NoteNumber,
-                     unsigned int Velocity);
-
-    TMidiNoteOnEvent(unsigned int Channel,
-                     unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param);
-
-    void Init(unsigned int Channel, unsigned int NoteNumber,
-              unsigned int Velocity);
+    void SendNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
+    {
+        SendNoteOnEvent(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
+    }
 
 
-    void Init(unsigned int Channel, unsigned int NoteNumber,
-              unsigned int Velocity, int PortNumber_param);
 
-};
-
-TMidiNoteOnEvent::TMidiNoteOnEvent(unsigned int Channel,
-                                   unsigned int NoteNumber, unsigned int Velocity)
-{
-    Init(Channel, NoteNumber, Velocity, 0);
-}
-
-TMidiNoteOnEvent::TMidiNoteOnEvent(unsigned int Channel,
-                                   unsigned int NoteNumber, unsigned int Velocity, int PortNumber_param)
-{
-    Init(Channel, NoteNumber, Velocity, PortNumber_param);
-}
-
-
-void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
-                            unsigned int Velocity)
-{
-
-    if (Channel < 1)
-        Channel = 1;
-    if (Channel > 16)
-        Channel = 16;
-
-    charArray[0] = (NoteOnField << 4) + ((Channel - 1) & 0x0F);
-    charArray[1] = NoteNumber & 0x7F;
-    charArray[2] = Velocity;
-    wprintw(win_debug_messages.GetRef(), "Note number: %i\n", (int) charArray[1]);
-
-    sendToMidi();
-
-}
-
-
-void TMidiNoteOnEvent::Init(unsigned int Channel, unsigned int NoteNumber,
-                            unsigned int Velocity, int PortNumber_param)
-
-{
-    PortNumber = PortNumber_param;
-    Init(Channel, NoteNumber, Velocity);
-
-}
-
-TMidiNoteOnEvent::TMidiNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
-{
-    Init(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
-}
 
 
 // Same for Note Off MIDI event.
 // If you want to send out some MIDI notes,
 // you're better off using PlayNote(), rather than drilling down to the Note ON / OFF events...
-class TMidiNoteOffEvent: public TMidiNoteOnEvent
-{
-    using TMidiNoteOnEvent::TMidiNoteOnEvent;
-
-public:
-    unsigned char NoteOnField = 8;
-//    explicit TMidiNoteOffEvent(TPlayNoteMsg * PlayNoteMsg);
-};
-
-class TMidiProgramChange
-{
-private:
-    unsigned char MidiFunctionID = 0xC; // See MIDI specifications
-    unsigned char charArray[2];
-    int PortNumber = 0;
-
-    void sendToMidi(void)
+    void SendNoteOffEvent(unsigned int Channel, unsigned int NoteNumber, unsigned int Velocity)
     {
-        wprintw(win_midi_out.GetRef(), "%i\n%i\n", (int) charArray[0], (int) charArray[1]);
-        if(handle_midi_hw_out[PortNumber] != 0)
-        {
-            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
-        }
-    }
-    ;
-
-public:
-
-    TMidiProgramChange(unsigned char Channel, unsigned char Program)
-    {
-        TMidiProgramChange(Channel, Program, 0);
-    }
-
-    TMidiProgramChange(unsigned char Channel, unsigned char Program, int PortNumber_param)
-    {
-        PortNumber = PortNumber_param;
+        // This function sends a Note OFF event
+        // Example: SendNoteOffEvent(2, 60, 100);
+        unsigned char NoteOffField = 8; // See MIDI specifications
+        unsigned char charArray[3];
 
         if (Channel < 1)
+        {
             Channel = 1;
+        }
         if (Channel > 16)
+        {
             Channel = 16;
+        }
 
+        charArray[0] = (NoteOffField << 4) + ((Channel - 1) & 0x0F);
+        charArray[1] = NoteNumber & 0x7F;
+        charArray[2] = Velocity;
+        wprintw(win_debug_messages.GetRef(), "Note OFF number: %i\n", (int) charArray[1]);
+
+        wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
+        if (handle_midi_hw_out != 0)
+        {
+            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+        }
+    }
+
+
+
+    void SendNoteOffEvent(TPlayNoteMsg * PlayNoteMsg)
+    {
+        SendNoteOffEvent(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
+    }
+
+
+    void SendProgramChange(unsigned char Channel, unsigned char Program)
+    {
+        unsigned char MidiFunctionID = 0xC; // See MIDI specifications
+        unsigned char charArray[2];
+        if (Channel < 1)
+        {
+            Channel = 1;
+        }
+        if (Channel > 16)
+        {
+            Channel = 16;
+        }
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (Program - 1) & 0x7F;
         wprintw(win_debug_messages.GetRef(), "Program Change: Channel %i; Program %i\n", (int) Channel, (int) Program);
-        sendToMidi();
-    }
-
-};
-
-// Send out a CC (Control Change) MIDI event.
-class TMidiControlChange
-{
-private:
-    unsigned char MidiFunctionID = 0xB;
-    unsigned char charArray[3];
-    int PortNumber = 0;
-
-    void sendToMidi(void)
-    {
-        if (handle_midi_hw_out[PortNumber] != 0)
+        wprintw(win_midi_out.GetRef(), "%i\n%i\n", (int) charArray[0], (int) charArray[1]);
+        if(handle_midi_hw_out != 0)
         {
-            wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-            snd_rawmidi_write(handle_midi_hw_out[PortNumber], &charArray, sizeof(charArray));
+            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
-    ;
 
-public:
 
-    TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
-                       unsigned char ControllerValue)
+    // Send out a CC (Control Change) MIDI event.
+    void SendControlChange(unsigned char Channel, unsigned char ControlNumber,
+                           unsigned char ControllerValue)
     {
-        TMidiControlChange(Channel, ControlNumber, ControllerValue, 0);
-    }
+        unsigned char MidiFunctionID = 0xB;
+        unsigned char charArray[3];
 
-    TMidiControlChange(unsigned char Channel, unsigned char ControlNumber,
-                       unsigned char ControllerValue, int PortNumber_param)
-    {
-        PortNumber = PortNumber_param;
         if (Channel < 1)
+        {
             Channel = 1;
+
+        }
         if (Channel > 16)
+        {
             Channel = 16;
+        }
 
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (ControlNumber) & 0x7F;
         charArray[2] = (ControllerValue);
         wprintw(win_debug_messages.GetRef(), "Control Change - Controller Number: %i; Controller Value: %i\n", (int) charArray[1], (int) charArray[2]);
-        sendToMidi();
+        if (handle_midi_hw_out != 0)
+        {
+            wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
+            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+        }
     }
 
+    // Talk to ALSA and open a midi port in RAW mode, for data going OUT.
+    // (from this program, out of the computer, to the expander, to the Rack Eleven, etc.)
+    void StartRawMidiOut(void)
+    {
+        if (handle_midi_hw_out == 0)
+        {
+            int err = snd_rawmidi_open(NULL, &handle_midi_hw_out, name_midi_hw.c_str(), 0);
+            if (err)
+            {
+                wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw.c_str(), err);
+            }
+        }
+    }
+
+    // Close the RAW midi OUT port, for port "portnum" (0 or 1)
+    void StopRawMidiOut(void)
+    {
+        if(handle_midi_hw_out != 0)
+        {
+            snd_rawmidi_drain(handle_midi_hw_out);
+            snd_rawmidi_close(handle_midi_hw_out);
+            handle_midi_hw_out = 0;
+        }
+    }
+
+private:
+    std::string name_midi_hw;
+    std::thread::native_handle_type ThreadNativeHandle = 0;
+    int err;
+    unsigned char ch;
+    unsigned int rxNote, rxVolume, rxControllerNumber,
+             rxControllerValue;
+    enum
+    {
+        smInit,
+        smWaitMidiChar1,
+        smWaitMidiControllerChangeChar2,
+        smWaitMidiControllerChangeChar3,
+        smProcessControllerChange,
+        smWaitMidiNoteChar2,
+        smWaitMidiNoteChar3,
+        smProcessNoteEvent,
+        smInterpretMidiNote,
+        smSendMidiNotes
+    } stateMachine = smInit;
+
+    // Keep track of MIDI IN ALSA Handle
+    // Initialize with zero = invalid pointers.
+    snd_rawmidi_t * handle_midi_hw_in = 0;
+    // Same for the midisport midi output
+    snd_rawmidi_t * handle_midi_hw_out = 0;
+
+    // Hook function called whenever a note ON event is received
+    THookProcessNoteONEvent HookProcessNoteONEvent = 0;
+    // Hook function called whenever a controller change event is received
+    THookProcessControllerChangeEvent HookProcessControllerChangeEvent = 0;
+
+    // Talk to ALSA and open a midi port in RAW mode, for data going IN.
+    // (into the computer, into this program, from the pedalboard, from the keyboard...)
+    void StartRawMidiIn(void)
+    {
+        if (handle_midi_hw_in == 0)
+        {
+            int err = snd_rawmidi_open(&handle_midi_hw_in, NULL, name_midi_hw.c_str(), 0);
+            if (err)
+            {
+                wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw.c_str(), err);
+            }
+        }
+    }
+
+    // Close the RAW midi IN port, for port "portnum" (0 or 1)
+    void StopRawMidiIn(void)
+    {
+        if (handle_midi_hw_in != 0)
+        {
+            snd_rawmidi_drain(handle_midi_hw_in);
+            snd_rawmidi_close(handle_midi_hw_in);
+            handle_midi_hw_in = 0;
+        }
+    }
+
+
+    // This thread runs the main MIDI IN state machine
+    static void StateMachineThread(TMIDI_Port * pSelf)
+    {
+        // Change priority to top-most realtime
+        /*
+        struct sched_param param;
+        param.__sched_priority = sched_get_priority_max(SCHED_RR);
+        //https://linux.die.net/man/3/pthread_setschedparam
+        int s = pthread_setschedparam(pthread_self(), SCHED_RR, &param);
+        if (s != 0)
+        {
+            wprintw(win_debug_messages.GetRef(), "MIDI: error initializing thread priority, returned %i\n", s);
+        }*/
+
+        wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", pSelf->name_midi_hw.c_str());
+
+        pSelf->StartRawMidiIn();
+        pSelf->StartRawMidiOut();
+//    signal(SIGINT,sighandler);
+
+        if (pSelf->handle_midi_hw_in)
+        {
+            while (1)
+            {
+                switch (pSelf->stateMachine)
+                {
+                case smInit:
+                    pSelf->stateMachine = smWaitMidiChar1;
+                    break;
+
+                case smWaitMidiChar1:
+                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
+                    if (pSelf->ch == 0x91 && pSelf->HookProcessNoteONEvent)
+                    {
+                        pSelf->stateMachine = smWaitMidiNoteChar2;
+                    }
+                    if (pSelf->ch == 0xb0 && pSelf->HookProcessControllerChangeEvent)
+                    {
+                        pSelf->stateMachine = smWaitMidiControllerChangeChar2;
+                    }
+                    break;
+
+                case smWaitMidiNoteChar2:
+                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
+                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    {
+                        pSelf->stateMachine = smWaitMidiNoteChar3;
+                        pSelf->rxNote = pSelf->ch;
+                    }
+                    else
+                    {
+                        // Value out of bounds
+                        pSelf->stateMachine = smWaitMidiChar1;
+                    }
+                    break;
+
+                case smWaitMidiNoteChar3:
+                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
+                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    {
+                        pSelf->rxVolume = pSelf->ch;
+                        pSelf->stateMachine = smProcessNoteEvent;
+                    }
+                    else
+                    {
+                        // Value out of bounds
+                        pSelf->stateMachine = smWaitMidiChar1;
+                    }
+                    break;
+
+                case smWaitMidiControllerChangeChar2:
+                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
+                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    {
+                        pSelf->stateMachine = smWaitMidiControllerChangeChar3;
+                        pSelf->rxControllerNumber = pSelf->ch;
+                    }
+                    else
+                    {
+                        // Value out of bounds
+                        pSelf->stateMachine = smWaitMidiChar1;
+                    }
+
+                    break;
+
+                case smWaitMidiControllerChangeChar3:
+                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
+                    pSelf->stateMachine = smProcessControllerChange;
+                    pSelf->rxControllerValue = pSelf->ch;
+                    wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", pSelf->rxControllerNumber, pSelf->rxControllerValue);
+                    break;
+
+                case smProcessNoteEvent:
+                {
+                    pSelf->HookProcessNoteONEvent(pSelf->rxNote, pSelf->rxVolume);
+                }
+                pSelf->stateMachine = smWaitMidiChar1;
+                break;
+
+
+                case smProcessControllerChange:
+                {
+                    pSelf->HookProcessControllerChangeEvent(pSelf->rxControllerNumber, pSelf->rxControllerValue);
+                }
+                pSelf->stateMachine = smWaitMidiChar1;
+
+                break;
+
+                default:
+                    pSelf->stateMachine = smInit;
+
+                }
+            }
+        }
+
+        wprintw(win_debug_messages.GetRef(), "Closing\n");
+
+        pSelf->StopRawMidiIn();
+        pSelf->StopRawMidiOut();
+    }
 };
+
+
+// MIDI port A
+TMIDI_Port MIDI_A;
+
+// MIDI port B
+TMIDI_Port MIDI_B;
+
+
+
+
+
 
 
 // Thread used by PlayNote() to keep track of time, for each note.
 void playNoteThread(TPlayNoteMsg msg)
 {
-    TMidiNoteOnEvent MidiNoteOnEvent(&msg);
+    MIDI_A.SendNoteOnEvent(&msg);
     waitMilliseconds(msg.DurationMS);
     wprintw(win_debug_messages.GetRef(), "playNoteThread\n");
     msg.Velocity = 0;
-    TMidiNoteOffEvent MidiNoteOffEvent(&msg);
+    MIDI_A.SendNoteOffEvent(&msg);
 }
 
 // Useful function that plays a note, on a specific MIDI channel, Note Number, Duration in milliseconds, and Velocity.
@@ -1250,13 +1443,13 @@ int channel = 2;
 void StartNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOnEvent NoteOn(channel, octave *12 + noteInScale, 100);
+    MIDI_A.SendNoteOnEvent(channel, octave *12 + noteInScale, 100);
 }
 
 void StopNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    TMidiNoteOffEvent NoteOff(channel, octave *12 + noteInScale, 0);
+    MIDI_A.SendNoteOffEvent(channel, octave *12 + noteInScale, 0);
 }
 
 void OctaveLess(void * pVoid)
@@ -1276,7 +1469,7 @@ void ProgramLess(void * pVoid)
     program--;
     wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
     {
-        TMidiProgramChange PC1(channel, program);
+        MIDI_A.SendProgramChange(channel, program);
     }
 }
 
@@ -1285,7 +1478,7 @@ void ProgramMore(void * pVoid)
     program++;
     wprintw(win_debug_messages.GetRef(), "Program %i\n", program);
     {
-        TMidiProgramChange PC2(channel, program);
+        MIDI_A.SendProgramChange(channel, program);
     }
 }
 
@@ -1441,39 +1634,38 @@ namespace AroundTheWorld
 {
 void LowPassFilter(int val)
 {
+    // MIDI_B == send to 11R
     using std::vector;
     vector<double> xData113 = { 0, 127/5*1, 127/5*2, 127/5*3, 127/5*4,  120 };
     vector<double> yData113 = { 100, 100, 80, 60, 40,  64  };
-    TMidiControlChange cc113(1, 113, interpolate(xData113, yData113, val, false), 1); // last ,1: send to 11R
+    MIDI_B.SendControlChange(1, 113, interpolate(xData113, yData113, val, false));
 
     vector<double> xData114 = { 0, 127/5*1, 127/5*2, 127 };
     vector<double> yData114 = { 0, 0, 64, 64 };
-    TMidiControlChange cc114(1, 114, interpolate(xData114, yData114, val, false), 1); // last ,1: send to 11R
+    MIDI_B.SendControlChange(1, 114, interpolate(xData114, yData114, val, false));
 
     vector<double> xData115 = { 0, 127/5*2, 127/5*3, 127 };
     vector<double> yData115 = { 0, 0, 64, 64 };
-    TMidiControlChange cc115(1, 115, interpolate(xData115, yData115, val, false), 1); // last ,1: send to 11R
+    MIDI_B.SendControlChange(1, 115, interpolate(xData115, yData115, val, false));
 
     vector<double> xData96 = { 0, 127/5*3, 127/5*4, 127 };
     vector<double> yData96 = { 0, 0, 64, 64 };
-    TMidiControlChange cc96(1, 96, interpolate(xData96, yData96, val, false), 1); // last ,1: send to 11R
+    MIDI_B.SendControlChange(1, 96, interpolate(xData96, yData96, val, false));
 
     vector<double> xData97 = { 0, 127/5*4, 127/5*5, 127 };
     vector<double> yData97 = { 0, 0, 64, 64 };
-    TMidiControlChange cc97(1, 97, interpolate(xData97, yData97, val, false), 1); // last ,1: send to 11R
-
-
+    MIDI_B.SendControlChange(1, 97, interpolate(xData97, yData97, val, false));
 }
 
 void LoPassFilterEnable(void)
 {
     // channel 1, control 86 (FX2), value 127 (please turn ON), send to midisport out B (to 11R)
-    TMidiControlChange cc(1, 86, 127, 1);
+    MIDI_B.SendControlChange(1, 86, 127);
 }
 
 void LoPassFilterDisable(void)
 {
-    TMidiControlChange cc(1, 86, 0, 1);
+    MIDI_B.SendControlChange(1, 86, 0);
 }
 
 }
@@ -1484,16 +1676,16 @@ namespace WildThoughts
 {
 void Chord1_On(void)
 {
-    TMidiProgramChange pc(2, 96);
-    TMidiNoteOnEvent no(2, 53, 100);
-    TMidiNoteOnEvent no1(2, 56, 60);
+    MIDI_A.SendProgramChange(2, 96);
+    MIDI_A.SendNoteOnEvent(2, 53, 100);
+    MIDI_A.SendNoteOnEvent(2, 56, 60);
 
 }
 
 void Chord1_Off_Thread(void * pGobble)
 {
-    TMidiNoteOffEvent no(2, 53, 0);
-    TMidiNoteOffEvent no1(2, 56, 0);
+    MIDI_A.SendNoteOffEvent(2, 53, 0);
+    MIDI_A.SendNoteOffEvent(2, 56, 0);
 }
 
 void Chord1_Off(void)
@@ -1503,14 +1695,14 @@ void Chord1_Off(void)
 
 void Chord2_On(void)
 {
-    TMidiNoteOnEvent no(2, 60, 100);
-    TMidiNoteOnEvent no1(2, 63, 100);
+    MIDI_A.SendNoteOnEvent(2, 60, 100);
+    MIDI_A.SendNoteOnEvent(2, 63, 100);
 }
 
 void Chord2_Off_Thread(void * pGobble)
 {
-    TMidiNoteOffEvent no(2, 60, 0);
-    TMidiNoteOffEvent no1(2, 63, 0);
+    MIDI_A.SendNoteOffEvent(2, 60, 0);
+    MIDI_A.SendNoteOffEvent(2, 63, 0);
 }
 
 void Chord2_Off(void)
@@ -1520,14 +1712,14 @@ void Chord2_Off(void)
 
 void Chord3_On(void)
 {
-    TMidiNoteOnEvent no(2, 50, 100);
-    TMidiNoteOnEvent no1(2, 43, 100);
+    MIDI_A.SendNoteOnEvent(2, 50, 100);
+    MIDI_A.SendNoteOnEvent(2, 43, 100);
 }
 
 void Chord3_Off_Thread(void * pGobble)
 {
-    TMidiNoteOffEvent no(2, 50, 0);
-    TMidiNoteOffEvent no1(2, 43, 0);
+    MIDI_A.SendNoteOffEvent(2, 50, 0);
+    MIDI_A.SendNoteOffEvent(2, 43, 0);
 }
 
 void Chord3_Off(void)
@@ -1549,10 +1741,10 @@ void AllSoundsOff(void)
     // all sounds off for all channels
     for (unsigned int i = 1; i<=16; i++)
     {
-        TMidiControlChange cc(i, 0x78, 0);
-        TMidiControlChange cc2(i, 0x79, 0);
-        TMidiControlChange cc3(i, 0x7B, 0);
-        TMidiControlChange cc4(i, 0x7C, 0);
+        MIDI_A.SendControlChange(i, 0x78, 0);
+        MIDI_A.SendControlChange(i, 0x79, 0);
+        MIDI_A.SendControlChange(i, 0x7B, 0);
+        MIDI_A.SendControlChange(i, 0x7C, 0);
     }
 }
 
@@ -1675,16 +1867,16 @@ namespace CapitaineFlam
 
 void Partial_On(int NoteNumber)
 {
-    TMidiNoteOnEvent no1(3, NoteNumber, 100);
-    TMidiNoteOnEvent no2(4, NoteNumber, 100);
-    TMidiNoteOnEvent no3(5, NoteNumber, 100);
+    MIDI_A.SendNoteOnEvent(3, NoteNumber, 100);
+    MIDI_A.SendNoteOnEvent(4, NoteNumber, 100);
+    MIDI_A.SendNoteOnEvent(5, NoteNumber, 100);
 }
 
 void Partial_Off(int NoteNumber)
 {
-    TMidiNoteOffEvent no1(3, NoteNumber, 0);
-    TMidiNoteOffEvent no2(4, NoteNumber, 0);
-    TMidiNoteOffEvent no3(5, NoteNumber, 0);
+    MIDI_A.SendNoteOffEvent(3, NoteNumber, 0);
+    MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
+    MIDI_A.SendNoteOffEvent(5, NoteNumber, 0);
 }
 
 
@@ -1714,7 +1906,7 @@ void * Laser_Cycle(void * pMessage)
 {
     while (poorMansSemaphore)
     {
-        TMidiNoteOnEvent no(2, 30, 100);
+        MIDI_A.SendNoteOnEvent(2, 30, 100);
         waitMilliseconds(100);
 //        TMidiNoteOffEvent noff(2, 30, 0);
         //waitMilliseconds(30);
@@ -1731,14 +1923,14 @@ void Init(void)
     // For a reason that eludes me, changing the variation of the part
     // must be sent twice...
     // We want to select the LaserGun (program 128, variation 2)
-    TMidiProgramChange pc(2, 128);
-    TMidiControlChange cc(2, 0, 2);
-    TMidiProgramChange pc1(2, 128);
-    TMidiControlChange cc1(2, 0, 2);
+    MIDI_A.SendProgramChange(2, 128);
+    MIDI_A.SendControlChange(2, 0, 2);
+    MIDI_A.SendProgramChange(2, 128);
+    MIDI_A.SendControlChange(2, 0, 2);
 
-    TMidiProgramChange pc3(3, 57); // channel 3, trumpet
-    TMidiProgramChange pc4(4, 64); // channel 3, synth brass
-    TMidiProgramChange pc5(5, 61); // channel 3, trumpet
+    MIDI_A.SendProgramChange(3, 57); // channel 3, trumpet
+    MIDI_A.SendProgramChange(4, 64); // channel 3, synth brass
+    MIDI_A.SendProgramChange(5, 61); // channel 3, trumpet
 
 }
 
@@ -1848,7 +2040,7 @@ void Start_NoteOn(void)
 {
     if(mutex == 0)
     {
-        TMidiProgramChange pc(2, 49);
+        MIDI_A.SendProgramChange(2, 49);
         index = 0;
         PlayChord();
         gettimeofday(&tv1, NULL);
@@ -1900,9 +2092,9 @@ namespace BeatIt
 
 void Init(void)
 {
-    TMidiProgramChange pc1(2, 92);
-    TMidiProgramChange pc2(3, 101);
-    TMidiProgramChange pc3(4, 89);
+    MIDI_A.SendProgramChange(2, 92);
+    MIDI_A.SendProgramChange(3, 101);
+    MIDI_A.SendProgramChange(4, 89);
 //    TMidiProgramChange pc4(1, 4, 1);
 
 
@@ -1913,9 +2105,9 @@ void Init(void)
 
 void Partial_Off(void * pParam)
 {
-    TMidiControlChange cc1(2,0x42, 0);
-    TMidiControlChange cc2(3,0x42, 0);
-    TMidiControlChange cc3(4,0x42, 0);
+    MIDI_A.SendControlChange(2,0x42, 0);
+    MIDI_A.SendControlChange(3,0x42, 0);
+    MIDI_A.SendControlChange(4,0x42, 0);
 
 }
 
@@ -1928,9 +2120,9 @@ void Partial_On(int NoteNumber)
     PlayNote(3, NoteNumber, 400, 80);
     PlayNote(4, NoteNumber -12, 400, 100);
     PlayNote(4, NoteNumber, 400, 100);
-    TMidiControlChange cc1(2,0x42, 127);
-    TMidiControlChange cc2(3,0x42, 127);
-    TMidiControlChange cc3(4,0x42, 127);
+    MIDI_A.SendControlChange(2,0x42, 127);
+    MIDI_A.SendControlChange(3,0x42, 127);
+    MIDI_A.SendControlChange(4,0x42, 127);
 
 //    ExecuteAfterTimeout(Partial_Off, 1700, NULL);
 }
@@ -2011,7 +2203,7 @@ void StopSequencer(void)
 
         sleep(1);
 
-        StartRawMidiOut(0);
+        MIDI_A.StartRawMidiOut();
         AllSoundsOff();
     }
 }
@@ -2021,7 +2213,7 @@ void * ThreadSequencerFunction (void * params)
 {
 
 
-    StopRawMidiOut(0);
+    MIDI_A.StopRawMidiOut();
 
     SequencerRunning = 1;
     showlist();
@@ -2034,7 +2226,7 @@ void * ThreadSequencerFunction (void * params)
     char const * (argv1[4]) =
     { str10, str11, str12, str13 };
     main_TODO(argc, argv1, Tempo);
-    StartRawMidiOut(0);
+    MIDI_A.StartRawMidiOut();
 
     thread_sequencer = NULL;
 
@@ -2122,12 +2314,10 @@ void Init(void)
     // For a reason that eludes me, changing the variation of the part
     // must be sent twice...
     // We want to select the Sine Wave (program 81, variation 8)
-    TMidiProgramChange pc(2, 81);
-    TMidiControlChange cc(2, 0, 8);
-    TMidiProgramChange pc1(2, 81);
-    TMidiControlChange cc1(2, 0, 8);
-
-
+    MIDI_A.SendProgramChange(2, 81);
+    MIDI_A.SendControlChange(2, 0, 8);
+    MIDI_A.SendProgramChange(2, 81);
+    MIDI_A.SendControlChange(2, 0, 8);
 }
 
 void WhiteNoiseUniform(void)
@@ -2143,13 +2333,13 @@ void WhiteNoiseGaussian(void)
 int CurrentNote = 0;
 void SineWaveOn(void)
 {
-    TMidiNoteOnEvent no(2, CurrentNote, 100);
+    MIDI_A.SendNoteOnEvent(2, CurrentNote, 100);
 }
 
 
 void SineWaveOff(void)
 {
-    TMidiNoteOffEvent no(2, CurrentNote, 0);
+    MIDI_A.SendNoteOffEvent(2, CurrentNote, 0);
 }
 
 void SineWavePitch(int ccValue)
@@ -2181,23 +2371,18 @@ void Solo_On_Off(void)
     SoloON = !SoloON;
     if (SoloON)
     {
-        TMidiControlChange cc(1, 50, 127, 1);
-        TMidiControlChange cc2(1, 86, 127, 1);
+        MIDI_B.SendControlChange(1, 50, 127);
+        MIDI_B.SendControlChange(1, 86, 127);
 
     }
     else
     {
-        TMidiControlChange cc(1, 50, 0, 1);
-        TMidiControlChange cc2(1, 86, 0, 1);
-
+        MIDI_B.SendControlChange(1, 50, 0);
+        MIDI_B.SendControlChange(1, 86, 0);
     }
-
 }
 
-
-
 }
-
 
 }
 
@@ -2207,13 +2392,13 @@ namespace ElevenRack
 void DistOFF(void)
 {
     // Midi channel 1, controller number 25, value 0, send to Midisport port B
-    TMidiControlChange cc(1, 25, 0, 1);
+    MIDI_B.SendControlChange(1, 25, 0);
     Banner.SetMessage("Dist OFF");
 }
 
 void DistON(void)
 {
-    TMidiControlChange cc(1, 25, 127, 1);
+    MIDI_B.SendControlChange(1, 25, 127);
     Banner.SetMessage("Dist ON");
 }
 
@@ -2235,14 +2420,14 @@ void DistToggle(void)
 
 void ModOFF(void)
 {
-    // Midi channel 1, controller number 25, value 0, send to Midisport port B
-    TMidiControlChange cc(1, 50, 0, 1);
+    // Midi channel 1, controller number 50, value 0, send to Midisport port B
+    MIDI_B.SendControlChange(1, 50, 0);
     Banner.SetMessage("Mod OFF");
 }
 
 void ModON(void)
 {
-    TMidiControlChange cc(1, 50, 127, 1);
+    MIDI_B.SendControlChange(1, 50, 127);
     Banner.SetMessage("Mod ON");
 }
 
@@ -2266,14 +2451,14 @@ void ModToggle(void)
 
 void WahOFF(void)
 {
-    // Midi channel 1, controller number 25, value 0, send to Midisport port B
-    TMidiControlChange cc(1, 43, 0, 1);
+    // Midi channel 1, controller number 43, value 0, send to Midisport port B
+    MIDI_B.SendControlChange(1, 43, 0);
     Banner.SetMessage("WAH OFF");
 }
 
 void WahON(void)
 {
-    TMidiControlChange cc(1, 43, 127, 1);
+    MIDI_B.SendControlChange(1, 43, 127);
     Banner.SetMessage("WAH ON");
 }
 
@@ -2295,7 +2480,7 @@ void WahToggle(void)
 
 void WahSetValue(int Val)
 {
-    TMidiControlChange cc(1, 4, Val, 1);
+    MIDI_B.SendControlChange(1, 4, Val);
 }
 
 void Init(void)
@@ -2304,8 +2489,8 @@ void Init(void)
     // Manual page 124.
     // Midi channel 1, Control number 32, Value 0, on Midisport port B
     // (going to rack eleven)
-    TMidiControlChange cc(1, 32, 0, 1);
-    TMidiProgramChange pc(1, 104, 1);
+    MIDI_B.SendControlChange(1, 32, 0);
+    MIDI_B.SendProgramChange(1, 104);
 
     DistOFF();
     ModOFF();
@@ -2314,178 +2499,60 @@ void Init(void)
 
 }
 
-// Inspect MIDI IN for events, and dispatch then accordingly as Control Change events,
-// midi notes assigned to pedals of the pedalboard, or other.
-void threadMidiAutomaton(void)
+
+// This hook function is called whenever a Note ON event was received on
+// MIDI A IN.
+void MIDI_A_IN_NoteOnEvent(unsigned int rxNote, unsigned int rxVolume)
 {
-    int err;
-    int thru = 0;
-    int fd_in = -1, fd_out = -1;
-
-    wprintw(win_debug_messages.GetRef(), "Using: \n");
-    wprintw(win_debug_messages.GetRef(), "Input & output: ");
-    wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[0]);
-    wprintw(win_debug_messages.GetRef(), "device %s\n", name_midi_hw[1]);
-
-    StartRawMidiIn(0);
-    StartRawMidiOut(0);
-    StartRawMidiIn(1);
-    StartRawMidiOut(1);
-//    signal(SIGINT,sighandler);
-    if (!thru)
+    if (rxNote >= 1 && rxNote <= 10)
     {
-        if (handle_midi_hw_in[0])
+
+
+        TContext context;
+        context = **PlaylistPosition;
+        for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
+                it != context.Pedalboard.PedalsDigital.end(); \
+                it++)
         {
-            unsigned char ch;
-            unsigned int rxNote, rxVolume, rxControllerNumber,
-                     rxControllerValue;
-            enum
+            TPedalDigital PedalDigital = *it;
+            if (rxNote == PedalDigital.GetNumber())
             {
-                smInit,
-                smWaitMidiChar1,
-                smWaitMidiControllerChangeChar2,
-                smWaitMidiControllerChangeChar3,
-                smProcessControllerChange,
-                smWaitMidiNoteChar2,
-                smWaitMidiNoteChar3,
-                smProcessNoteEvent,
-                smInterpretMidiNote,
-                smSendMidiNotes
-            } stateMachine = smInit;
-
-            while (!stop)
-            {
-                wprintw(win_midi_in.GetRef(), "0x%02x", ch);
-
-                switch (stateMachine)
+                if (rxVolume > 0)
                 {
-                case smInit:
-                    stateMachine = smWaitMidiChar1;
-                    break;
-
-                case smWaitMidiChar1:
-                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    if (ch == 0x91)
-                        stateMachine = smWaitMidiNoteChar2;
-                    if (ch == 0xb0)
-                        stateMachine = smWaitMidiControllerChangeChar2;
-                    break;
-
-                case smWaitMidiNoteChar2:
-                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    if (ch >= 1 && ch <= 10)
-                    {
-                        stateMachine = smWaitMidiNoteChar3;
-                        rxNote = ch;
-
-                    }
-                    else
-                    {
-                        stateMachine = smWaitMidiChar1;
-                    }
-
-                    break;
-
-                case smWaitMidiNoteChar3:
-                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    rxVolume = ch;
-                    stateMachine = smProcessNoteEvent;
-                    break;
-
-                case smWaitMidiControllerChangeChar2:
-                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    if (ch >= 0 && ch <= 119)
-                    {
-                        stateMachine = smWaitMidiControllerChangeChar3;
-                        rxControllerNumber = ch;
-
-                    }
-                    else
-                    {
-                        stateMachine = smWaitMidiChar1;
-                    }
-
-                    break;
-
-                case smWaitMidiControllerChangeChar3:
-                    snd_rawmidi_read(handle_midi_hw_in[0], &ch, 1);
-                    stateMachine = smProcessControllerChange;
-                    rxControllerValue = ch;
-                    wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
-                    break;
-
-                case smProcessNoteEvent:
-                {
-                    TContext context;
-                    context = **PlaylistPosition;
-                    for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
-                            it != context.Pedalboard.PedalsDigital.end(); \
-                            it++)
-                    {
-                        TPedalDigital PedalDigital = *it;
-                        if (rxNote == PedalDigital.GetNumber())
-                        {
-                            if (rxVolume > 0)
-                            {
-                                PedalDigital.Press();
-                            }
-                            if (rxVolume == 0)
-                            {
-                                PedalDigital.Release();
-                            }
-                        }
-                    }
+                    PedalDigital.Press();
                 }
-
-
-                stateMachine = smWaitMidiChar1;
-                break;
-
-                case smProcessControllerChange:
+                if (rxVolume == 0)
                 {
-                    TContext context;
-                    context = **PlaylistPosition;
-                    for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
-                            it != context.Pedalboard.PedalsAnalog.end(); \
-                            it++)
-                    {
-                        TPedalAnalog PedalAnalog = *it;
-                        if (rxControllerNumber == PedalAnalog.GetControllerNumber())
-                        {
-                            PedalAnalog.Change(rxControllerValue);
-                        }
-
-
-                    }
-                }
-                stateMachine = smWaitMidiChar1;
-
-                break;
-
-                default:
-                    stateMachine = smInit;
-
+                    PedalDigital.Release();
                 }
             }
         }
+
     }
 
-    wprintw(win_debug_messages.GetRef(), "Closing\n");
+}
 
-    StopRawMidiIn(0);
-    StopRawMidiOut(0);
-    StopRawMidiIn(1);
-    StopRawMidiOut(1);
+// This hook function is called whenever a Controller Change event is
+// received on MIDI A IN
+void MIDI_A_IN_CC_Event(unsigned int rxControllerNumber, unsigned int rxControllerValue)
+{
 
-    if (fd_in != -1)
+    TContext context;
+    context = **PlaylistPosition;
+    for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
+            it != context.Pedalboard.PedalsAnalog.end(); \
+            it++)
     {
-        close(fd_in);
-    }
-    if (fd_out != -1)
-    {
-        close(fd_out);
+        TPedalAnalog PedalAnalog = *it;
+        if (rxControllerNumber == PedalAnalog.GetControllerNumber())
+        {
+            PedalAnalog.Change(rxControllerValue);
+        }
+
     }
 }
+
+
 
 
 // This function initializes all the TContext objects, and then gathers
@@ -2748,6 +2815,33 @@ void InitializePlaylist(void)
     cHighwayToHell.Author = "AC/DC";
     cHighwayToHell.SongName = "Highway To Hell";
 
+
+    c25years.Author = "4 Non Blondes";
+    c25years.SongName = "25 years";
+
+    cAllumerLeFeu.Author = "Johnny Halliday";
+    cAllumerLeFeu.SongName = "Allumer Le Feu";
+
+    cAllInYou.Author = "Synapson";
+    cAllInYou.SongName = "All InYou";
+
+    cChandelier.Author = "Sia";
+    cChandelier.SongName = "Chandelier";
+
+    cThisGirl.Author = "Kung";
+    cThisGirl.SongName = "This Girl";
+
+    cEncoreUnMatin.Author = "Jean-Jacques Goldman";
+    cEncoreUnMatin.SongName = "Encore Un Matin";
+
+    cQuandLaMusiqueEstBonne.Author = "Jean-Jacques Goldman";
+    cQuandLaMusiqueEstBonne.SongName = "Quand La Musique Est Bonne";
+
+    cDumbo.Author = "Viannay";
+    cDumbo.SongName = "Dumbo";
+
+
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -2816,6 +2910,15 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cGangstaParadise);
     PlaylistData.push_back(&cBeatIt);
     PlaylistData.push_back(&cLady);
+
+    PlaylistData.push_back(&c25years);
+    PlaylistData.push_back(&cAllumerLeFeu);
+    PlaylistData.push_back(&cChandelier);
+    PlaylistData.push_back(&cAllInYou);
+    PlaylistData.push_back(&cThisGirl);
+    PlaylistData.push_back(&cEncoreUnMatin);
+    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
+    PlaylistData.push_back(&cDumbo);
 
 
     // Set the current active context here.
@@ -3143,7 +3246,11 @@ int main(int argc, char** argv)
     Banner.SetMessage("OXFORD - LE GROUPE");
 
     // Create thread that scans midi messages
-    std::thread thread1(threadMidiAutomaton);
+    // Initialize MIDI port A - this will spawn a new thread that parses MIDI IN
+    MIDI_A.Init(name_midi_hw_MIDISPORT_A, MIDI_A_IN_NoteOnEvent, MIDI_A_IN_CC_Event);
+
+    // Same for MIDI port B
+    MIDI_B.Init(name_midi_hw_MIDISPORT_B, 0, 0);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
