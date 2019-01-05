@@ -54,11 +54,14 @@
 
 int stop = 0;
 
-std::string midi_sequencer_name = "20:0"; // obtained with pmidi -l
+// midi sequencer name
+// obtained with pmidi -l
+const std::string midi_sequencer_name = "20:0";
 
 // String name of the hardware device for the first midi port (IN1/OUT1)
 // obtained with amidi -l
 const std::string name_midi_hw_MIDISPORT_A = "hw:1,0,0";
+
 // String name of the hardware device for the first midi port (IN2/OUT2)
 // obtained with amidi -l
 const std::string name_midi_hw_MIDISPORT_B = "hw:1,0,1";
@@ -67,7 +70,11 @@ const std::string name_midi_hw_MIDISPORT_B = "hw:1,0,1";
 // concurrent threads.
 std::mutex ncurses_mutex;
 
+// Start threads with top priority
+#define REALTIME
 
+// Test XV5080 class
+#define TEST_XV5080
 
 
 // This is a ncurses cdk panel, with a boxed window on it, that can't
@@ -81,9 +88,9 @@ std::mutex ncurses_mutex;
 class TBoxedWindow
 {
 private:
-    PANEL * Panel; // Panel is the cdk object that allows showing/hiding parts of the screen.
-    WINDOW * BoxedWindow; // outer window, shown with a box, prevent writing on that
-    WINDOW * SubWindow; // inner space of the window, usable to display text
+    PANEL * Panel = 0; // Panel is the cdk object that allows showing/hiding parts of the screen.
+    WINDOW * BoxedWindow = 0; // outer window, shown with a box, prevent writing on that
+    WINDOW * SubWindow = 0; // inner space of the window, usable to display text
 public:
     TBoxedWindow(void) {};
     void Init(char* name, int height, int width, int starty, int startx)
@@ -157,13 +164,6 @@ TBoxedWindow win_context_select_menu;
 TBoxedWindow win_big_message;
 
 
-
-
-
-
-
-
-
 // Wait "milliseconds" milliseconds.
 #pragma reentrant
 void waitMilliseconds(int milliseconds)
@@ -191,6 +191,7 @@ typedef struct
     void * pFuncParam;
 } TExecuteAfterTimeoutStruct;
 
+
 // Thread used to support the functionality of function ExecuteAfterTimeout.
 #pragma reentrant
 void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
@@ -200,6 +201,7 @@ void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
     // Call "pFunction(pFuncParam)"
     (Message.pFunction)( Message.pFuncParam );
 }
+
 
 // This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
 // that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
@@ -215,17 +217,6 @@ void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, vo
     std::thread Thread(ExecuteAfterTimeout_Thread, ExecuteAfterTimeoutStruct);
     Thread.detach();
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 //       |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |
@@ -360,7 +351,6 @@ private:
             for (unsigned int col = 0+offset; col < canvas_width+offset; col++)
             {
                 int teststring_index = col / char_width;
-                //printf("%i   ", teststring_index);
                 teststring_index %= message_size;
                 int character_to_print_ascii = message[teststring_index];
                 int character_to_print_rasterindex = character_to_print_ascii - 32;
@@ -392,9 +382,6 @@ private:
         }
         pBoxedWindow->Refresh();
     }
-
-
-
 };
 
 
@@ -409,6 +396,8 @@ void ContextPreviousPress(void);
 void ContextPreviousRelease(void);
 void ContextNextPress(void);
 void ContextNextRelease(void);
+
+
 namespace ElevenRack
 {
 void DistON(void);
@@ -425,10 +414,14 @@ void WahSetValue(int);
 }
 
 
+// There is an ugly hack, whereby we need some #defines located in two different headers,
+// but some of them are redefined differently in each header...
+// The key mapping we need is contained in input-event-codes.h. Any other "source" of keymaps
+// is not what we look for.
 #include <linux/input.h>
 #undef _INPUT_EVENT_CODES_H
 #include <linux/input-event-codes.h>
-namespace Keyboard
+namespace ComputerKeyboard
 {
 
 static const char *const evval[3] =
@@ -523,6 +516,7 @@ void KeyboardThread(void)
     }
 }
 
+
 void Initialize(void)
 {
     fd = open(dev, O_RDONLY);
@@ -559,19 +553,7 @@ void RegisterEventCallbackReleased(int key_value_param, TKeyboardCallbackFunctio
 }
 
 
-
-
-
 }
-
-
-
-
-
-
-
-
-
 
 
 // A pedal, from the pedalboard (Behringer FCB1010), with analog action
@@ -787,7 +769,6 @@ std::list<TContext *> PlaylistData_BySongName;
 std::list<TContext *>::iterator PlaylistPosition;
 
 
-
 // Here, the actual TContext objects are instanciated. One for each context, which
 // more or less represents one for each *song* in the playlist, in the band/musical sense.
 TContext cFirstContext;
@@ -973,25 +954,23 @@ typedef struct
 } TPlayNoteMsg;
 
 
-
-
-
-
-
-
-
 // This class runs a state machine capable of processing MIDI input.
 // It instantiates a thread on its own (that runs the state machine).
 // A defined MIDI IN port must be assigned to it upon initialization.
 // Callback functions must be set up to process:
+// - Note events (from outside into this program)
+// - Controller Change events (from outside into this program)
+// It also implements the functions to send to MIDI OUT (from this program to outside world):
 // - Note events
-// - Controller Change events
+// - CC (Controller Change)
+// - PC (Program Change)
 class TMIDI_Port
 {
 
 public:
     TMIDI_Port(void) {};
 
+    // Hook function called whenever a Note ON event is received
     typedef void (*THookProcessNoteONEvent)(unsigned int rxNote_param, unsigned int rxVolume_param);
     // Hook function called whenever a controller change event is received
     typedef void (*THookProcessControllerChangeEvent)(unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
@@ -1004,8 +983,7 @@ public:
         // Spawn new thread that takes care of processing MIDI packets
         if (ThreadNativeHandle == 0)
         {
-            // Pass "this" object as an argument to the thread CAN_DriverInterruptFake.
-            // It will
+            // Pass "this" object as an argument to the thread StateMachineThread.
             std::thread tmp_thread(StateMachineThread, this);
             // Please note that access to the so-called "native handle" is possible only
             // **BEFORE** we detach the thread. There are other ways to identify a Linux thread,
@@ -1013,15 +991,15 @@ public:
             // is "captured" in the member variable ThreadNativeHandle, for further use later on.
             ThreadNativeHandle = tmp_thread.native_handle();
             tmp_thread.detach();
-            // tmp_thread is thrown away when going out of scope, but StateMachineThread() will continue spinning as a thread.
+            // tmp_thread object is thrown away when going out of scope, but StateMachineThread() will carry on,
+            // spinning as a separate thread.
         }
         else
         {
             // That thread needs to be spawned only once. If we come here, it probably
-            // had been initialized by a previous call to Init().
+            // had been initialized by a previous call to Init(). Check your initialization code.
             wprintw(win_debug_messages.GetRef(), "TProcessMidiInput::Init() called too often\n");
         }
-
     }
     /*
         snd_rawmidi_t * GetHandle_MIDI_In(void)
@@ -1073,8 +1051,20 @@ public:
     }
 
 
+/*
+ Remark from the MIDI specifications:
+ ------------------------------------
+MIDI provides two roughly equivalent means of turning off a note (voice).
+A note may be turned off either by sending a Note-Off message for the same note
+number and channel, or by sending a Note-On message for that note and channel
+with a velocity value of zero. The advantage to using "Note-On at zero velocity"
+is that it can avoid sending additional status bytes when Running Status is
+employed.
 
+Due to this efficiency, sending Note-On messages with velocity values of zero is
+the most commonly used method.
 
+*/
 
 // Same for Note Off MIDI event.
 // If you want to send out some MIDI notes,
@@ -1107,13 +1097,10 @@ public:
         }
     }
 
-
-
     void SendNoteOffEvent(TPlayNoteMsg * PlayNoteMsg)
     {
         SendNoteOffEvent(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
     }
-
 
     void SendProgramChange(unsigned char Channel, unsigned char Program)
     {
@@ -1130,13 +1117,12 @@ public:
         charArray[0] = (MidiFunctionID << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = (Program - 1) & 0x7F;
         wprintw(win_debug_messages.GetRef(), "Program Change: Channel %i; Program %i\n", (int) Channel, (int) Program);
-        wprintw(win_midi_out.GetRef(), "%i\n%i\n", (int) charArray[0], (int) charArray[1]);
+        wprintw(win_midi_out.GetRef(), "%02x\n%02x\n", (int) charArray[0], (int) charArray[1]);
         if(handle_midi_hw_out != 0)
         {
             snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
-
 
     // Send out a CC (Control Change) MIDI event.
     void SendControlChange(unsigned char Channel, unsigned char ControlNumber,
@@ -1161,8 +1147,22 @@ public:
         wprintw(win_debug_messages.GetRef(), "Control Change - Controller Number: %i; Controller Value: %i\n", (int) charArray[1], (int) charArray[2]);
         if (handle_midi_hw_out != 0)
         {
-            wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
+            wprintw(win_midi_out.GetRef(), "%02x\n%02x\n%02x\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
             snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+        }
+    }
+
+    // Send out raw midi data
+    void SendRawData(std::vector<unsigned char> data)
+    {
+        for (auto x : data)
+        {
+                wprintw(win_midi_out.GetRef(), "%02x\n", (int) x);
+        }
+
+        if (handle_midi_hw_out != 0)
+        {
+            snd_rawmidi_write(handle_midi_hw_out, &data[0], data.size());
         }
     }
 
@@ -1229,7 +1229,8 @@ private:
     {
         if (handle_midi_hw_in == 0)
         {
-            int err = snd_rawmidi_open(&handle_midi_hw_in, NULL, name_midi_hw.c_str(), 0);
+            // SND_RAWMIDI_SYNC enforces that all calls to snd_rawmidi_write are atomic (i.e. automatically flushed)
+            int err = snd_rawmidi_open(&handle_midi_hw_in, NULL, name_midi_hw.c_str(), SND_RAWMIDI_SYNC);
             if (err)
             {
                 wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw.c_str(), err);
@@ -1253,7 +1254,7 @@ private:
     static void StateMachineThread(TMIDI_Port * pSelf)
     {
         // Change priority to top-most realtime
-        /*
+        #ifdef REALTIME
         struct sched_param param;
         param.__sched_priority = sched_get_priority_max(SCHED_RR);
         //https://linux.die.net/man/3/pthread_setschedparam
@@ -1261,7 +1262,8 @@ private:
         if (s != 0)
         {
             wprintw(win_debug_messages.GetRef(), "MIDI: error initializing thread priority, returned %i\n", s);
-        }*/
+        }
+        #endif
 
         wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", pSelf->name_midi_hw.c_str());
 
@@ -1385,6 +1387,497 @@ TMIDI_Port MIDI_B;
 
 
 
+/**
+XV-5080 driver
+
+Handles communication with the XV-5080
+
+*/
+class TXV5080
+{
+public:
+
+    // Constructor
+    // Tell this object which MIDI port it should use to transmit MIDI information
+    TXV5080(TMIDI_Port * pMIDI_Port_param)
+    {
+        pMIDI_Port = pMIDI_Port_param;
+        pTXV5080 = this;
+    }
+
+
+    class TParameter
+    {
+    public:
+        TParameter(void) {};
+        TParameter(unsigned long int OffsetAddress_param, int MinValue_param, int MaxValue_param, std::string str)
+        {
+            OffsetAddress = OffsetAddress_param;
+
+            for (int i = str.size(); i--;)
+            {
+                if (str[i] == '0')
+                {
+                    Mask.push_back(false);
+                }
+                else if (str[i] == ' ')
+                {
+                    continue;
+                }
+                else
+                {
+                    Mask.push_back(true);
+                }
+            }
+            printf("Mask size: %i\n", Mask.size());
+            if (Mask.size() % 8 != 0)
+            {
+                printf("ERROR: TValue Mask not a multiple of 8 bits\n");
+                exit(0);
+            }
+            // e.g.:
+            // str = "00aa aaaa"
+            //  v
+            //  v
+            // Mask[0] = true
+            // Mask[1] = true
+            // Mask[2] = true
+            // Mask[3] = true
+            // Mask[4] = true
+            // Mask[5] = true
+            // Mask[6] = false
+            // Mask[7] = false
+        }
+
+    protected:
+
+        int MinValue;
+        int MaxValue;
+
+        unsigned long int OffsetAddress;
+        std::vector<bool> Mask;
+        std::vector<unsigned char> GetDataBytes(int Value)
+        {
+            std::vector<unsigned char> Bytes;
+            unsigned long int tmpByte = 0;
+            int i = 0;
+            for (auto x : Mask)
+            {
+                if(x)
+                {
+                    // Copy this bit
+                    unsigned long int bit = Value & 1;
+                    // LSB consumed => shift Value to the right to get next bit
+                    // (for next cycle)
+                    Value = Value>>1;
+                    // Construct final byte
+                    tmpByte = tmpByte | (bit<< (i%8));
+                    i++;
+                }
+                else
+                {
+                    i++;
+                }
+                if (i%8 == 0)
+                {
+                    // Full byte constructed: commit final value in vector
+                    Bytes.push_back(tmpByte);
+                    // Clear temporary buffer
+                    tmpByte = 0;
+                }
+            }
+            // Bytes hold the correct bytes to be sent, but in reverse order.
+            // So return the "reverted" version of it:
+            std::reverse(Bytes.begin(),Bytes.end());
+            // Now Bytes order is correct. Return result.
+            return Bytes;
+        }
+    };
+
+    class TParameterSection
+    {
+    public:
+        TParameterSection(int OffsetAddress_param)
+        {
+            OffsetAddress = OffsetAddress_param;
+        }
+        int OffsetAddress;
+    };
+
+    class TSystem : TParameterSection
+    {
+    public:
+        TSystem(void) : TParameterSection(0x00000000) {};
+        class TSystemCommon : TParameterSection
+        {
+        public:
+            TSystemCommon(void) : TParameterSection(OffsetAddress + 0x00000000) {};
+            class TSoundMode : TParameter
+            {
+            public:
+                TSoundMode(void) : TParameter(OffsetAddress + 0x00000000, 0, 4, "0000 0aaa") {};
+                void Perform(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(0));
+                }
+                void Patch(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(1));
+                }
+                void GM1(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(2));
+                }
+                void GM2(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(3));
+                }
+                void GS(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(4));
+                }
+            } SoundMode;
+
+            class TMasterTune : TParameter
+            {
+            public:
+                TMasterTune(void) : TParameter(OffsetAddress + 0x00000001, 24, 2024, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
+                /** -100.0 to +100.0 cent */
+                void Set(float Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param * 100 + 24 + 100));
+                }
+            } MasterTune;
+
+
+            class TMasterKeyShift : TParameter
+            {
+            public:
+                TMasterKeyShift(void) : TParameter(OffsetAddress + 0x0005, 40, 88, "00aa aaaa") {};
+                /** -24 to +24 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -40 -24));
+                }
+            } MasterKeyShift;
+
+            class TMasterLevel : TParameter
+            {
+            public:
+                TMasterLevel(void) : TParameter(OffsetAddress + 0x0006, 0, 127, "0aaa aaaa") {};
+                /** 0 to 127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } MasterLevel;
+
+            class TScaleTuneSwitch : TParameter
+            {
+            public:
+                TScaleTuneSwitch(void) : TParameter(OffsetAddress + 0x0007, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ScaleTuneSwitch;
+
+            class TPatchRemain : TParameter
+            {
+            public:
+                TPatchRemain(void) : TParameter(OffsetAddress + 0x0008, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchRemain;
+
+            class TMixParallel : TParameter
+            {
+            public:
+                TMixParallel(void) : TParameter(OffsetAddress + 0x0009, 0, 1, "0000 000a") {};
+                /** 0 = Mix, 1 = Parallel */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } MixParallel;
+
+            class TMFXSwitch : TParameter
+            {
+            public:
+                TMFXSwitch(void) : TParameter(OffsetAddress + 0x000A, 0, 1, "0000 000a") {};
+                /** 0 = BYPASS, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } MFXSwitch;
+
+            class TChorusSwitch : TParameter
+            {
+            public:
+                TChorusSwitch(void) : TParameter(OffsetAddress + 0x000B, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ChorusSwitch;
+
+            class TReverbSwitch : TParameter
+            {
+            public:
+                TReverbSwitch(void) : TParameter(OffsetAddress + 0x000C, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReverbSwitch;
+
+            class TPerformanceControlChannel : TParameter
+            {
+            public:
+                TPerformanceControlChannel(void) : TParameter(OffsetAddress + 0x000D, 0, 16, "000a aaaa") {};
+                /** 1-16=Channels 1-16, 0=OFF */
+                void Set(int Value_param)
+                {
+                    if (Value_param >= 1 && Value_param <=16)
+                    {
+                        pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -1));
+                    }
+                    else
+                    {
+                        pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(16)); // Corresponds to OFF
+                    }
+                }
+            } PerformanceControlChannel;
+
+            class TPerformanceBankSelectMSB : TParameter
+            {
+            public:
+                TPerformanceBankSelectMSB(void) : TParameter(OffsetAddress + 0x000E, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PerformanceBankSelectMSB;
+
+            class TPerformanceBankSelectLSB : TParameter
+            {
+            public:
+                TPerformanceBankSelectLSB(void) : TParameter(OffsetAddress + 0x000F, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PerformanceBankSelectLSB;
+
+            class TPerformanceProgramNumber : TParameter
+            {
+            public:
+                TPerformanceProgramNumber(void) : TParameter(OffsetAddress + 0x0010, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PerformanceProgramNumber;
+
+            class TSystemTempo : TParameter
+            {
+            public:
+                TSystemTempo(void) : TParameter(OffsetAddress + 0x0016, 20, 250, "0000 aaaa 0000 bbbb") {};
+                /** 20-250 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } SystemTempo;
+        } SystemCommon;
+    } System;
+
+
+    class TPerformance : TParameterSection
+    {
+    public:
+        TPerformance(unsigned long int Address_param) : TParameterSection(Address_param) {};
+
+        class TPerformanceCommon : TParameterSection
+        {
+        public:
+            TPerformanceCommon(void) : TParameterSection(OffsetAddress + 0x000000) {};
+            class TPerformanceName : TParameter
+            {
+            public:
+                TPerformanceName(void) : TParameter() {};
+                void Set(std::string Name)
+                {
+                    for (unsigned int i = 0; i<12 ;i++)
+                    {
+                        if (i < Name.length() )
+                        {
+                            TParameter(0 + i, 32, 127, "0aaa aaaa");
+                            pTXV5080->ExclusiveMsgSetParameter(OffsetAddress +i, GetDataBytes(Name[i]));
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+             /*   TPerformanceName(void) : TParameter(0) {};*/
+
+            } PerformanceName;
+
+            class TSoloPartSelect : TParameter
+            {
+            public:
+                TSoloPartSelect(void) : TParameter(0x000C, 0, 32, "00aa aaaa") {};
+                /** 0 = OFF, 1-32 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } SoloPartSelect;
+        } PerformanceCommon;
+
+        class TPerformancePart : TParameterSection
+        {
+        public:
+            TPerformancePart(int Offset_param) : TParameterSection(Offset_param) {};
+
+            class TPatchBankSelectMSB : TParameter
+            {
+            public:
+                TPatchBankSelectMSB(void) : TParameter(OffsetAddress + 0x0004, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchBankSelectMSB;
+
+            class TPatchBankSelectLSB : TParameter
+            {
+            public:
+                TPatchBankSelectLSB(void) : TParameter(OffsetAddress + 0x0005, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchBankSelectLSB;
+
+            class TPatchProgramNumber : TParameter
+            {
+            public:
+                TPatchProgramNumber(void) : TParameter(OffsetAddress + 0x0006, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchProgramNumber;
+        } PerformancePart[4] = {0x2000, 0x2100, 0x2200, 0x2300}; // only 4 listed - normally there are 32
+
+    };
+
+    // Normally a total of 64 user performances - only 4 are listed here
+    std::array<TPerformance, 4> UserPerformances = {0x20000000, 0x20010000, 0x20020000, 0x20030000};
+
+
+private:
+    // Record which MIDI port should be used for communication
+    TMIDI_Port * pMIDI_Port;
+    static TXV5080 * pTXV5080;
+
+    char ExclusiveMsgChecksum(std::vector<unsigned char> data)
+    {
+        unsigned long int checksum_value = 0;
+        for (auto x : data)
+        {
+            checksum_value += x;
+        }
+        return (128 - checksum_value % 128);
+    }
+
+private:
+
+    void ExclusiveMsgSetParameter(unsigned long int addr, std::vector<unsigned char> value)
+    {
+        // From Roland XV-5080 manual
+        std::vector<unsigned char> v;
+        v.push_back(0xF0); // F0H Exclusive status
+        v.push_back(0x41); // 41H ID number (Roland)
+        v.push_back(0x10); // dev Device ID (dev: 00H - 1FH, Initial value is 10H)
+        v.push_back(0x00); // 00H Model ID #1 (XV-5080)
+        v.push_back(0x10); // 10H Model ID #2 (XV-5080)
+        v.push_back(0x12); // 12H Command ID (DT1)
+        v.push_back((addr & 0xFF000000) >> 24); // aaH Address MSB: upper byte of the starting address of the data to be sent
+        v.push_back((addr & 0x00FF0000) >> 16); // bbH Address: upper middle byte of the starting address of the data to be sent
+        v.push_back((addr & 0x0000FF00) >> 8); // ccH Address: lower middle byte of the starting address of the data to be sent
+        v.push_back((addr & 0x000000FF) >> 0); // ddH Address LSB: lower byte of the starting address of the data to be sent.
+        v.insert(v.end(), value.begin(), value.end()); // eeH Data: the actual data to be sent. Multiple bytes of data are transmitted in order starting from the address.
+
+        std::vector<unsigned char> chksum_data;
+        chksum_data.insert(chksum_data.end(), v.begin() +6, v.end());
+
+        v.push_back(ExclusiveMsgChecksum(chksum_data)); // ??H Data sum Checksum
+        v.push_back(0xF7); v.push_back(0xE0); // F7H EOX (End Of Exclusive)
+
+        pMIDI_Port->SendRawData(v);
+    }
+};
+
+// Definition of static member in TXV5080
+TXV5080 * TXV5080::pTXV5080 = 0;
+// Instance of the XV-5080 communication driver
+TXV5080 XV5080(&MIDI_B);
+
+
+std::vector<unsigned char> test1(void)
+{
+
+            std::vector<unsigned char> v;
+            v.push_back(0);
+            return v;
+}
+
+void test_XV5080(void)
+{
+    /*
+    XV5080.System.SystemCommon.SoundMode.Patch();
+    XV5080.System.SystemCommon.SoundMode.Perform();
+    XV5080.System.SystemCommon.MasterTune.Set(6.5);
+    XV5080.System.SystemCommon.MasterKeyShift.Set(1);
+    XV5080.System.SystemCommon.MasterLevel.Set(99);
+    XV5080.System.SystemCommon.ScaleTuneSwitch.Set(1);
+    XV5080.System.SystemCommon.PatchRemain.Set(1);
+    XV5080.System.SystemCommon.MixParallel.Set(1);
+    XV5080.System.SystemCommon.MFXSwitch.Set(1);
+    XV5080.System.SystemCommon.ChorusSwitch.Set(1);
+    XV5080.System.SystemCommon.ReverbSwitch.Set(1);
+    XV5080.System.SystemCommon.PerformanceControlChannel.Set(1);
+    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(1);
+    XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(3);
+    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);
+    XV5080.System.SystemCommon.SystemTempo.Set(130);
+*/
+//    unsigned long int addr = XV5080.UserPerformances[1].TEST_GetOffsetAddress();
+
+  //  TXV5080::System::SystemCommon::SoundMode::Write(0);
+
+}
+
+
+
+//XV5080.SetSoundMode(sm_perform);
 
 
 
@@ -1523,64 +2016,62 @@ void threadKeyboard(void)
 
 
     // create all the notes in
-    Keyboard::RegisterEventCallbackPressed(KEY_Q, StartNote, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_2, StartNote, (void *)1);
-    Keyboard::RegisterEventCallbackPressed(KEY_W, StartNote, (void *)2);
-    Keyboard::RegisterEventCallbackPressed(KEY_3, StartNote, (void *)3);
-    Keyboard::RegisterEventCallbackPressed(KEY_E, StartNote, (void *)4);
-    Keyboard::RegisterEventCallbackPressed(KEY_4, StartNote, (void *)5);
-    Keyboard::RegisterEventCallbackPressed(KEY_R, StartNote, (void *)6);
-    Keyboard::RegisterEventCallbackPressed(KEY_T, StartNote, (void *)7);
-    Keyboard::RegisterEventCallbackPressed(KEY_6, StartNote, (void *)8);
-    Keyboard::RegisterEventCallbackPressed(KEY_Y, StartNote, (void *)9);
-    Keyboard::RegisterEventCallbackPressed(KEY_7, StartNote, (void *)10);
-    Keyboard::RegisterEventCallbackPressed(KEY_U, StartNote, (void *)11);
-    Keyboard::RegisterEventCallbackPressed(KEY_I, StartNote, (void *)12);
-    Keyboard::RegisterEventCallbackPressed(KEY_9, StartNote, (void *)13);
-    Keyboard::RegisterEventCallbackPressed(KEY_O, StartNote, (void *)14);
-    Keyboard::RegisterEventCallbackPressed(KEY_0, StartNote, (void *)15);
-    Keyboard::RegisterEventCallbackPressed(KEY_P, StartNote, (void *)16);
-    Keyboard::RegisterEventCallbackPressed(KEY_MINUS, StartNote, (void *)17);
-    Keyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)18);
-    Keyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)19);
-    Keyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)20);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_Q, StartNote, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_2, StartNote, (void *)1);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_W, StartNote, (void *)2);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_3, StartNote, (void *)3);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_E, StartNote, (void *)4);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_R, StartNote, (void *)5);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_5, StartNote, (void *)6);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_T, StartNote, (void *)7);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_6, StartNote, (void *)8);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_Y, StartNote, (void *)9);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_7, StartNote, (void *)10);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_U, StartNote, (void *)11);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_I, StartNote, (void *)12);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_9, StartNote, (void *)13);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_O, StartNote, (void *)14);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_0, StartNote, (void *)15);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_P, StartNote, (void *)16);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)17);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)18);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)19);
 
 
 
-    Keyboard::RegisterEventCallbackReleased(KEY_Q, StopNote, 0);
-    Keyboard::RegisterEventCallbackReleased(KEY_2, StopNote, (void *)1);
-    Keyboard::RegisterEventCallbackReleased(KEY_W, StopNote, (void *)2);
-    Keyboard::RegisterEventCallbackReleased(KEY_3, StopNote, (void *)3);
-    Keyboard::RegisterEventCallbackReleased(KEY_E, StopNote, (void *)4);
-    Keyboard::RegisterEventCallbackReleased(KEY_4, StopNote, (void *)5);
-    Keyboard::RegisterEventCallbackReleased(KEY_R, StopNote, (void *)6);
-    Keyboard::RegisterEventCallbackReleased(KEY_T, StopNote, (void *)7);
-    Keyboard::RegisterEventCallbackReleased(KEY_6, StopNote, (void *)8);
-    Keyboard::RegisterEventCallbackReleased(KEY_Y, StopNote, (void *)9);
-    Keyboard::RegisterEventCallbackReleased(KEY_7, StopNote, (void *)10);
-    Keyboard::RegisterEventCallbackReleased(KEY_U, StopNote, (void *)11);
-    Keyboard::RegisterEventCallbackReleased(KEY_I, StopNote, (void *)12);
-    Keyboard::RegisterEventCallbackReleased(KEY_9, StopNote, (void *)13);
-    Keyboard::RegisterEventCallbackReleased(KEY_O, StopNote, (void *)14);
-    Keyboard::RegisterEventCallbackReleased(KEY_0, StopNote, (void *)15);
-    Keyboard::RegisterEventCallbackReleased(KEY_P, StopNote, (void *)16);
-    Keyboard::RegisterEventCallbackReleased(KEY_MINUS, StopNote, (void *)17);
-    Keyboard::RegisterEventCallbackReleased(KEY_LEFTBRACE, StopNote, (void *)18);
-    Keyboard::RegisterEventCallbackReleased(KEY_EQUAL, StopNote, (void *)19);
-    Keyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StopNote, (void *)20);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_Q, StopNote, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_2, StopNote, (void *)1);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_W, StopNote, (void *)2);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_3, StopNote, (void *)3);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_E, StopNote, (void *)4);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_R, StopNote, (void *)5);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_5, StopNote, (void *)6);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_T, StopNote, (void *)7);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_6, StopNote, (void *)8);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_Y, StopNote, (void *)9);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_7, StopNote, (void *)10);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_U, StopNote, (void *)11);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_I, StopNote, (void *)12);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_9, StopNote, (void *)13);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_O, StopNote, (void *)14);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_0, StopNote, (void *)15);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_P, StopNote, (void *)16);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_LEFTBRACE, StopNote, (void *)17);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_EQUAL, StopNote, (void *)18);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StopNote, (void *)19);
 
 
-    Keyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_F4, ProgramMore, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_F5, ChannelLess, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_F6, ChannelMore, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F4, ProgramMore, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F5, ChannelLess, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F6, ChannelMore, 0);
 
-    Keyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
-    Keyboard::RegisterEventCallbackPressed(KEY_Z, Z, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_Z, Z, 0);
 
 //    kbd_callbacks[KEY_A] =
 
@@ -3192,6 +3683,7 @@ void threadMetronome (void)
 int main(int argc, char** argv)
 {
     int term_lines, term_cols;
+
 #if 1
     InitializePlaylist();
 
@@ -3258,11 +3750,15 @@ int main(int argc, char** argv)
     // Create the thread that refreshes the metronome
     std::thread thread3(threadMetronome);
 
-    Keyboard::Initialize();
+    ComputerKeyboard::Initialize();
 
     // Create thread that scans the keyboard
     std::thread thread4(MiniSynth::threadKeyboard);
 
+
+    #ifdef TEST_XV5080
+    test_XV5080();
+    #endif
 
 #endif
 
