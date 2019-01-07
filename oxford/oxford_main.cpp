@@ -12,7 +12,7 @@
 // Make sure you also have ncurses: libncurses5-dev libncursesw5-dev
 //
 // The USB midiman MidiSport 2x2 hardware requires midisport-firmware: install it with
-// apt-get intstall midisport-firmware
+// apt-get install midisport-firmware
 //
 // use amidi -l to list midi hardware devices
 // don't forget to link with asound, pthread, cdk (sometimes called libcdk), and panel
@@ -396,6 +396,12 @@ void ContextPreviousPress(void);
 void ContextPreviousRelease(void);
 void ContextNextPress(void);
 void ContextNextRelease(void);
+
+namespace Kungs_This_Girl
+{
+     void Sequence_1_Start_PedalPressed(void);
+     void Sequence_1_Start_PedalReleased(void);
+}
 
 
 namespace ElevenRack
@@ -971,9 +977,9 @@ public:
     TMIDI_Port(void) {};
 
     // Hook function called whenever a Note ON event is received
-    typedef void (*THookProcessNoteONEvent)(unsigned int rxNote_param, unsigned int rxVolume_param);
+    typedef void (*THookProcessNoteONEvent)(unsigned int rxChannel, unsigned int rxNote_param, unsigned int rxVolume_param);
     // Hook function called whenever a controller change event is received
-    typedef void (*THookProcessControllerChangeEvent)(unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
+    typedef void (*THookProcessControllerChangeEvent)(unsigned int rxChannel, unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
 
     void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
     {
@@ -1196,7 +1202,7 @@ private:
     std::thread::native_handle_type ThreadNativeHandle = 0;
     int err;
     unsigned char ch;
-    unsigned int rxNote, rxVolume, rxControllerNumber,
+    unsigned int rxNote, rxVolume, rxControllerNumber, rxChannel,
              rxControllerValue;
     enum
     {
@@ -1284,12 +1290,17 @@ private:
                 case smWaitMidiChar1:
                     snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
                     wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    if (pSelf->ch == 0x91 && pSelf->HookProcessNoteONEvent)
+                    if ( ( (pSelf->ch) & 0xF0 ) == 0x90 && pSelf->HookProcessNoteONEvent)
                     {
+                        // It's a note ON event. Get the least significant nibble, that's the channel
+                        pSelf->rxChannel = pSelf->ch & 0x0F +1;
                         pSelf->stateMachine = smWaitMidiNoteChar2;
                     }
-                    if (pSelf->ch == 0xb0 && pSelf->HookProcessControllerChangeEvent)
+                    if ( ( (pSelf->ch) & 0xF0 ) == 0xb0 && pSelf->HookProcessControllerChangeEvent)
                     {
+                        // It's a Controller Change event.
+                        // The channel is encoded offset by one. Bring back the value in the 0-16 range (+1 below)
+                        pSelf->rxChannel = pSelf->ch & 0x0F +1;
                         pSelf->stateMachine = smWaitMidiControllerChangeChar2;
                     }
                     break;
@@ -1350,7 +1361,7 @@ private:
 
                 case smProcessNoteEvent:
                 {
-                    pSelf->HookProcessNoteONEvent(pSelf->rxNote, pSelf->rxVolume);
+                    pSelf->HookProcessNoteONEvent(pSelf->rxChannel, pSelf->rxNote, pSelf->rxVolume);
                 }
                 pSelf->stateMachine = smWaitMidiChar1;
                 break;
@@ -1358,7 +1369,7 @@ private:
 
                 case smProcessControllerChange:
                 {
-                    pSelf->HookProcessControllerChangeEvent(pSelf->rxControllerNumber, pSelf->rxControllerValue);
+                    pSelf->HookProcessControllerChangeEvent(pSelf->rxChannel, pSelf->rxControllerNumber, pSelf->rxControllerValue);
                 }
                 pSelf->stateMachine = smWaitMidiChar1;
 
@@ -1799,12 +1810,12 @@ private:
 
     char ExclusiveMsgChecksum(std::vector<unsigned char> data)
     {
-        unsigned long int checksum_value = 0;
+         unsigned long int checksum_value = 0;
         for (auto x : data)
         {
             checksum_value += x;
         }
-        return (128 - checksum_value % 128);
+        return ((128 - (checksum_value % 128)) & 0x7F);
     }
 
 private:
@@ -1822,7 +1833,7 @@ private:
         v.push_back((addr & 0xFF000000) >> 24); // aaH Address MSB: upper byte of the starting address of the data to be sent
         v.push_back((addr & 0x00FF0000) >> 16); // bbH Address: upper middle byte of the starting address of the data to be sent
         v.push_back((addr & 0x0000FF00) >> 8); // ccH Address: lower middle byte of the starting address of the data to be sent
-        v.push_back((addr & 0x000000FF) >> 0); // ddH Address LSB: lower byte of the starting address of the data to be sent.
+        v.push_back((addr & 0x000000FF)); // ddH Address LSB: lower byte of the starting address of the data to be sent.
         v.insert(v.end(), value.begin(), value.end()); // eeH Data: the actual data to be sent. Multiple bytes of data are transmitted in order starting from the address.
 
         std::vector<unsigned char> chksum_data;
@@ -1838,7 +1849,7 @@ private:
 // Definition of static member in TXV5080
 TXV5080 * TXV5080::pTXV5080 = 0;
 // Instance of the XV-5080 communication driver
-TXV5080 XV5080(&MIDI_B);
+TXV5080 XV5080(&MIDI_A);
 
 
 std::vector<unsigned char> test1(void)
@@ -1869,6 +1880,7 @@ void test_XV5080(void)
     XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);
     XV5080.System.SystemCommon.SystemTempo.Set(130);
 */
+    XV5080.System.SystemCommon.SystemTempo.Set(130);
 //    unsigned long int addr = XV5080.UserPerformances[1].TEST_GetOffsetAddress();
 
   //  TXV5080::System::SystemCommon::SoundMode::Write(0);
@@ -2004,9 +2016,20 @@ void N(void * pVoid)
     SelectContextInPlaylist(PlaylistData_ByAuthor, true);
 }
 
-void Z(void * pVoid)
+
+void Z_p(void * pVoid)
 {
-    system("aplay ./wav/FXCarpenterLaserBig.wav &");
+    //system("aplay ./wav/FXCarpenterLaserBig.wav &");
+/*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
+    XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
+    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
+    XV5080.System.SystemCommon.SystemTempo.Set(130);*/
+    Kungs_This_Girl::Sequence_1_Start_PedalPressed();
+}
+
+void Z_r(void * pVoid)
+{
+    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -2071,7 +2094,8 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_Z, Z, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_Z, Z_p, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_Z, Z_r, 0);
 
 //    kbd_callbacks[KEY_A] =
 
@@ -2252,7 +2276,7 @@ public:
 
 
 // Represents and plays a short sequence of notes, at a tempo that is computed from the time
-// that mapsed between the calls to Start_PedalPressed and Start_PedalReleased.
+// that lapsed between the calls to Start_PedalPressed and Start_PedalReleased.
 // Upon Start_PedalPressed, it starts playing the sequence (first note),
 // Upon Start_PedalReleased, it continues to play the sequence at said tempo.
 // Of course, there is a requirement that the time duration between the first and second note
@@ -2587,10 +2611,6 @@ void Init(void)
     MIDI_A.SendProgramChange(3, 101);
     MIDI_A.SendProgramChange(4, 89);
 //    TMidiProgramChange pc4(1, 4, 1);
-
-
-
-
 }
 
 
@@ -2666,6 +2686,78 @@ void Chord4_Off(void)
 }
 
 
+}
+
+
+namespace Kungs_This_Girl
+{
+
+
+    void Trumpet_On(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+    }
+
+    void Trumpet_Off(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}},
+Trumpet_On, Trumpet_Off, 72);
+
+    TSequence Sequence_2({{2, 1}, {2, 1}},
+Trumpet_On, Trumpet_Off, 72);
+
+    TSequence Sequence_3({{2, 1}, {0, 1}},
+Trumpet_On, Trumpet_Off, 72);
+
+    void Sequence_1_Start_PedalPressed(void)
+    {
+        Sequence_1.Start_PedalPressed();
+    }
+
+    void Sequence_1_Start_PedalReleased(void)
+    {
+        Sequence_1.Start_PedalReleased();
+    }
+
+    void Sequence_2_Start_PedalPressed(void)
+    {
+        Sequence_2.Start_PedalPressed();
+    }
+
+    void Sequence_2_Start_PedalReleased(void)
+    {
+        Sequence_2.Start_PedalReleased();
+    }
+
+    void Sequence_3_Start_PedalPressed(void)
+    {
+        Sequence_3.Start_PedalPressed();
+    }
+
+    void Sequence_3_Start_PedalReleased(void)
+    {
+        Sequence_3.Start_PedalReleased();
+    }
+
+    void Sequences_Stop(void)
+    {
+        Sequence_1.Stop_PedalPressed();
+        Sequence_2.Stop_PedalPressed();
+        Sequence_3.Stop_PedalPressed();
+    }
+
+    void Init(void)
+    {
+        // Force XV5080 to performance mode
+        XV5080.System.SystemCommon.SoundMode.Perform();
+        XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0);
+        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(1);
+
+    }
 }
 
 
@@ -2993,12 +3085,17 @@ void Init(void)
 
 // This hook function is called whenever a Note ON event was received on
 // MIDI A IN.
-void MIDI_A_IN_NoteOnEvent(unsigned int rxNote, unsigned int rxVolume)
+void MIDI_A_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned int rxVolume)
 {
+    if (rxChannel != 2)
+    {
+        // The FCB1010 should send Note ON on Channel 2
+        return;
+    }
+
+    // If Channel 2 == FCB1010: action the corresponding digital pedal
     if (rxNote >= 1 && rxNote <= 10)
     {
-
-
         TContext context;
         context = **PlaylistPosition;
         for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
@@ -3018,14 +3115,26 @@ void MIDI_A_IN_NoteOnEvent(unsigned int rxNote, unsigned int rxVolume)
                 }
             }
         }
-
     }
-
 }
+
+
+// This hook function is called whenever a Note ON event was received on
+// MIDI B IN.
+void MIDI_B_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned int rxVolume)
+{
+    if (rxNote >= 1 && rxNote <= 127)
+    {
+        // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
+        MIDI_A.SendNoteOnEvent(rxChannel, rxNote, rxVolume);
+    }
+}
+
+
 
 // This hook function is called whenever a Controller Change event is
 // received on MIDI A IN
-void MIDI_A_IN_CC_Event(unsigned int rxControllerNumber, unsigned int rxControllerValue)
+void MIDI_A_IN_CC_Event(unsigned int rxChannel, unsigned int rxControllerNumber, unsigned int rxControllerValue)
 {
 
     TContext context;
@@ -3039,10 +3148,8 @@ void MIDI_A_IN_CC_Event(unsigned int rxControllerNumber, unsigned int rxControll
         {
             PedalAnalog.Change(rxControllerValue);
         }
-
     }
 }
-
 
 
 
@@ -3321,6 +3428,11 @@ void InitializePlaylist(void)
 
     cThisGirl.Author = "Kung";
     cThisGirl.SongName = "This Girl";
+    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1"));
+    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2"));
+    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Kungs_This_Girl::Sequence_3_Start_PedalPressed, Kungs_This_Girl::Sequence_3_Start_PedalReleased,"Sequence 3"));
+    cThisGirl.SetInitFunc(Kungs_This_Girl::Init);
+
 
     cEncoreUnMatin.Author = "Jean-Jacques Goldman";
     cEncoreUnMatin.SongName = "Encore Un Matin";
@@ -3742,7 +3854,7 @@ int main(int argc, char** argv)
     MIDI_A.Init(name_midi_hw_MIDISPORT_A, MIDI_A_IN_NoteOnEvent, MIDI_A_IN_CC_Event);
 
     // Same for MIDI port B
-    MIDI_B.Init(name_midi_hw_MIDISPORT_B, 0, 0);
+    MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_NoteOnEvent);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
