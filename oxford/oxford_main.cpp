@@ -2374,7 +2374,14 @@ public:
             PhraseInProgress = true;
             it = MelodyNotes.begin();
             CurrentNote = *it;
-            pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            if (CurrentNote.NoteNumber != 99)
+            {
+                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            }
+            else
+            {
+                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            }
             gettimeofday(&tv1, NULL);
         }
         else
@@ -2437,14 +2444,24 @@ public:
             PhraseInProgress = true;
             it = MelodyNotes.begin();
             CurrentNote = *it;
-            pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            if (CurrentNote.NoteNumber != 99)
+            {
+                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            }
+            else
+            {
+                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            }
             WatchdogFlag = true;
-            ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+ //           ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
         }
         else
         {
             WatchdogFlag = true;
-            pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            if (CurrentNote.NoteNumber != 99)
+            {
+                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            }
             it++;
             if (it == MelodyNotes.end())
             {
@@ -2453,8 +2470,15 @@ public:
             else
             {
                 CurrentNote = *it;
-                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+                if (CurrentNote.NoteNumber != 99)
+                {
+                    pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                }
+                else
+                {
+                    pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+                }
+//                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
             }
         }
     }
@@ -2794,11 +2818,11 @@ namespace Kungs_This_Girl
         MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
     }
 
-    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
+    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
-    TSequence Sequence_2({{2, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
+    TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
-    TSequence Sequence_3({{2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
+    TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -2841,9 +2865,9 @@ namespace Kungs_This_Girl
     {
         // Force XV5080 to performance mode
         XV5080.System.SystemCommon.SoundMode.Perform();
-        XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85);
-        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0);
-        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(1);
+        XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85); //
+        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0); // Group A
+        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(3); // number 4
 
     }
 }
