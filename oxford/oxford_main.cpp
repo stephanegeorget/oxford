@@ -1259,6 +1259,11 @@ private:
     // This thread runs the main MIDI IN state machine
     static void StateMachineThread(TMIDI_Port * pSelf)
     {
+        pSelf->StateMachineFunction();
+    }
+
+    void StateMachineFunction(void)
+    {
         // Change priority to top-most realtime
         #ifdef REALTIME
         struct sched_param param;
@@ -1271,112 +1276,112 @@ private:
         }
         #endif
 
-        wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", pSelf->name_midi_hw.c_str());
+        wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", name_midi_hw.c_str());
 
-        pSelf->StartRawMidiIn();
-        pSelf->StartRawMidiOut();
+        StartRawMidiIn();
+        StartRawMidiOut();
 //    signal(SIGINT,sighandler);
 
-        if (pSelf->handle_midi_hw_in)
+        if (handle_midi_hw_in)
         {
             while (1)
             {
-                switch (pSelf->stateMachine)
+                switch (stateMachine)
                 {
                 case smInit:
-                    pSelf->stateMachine = smWaitMidiChar1;
+                    stateMachine = smWaitMidiChar1;
                     break;
 
                 case smWaitMidiChar1:
-                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    if ( ( (pSelf->ch) & 0xF0 ) == 0x90 && pSelf->HookProcessNoteONEvent)
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if ( ( (ch) & 0xF0 ) == 0x90 && HookProcessNoteONEvent)
                     {
                         // It's a note ON event. Get the least significant nibble, that's the channel
-                        pSelf->rxChannel = pSelf->ch & 0x0F +1;
-                        pSelf->stateMachine = smWaitMidiNoteChar2;
+                        rxChannel = (ch & 0x0F) +1;
+                        stateMachine = smWaitMidiNoteChar2;
                     }
-                    if ( ( (pSelf->ch) & 0xF0 ) == 0xb0 && pSelf->HookProcessControllerChangeEvent)
+                    if ( ( (ch) & 0xF0 ) == 0xb0 && HookProcessControllerChangeEvent)
                     {
                         // It's a Controller Change event.
                         // The channel is encoded offset by one. Bring back the value in the 0-16 range (+1 below)
-                        pSelf->rxChannel = pSelf->ch & 0x0F +1;
-                        pSelf->stateMachine = smWaitMidiControllerChangeChar2;
+                        rxChannel = ch & 0x0F +1;
+                        stateMachine = smWaitMidiControllerChangeChar2;
                     }
                     break;
 
                 case smWaitMidiNoteChar2:
-                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if (ch >= 0 && ch <= 127)
                     {
-                        pSelf->stateMachine = smWaitMidiNoteChar3;
-                        pSelf->rxNote = pSelf->ch;
+                        stateMachine = smWaitMidiNoteChar3;
+                        rxNote = ch;
                     }
                     else
                     {
                         // Value out of bounds
-                        pSelf->stateMachine = smWaitMidiChar1;
+                        stateMachine = smWaitMidiChar1;
                     }
                     break;
 
                 case smWaitMidiNoteChar3:
-                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if (ch >= 0 && ch <= 127)
                     {
-                        pSelf->rxVolume = pSelf->ch;
-                        pSelf->stateMachine = smProcessNoteEvent;
+                        rxVolume = ch;
+                        stateMachine = smProcessNoteEvent;
                     }
                     else
                     {
                         // Value out of bounds
-                        pSelf->stateMachine = smWaitMidiChar1;
+                        stateMachine = smWaitMidiChar1;
                     }
                     break;
 
                 case smWaitMidiControllerChangeChar2:
-                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    if (pSelf->ch >= 0 && pSelf->ch <= 127)
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if (ch >= 0 && ch <= 127)
                     {
-                        pSelf->stateMachine = smWaitMidiControllerChangeChar3;
-                        pSelf->rxControllerNumber = pSelf->ch;
+                        stateMachine = smWaitMidiControllerChangeChar3;
+                        rxControllerNumber = ch;
                     }
                     else
                     {
                         // Value out of bounds
-                        pSelf->stateMachine = smWaitMidiChar1;
+                        stateMachine = smWaitMidiChar1;
                     }
 
                     break;
 
                 case smWaitMidiControllerChangeChar3:
-                    snd_rawmidi_read(pSelf->handle_midi_hw_in, &pSelf->ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", pSelf->ch);
-                    pSelf->stateMachine = smProcessControllerChange;
-                    pSelf->rxControllerValue = pSelf->ch;
-                    wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", pSelf->rxControllerNumber, pSelf->rxControllerValue);
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    stateMachine = smProcessControllerChange;
+                    rxControllerValue = ch;
+                    wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
                     break;
 
                 case smProcessNoteEvent:
                 {
-                    pSelf->HookProcessNoteONEvent(pSelf->rxChannel, pSelf->rxNote, pSelf->rxVolume);
+                    HookProcessNoteONEvent(rxChannel, rxNote, rxVolume);
                 }
-                pSelf->stateMachine = smWaitMidiChar1;
+                stateMachine = smWaitMidiChar1;
                 break;
 
 
                 case smProcessControllerChange:
                 {
-                    pSelf->HookProcessControllerChangeEvent(pSelf->rxChannel, pSelf->rxControllerNumber, pSelf->rxControllerValue);
+                    HookProcessControllerChangeEvent(rxChannel, rxControllerNumber, rxControllerValue);
                 }
-                pSelf->stateMachine = smWaitMidiChar1;
+                stateMachine = smWaitMidiChar1;
 
                 break;
 
                 default:
-                    pSelf->stateMachine = smInit;
+                    stateMachine = smInit;
 
                 }
             }
@@ -1384,8 +1389,8 @@ private:
 
         wprintw(win_debug_messages.GetRef(), "Closing\n");
 
-        pSelf->StopRawMidiIn();
-        pSelf->StopRawMidiOut();
+        StopRawMidiIn();
+        StopRawMidiOut();
     }
 };
 
@@ -2275,48 +2280,60 @@ public:
 } TNote;
 
 
-// Represents and plays a short sequence of notes, at a tempo that is computed from the time
+// Represents and plays a short sequence of notes
+
+// If TimeoutFactor_param is set to 0, the sequence is played at the tempo
+// inferred (measured) from the time
 // that lapsed between the calls to Start_PedalPressed and Start_PedalReleased.
 // Upon Start_PedalPressed, it starts playing the sequence (first note),
 // Upon Start_PedalReleased, it continues to play the sequence at said tempo.
 // Of course, there is a requirement that the time duration between the first and second note
 // should be 1, i.e. one "unit of time", that lapsed between the pedal pressed and pedal released.
 // Stop_PedalPressed stops the sequence in progress, if any.
+
+// If TimeoutFactor_param is non-zero, the sequence is played one note at a time,
+// each time Start_PedalPressed OR Start_PedalReleased is called. If the last note of the sequence
+// is played on a PedalPressed event, that is in the case of an odd number of notes in the sequence,
+// the next call to PedalReleased does no action, so the performer can release his/her foot from the pedal
+// to rest.
+// If no pedal action occurred within Timeout_param s, the whole sequence is cancelled, and it will resume
+// on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case it timed out while the pedal is pressed)
 class TSequence
 {
 private:
     struct timeval tv1, tv2;
     pthread_t thread;
-    int event_flag = 0;
-    int BeatTime_ms = 0;
+    long int BeatTime_ms = 0;
     std::list<TNote> MelodyNotes;
     std::list<TNote>::iterator it;
     TNote CurrentNote;
     void (*pFuncNoteOn)(int NoteNumber) = NULL;
     void (*pFuncNoteOff)(int NoteNumber) = NULL;
     int RootNoteNumber = 60;
+    float Timeout = 1;
+    bool PhraseInProgress = false;
+    bool WatchdogFlag = false;
 
-    static void * SequencerThread(void * pParam)
+
+    static void * PhraseSequencerThread(void * pParam)
     {
         TSequence * pSeq = (TSequence *) pParam;
-        pSeq->Sequencer();
+        pSeq->PhraseSequencer();
     }
 
-    void Sequencer(void)
+    void PhraseSequencer(void)
     {
-        event_flag = 1;
-        while(event_flag)
+        while(PhraseInProgress)
         {
             pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
             it++;
             if (it == MelodyNotes.end())
             {
-                event_flag = 0;
+                PhraseInProgress = false;
             }
             else
             {
                 CurrentNote = *it;
-
                 pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
                 waitMilliseconds(CurrentNote.NoteDuration * (float)BeatTime_ms);
             }
@@ -2332,44 +2349,120 @@ public:
               void (*pFuncNoteOff_param)(int NoteNumber),
               int RootNoteNumber_param)
     {
+        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param, RootNoteNumber_param, 0);
+    }
+
+
+    TSequence(std::list<TNote> MelodyNotes_param,
+              void (*pFuncNoteOn_param)(int NoteNumber),
+              void (*pFuncNoteOff_param)(int NoteNumber),
+              int RootNoteNumber_param, float Timeout_param)
+    {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
         pFuncNoteOff = pFuncNoteOff_param;
         RootNoteNumber = RootNoteNumber_param;
+        Timeout = Timeout_param;
     }
 
-    // Downswing of the start sequencer pedal (step 1)
+
     void Start_PedalPressed(void)
     {
-        it = MelodyNotes.begin();
-        CurrentNote = *it;
-        pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-        gettimeofday(&tv1, NULL);
-    }
-
-    // Upswing of the start sequencer pedal (step 2)
-    void Start_PedalReleased(void)
-    {
-        gettimeofday(&tv2, NULL);
-        // Compute time lapse between pedal down and pedal up
-        // that will set our "one beat" tempo time
-        BeatTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
-
-        // Next, let the sequencer run in its own thread
-        int iret1;
-        iret1 = pthread_create(&thread, NULL, SequencerThread, this);
-        if (iret1)
+        if(Timeout == 0)
         {
-            fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
-            exit(EXIT_FAILURE);
+            // Downswing of the start sequencer pedal (step 1)
+            PhraseInProgress = true;
+            it = MelodyNotes.begin();
+            CurrentNote = *it;
+            pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            gettimeofday(&tv1, NULL);
+        }
+        else
+        {
+            PlayNextNote();
         }
     }
 
+
+    void Start_PedalReleased(void)
+    {
+        if (Timeout == 0)
+        {
+            // Upswing of the start sequencer pedal (step 2)
+            gettimeofday(&tv2, NULL);
+            // Compute time lapse between pedal down and pedal up
+            // that will set our "one beat" tempo time
+            BeatTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
+
+            // Next, let the sequencer run in its own thread
+            int iret1;
+            iret1 = pthread_create(&thread, NULL, PhraseSequencerThread, this);
+            if (iret1)
+            {
+                fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            if (PhraseInProgress == true)
+            {
+                PlayNextNote();
+            }
+        }
+    }
+
+    static void WatchdogStatic(void * pVoid)
+    {
+        TSequence * pSequence = (TSequence *) pVoid;
+        pSequence->Watchdog();
+    }
+
+    void Watchdog(void)
+    {
+        if(WatchdogFlag == false && PhraseInProgress == true)
+        {
+            Stop_PedalPressed();
+        }
+        else
+        {
+            WatchdogFlag = false;
+        }
+    }
+
+    void PlayNextNote(void)
+    {
+        if (PhraseInProgress == false)
+        {
+            PhraseInProgress = true;
+            it = MelodyNotes.begin();
+            CurrentNote = *it;
+            pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+            WatchdogFlag = true;
+            ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+        }
+        else
+        {
+            WatchdogFlag = true;
+            pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
+            it++;
+            if (it == MelodyNotes.end())
+            {
+                PhraseInProgress = false;
+            }
+            else
+            {
+                CurrentNote = *it;
+                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+            }
+        }
+    }
     // Stop sequencer
     void Stop_PedalPressed(void)
     {
         // Stop sequence if any
-        event_flag = 0;
+        PhraseInProgress = false;
         AllSoundsOff();
     }
 };
@@ -2691,8 +2784,6 @@ void Chord4_Off(void)
 
 namespace Kungs_This_Girl
 {
-
-
     void Trumpet_On(int NoteNumber)
     {
         MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
@@ -2703,14 +2794,11 @@ namespace Kungs_This_Girl
         MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
     }
 
-    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}},
-Trumpet_On, Trumpet_Off, 72);
+    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
 
-    TSequence Sequence_2({{2, 1}, {2, 1}},
-Trumpet_On, Trumpet_Off, 72);
+    TSequence Sequence_2({{2, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
 
-    TSequence Sequence_3({{2, 1}, {0, 1}},
-Trumpet_On, Trumpet_Off, 72);
+    TSequence Sequence_3({{2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 72, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
