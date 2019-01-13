@@ -75,8 +75,11 @@ std::mutex ncurses_mutex;
 // Start threads with top priority
 #define REALTIME
 
+
+
 // Test XV5080 class
 #define TEST_XV5080
+
 
 
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::saturated_arithmetic> TInt_0_127;
@@ -111,22 +114,25 @@ std::ostream &operator <<(std::ostream &stream, IntRange ir)
 
 
 
-// This is a ncurses cdk panel, with a boxed window on it, that can't
-// be touched, and a "free text" window inside the boxed window.
-// It makes it easy to manage showing (and hiding, thanks panel), of
-// text, including automatically scrolling it, _inside_ a nice clean
-// window with a box.
-// To get a reference to the inner window (on which to display text), for instance
-// with wprinw, use ::GetRef(). E.g.: wprintw(MyBoxedWindow.GetRef(), "Hello World!\n");
-// Of course, call ::Init(...) beforehand.
+/** This is a ncurses cdk panel, with a boxed window on it, that can't
+be touched, and a "free text" window inside the boxed window.
+It makes it easy to manage showing (and hiding, thanks panel), of
+text, including automatically scrolling it, _inside_ a nice clean
+window with a box.
+To get a reference to the inner window (on which to display text), for instance
+with wprinw, use ::GetRef(). E.g.: wprintw(MyBoxedWindow.GetRef(), "Hello World!\n");
+Of course, call ::Init(...) beforehand. */
 class TBoxedWindow
 {
 private:
-    PANEL * Panel = 0; // Panel is the cdk object that allows showing/hiding parts of the screen.
-    WINDOW * BoxedWindow = 0; // outer window, shown with a box, prevent writing on that
-    WINDOW * SubWindow = 0; // inner space of the window, usable to display text
+    PANEL * Panel = 0; ///< Panel is the cdk object that allows showing/hiding parts of the screen.
+    WINDOW * BoxedWindow = 0; ///< outer window, shown with a box, prevent writing on that
+    WINDOW * SubWindow = 0; ///< inner space of the window, usable to display text
 public:
+    /// Constructor does nothing - call ::Init() manually prior to using members.
     TBoxedWindow(void) {};
+
+    /// Initialization of a boxed window
     void Init(char* name, int height, int width, int starty, int startx)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
@@ -139,6 +145,7 @@ public:
         idlok(SubWindow, TRUE);
     }
 
+    /// Show the boxed window. That does not guarantees to display on the foreground, use ::PutOnTop() for that.
     void Show(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
@@ -147,6 +154,7 @@ public:
         doupdate();
     }
 
+    /// Hide the boxed window.
     void Hide(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
@@ -155,12 +163,17 @@ public:
         doupdate();
     }
 
+    /**
+     * Get a ncurses reference to the window on which text can be displayed.
+     *For use with regular ncurses functions that work with a WINDOW * parameter.
+     */
     WINDOW * GetRef(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
         return SubWindow;
     }
 
+    /// Refresh boxed window
     void Refresh(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
@@ -172,11 +185,14 @@ public:
         }
     }
 
+    /// Display the boxed window on top of all other windows.
     void PutOnTop(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
         top_panel(Panel);
     }
+
+    /// Erase the contents of the boxed window. That keeps the frame decoration and window name though.
     void Erase(void)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
@@ -186,20 +202,20 @@ public:
 
 
 // Create various boxed windows to construct the display
-TBoxedWindow win_midi_in;
-TBoxedWindow win_midi_out;
-TBoxedWindow win_debug_messages;
-TBoxedWindow win_context_prev;
-TBoxedWindow win_context_current;
-TBoxedWindow win_context_next;
-TBoxedWindow win_context_usage;
-TBoxedWindow win_context_user_specific;
+TBoxedWindow win_midi_in; ///< Window that contains MIDI IN events
+TBoxedWindow win_midi_out; ///< Window that contains MIDI OUT events
+TBoxedWindow win_debug_messages; ///< Window that contains debugging messages
+TBoxedWindow win_context_prev; ///< Window that contains the name of the previous context in playlist order
+TBoxedWindow win_context_current; ///< Window that contains the name of the current context in playlist (current song)
+TBoxedWindow win_context_next; ///< Window that contains the name of the next context in playlist order
+TBoxedWindow win_context_usage; ///< Window that contains messages as to how to use the pedalboard, keyboards, etc. in the current context
+TBoxedWindow win_context_user_specific; ///< Window that displays user-specific information
 TBoxedWindow win_context_select_menu;
-TBoxedWindow win_big_message;
+TBoxedWindow win_big_message; ///< Window that displays a scrolling banner with a message made with large characters
 
 
-// Wait "milliseconds" milliseconds.
 #pragma reentrant
+/// Pause thread execution for "milliseconds" milliseconds, with a fairly high resolution.
 void waitMilliseconds(int milliseconds)
 {
     long int nanoseconds = milliseconds * 1000000;
@@ -217,7 +233,7 @@ start_wait:
 }
 
 
-// Intermediate structure used to communicate information to a spawned thread.
+/// Intermediate structure used to communicate information to a spawned thread.
 typedef struct
 {
     void (*pFunction)(void *);
@@ -226,8 +242,8 @@ typedef struct
 } TExecuteAfterTimeoutStruct;
 
 
-// Thread used to support the functionality of function ExecuteAfterTimeout.
 #pragma reentrant
+/// Thread used to support the functionality of function ExecuteAfterTimeout.
 void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
 {
     // Delay execution
@@ -237,10 +253,12 @@ void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
 }
 
 
-// This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
-// that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
-// Then the thread disappears.
 #pragma reentrant
+/**
+ * This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
+ * that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
+ * Then the thread disappears.
+ */
 void ExecuteAfterTimeout(void (*pFunc)(void *), unsigned long int Timeout_ms, void * pFuncParam)
 {
     TExecuteAfterTimeoutStruct ExecuteAfterTimeoutStruct;
@@ -266,7 +284,7 @@ char raster[] =
 //   012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
 
 
-/** Everything needed to print Big Character banners */
+/// Everything needed to print Big Character banners
 class TBanner
 {
 public:
@@ -370,7 +388,6 @@ private:
         }
     }
 
-
     void print_big(void)
     {
 
@@ -419,9 +436,11 @@ private:
 };
 
 
-// This is the main banner object. Call its member function "SetMessage" to
-// temporarily display a message in very large characters on the screen.
-TBanner Banner;
+/**
+ * This is the main banner object. Call its member function "SetMessage" to
+ * temporarily display a message in very large characters on the screen.
+ */
+ TBanner Banner;
 
 
 // I try to avoid the use of function prototypes and headers,
@@ -486,10 +505,12 @@ Map a certain set of keypresses to a set of function pointer along with an argum
 That will be called when the key is pressed.
 */
 static std::map<int,T_pf_arg> map_pressed;
+
 /**
 Same when a key is released.
 */
 static std::map<int,T_pf_arg> map_released;
+
 /**
 Maps all the key presses to a boolean, can be true (key is pressed)
 or false (key is released).
@@ -497,10 +518,12 @@ or false (key is released).
 static std::map<int,bool> map_keys;
 
 
-// This is the Linux device that gets raw keyboard information.
-// Default is "/dev/input/event0" but it may change depending on Linux distribution
-// This program does not sense key presses through the terminal, it gets them straight
-// from the keyboard.
+/**
+ * This is the Linux device that gets raw keyboard information.
+ * Default is "/dev/input/event0" but it may change depending on Linux distribution
+ * This program does not sense key presses through the terminal, it gets them straight
+ * from the keyboard.
+ */
 const char *dev = "/dev/input/event0";
 
 void KeyboardThread(void)
@@ -595,16 +618,17 @@ void RegisterEventCallbackReleased(int key_value_param, TKeyboardCallbackFunctio
 
 }
 
-
-// A pedal, from the pedalboard (Behringer FCB1010), with analog action
-// (i.e. can take a range of positions between two bounds).
-// Such a pedal must be programmed (from the FCB1010) to send Midi Control Change
-// events on a particular "Controller Number".
-// When this program receives CC events from ControllerNumber, the OnChange callback
-// function is called.
-// These callback functions must be set up properly during the initialization of the
-// TPedalAnalog object.
-// As of today, only CC on Midi channel 1 are recognized.
+/**
+ * A pedal, from the pedalboard (Behringer FCB1010), with analog action
+ * (i.e. can take a range of positions between two bounds).
+ * Such a pedal must be programmed (from the FCB1010) to send Midi Control Change
+ * events on a particular "Controller Number".
+ * When this program receives CC events from ControllerNumber, the OnChange callback
+ * function is called.
+ * These callback functions must be set up properly during the initialization of the
+ * TPedalAnalog object.
+ * As of today, only CC on Midi channel 1 are recognized.
+ */
 class TPedalAnalog
 {
 private:
@@ -649,16 +673,17 @@ public:
 
 
 
-
-// A pedal, from the pedalboard (Behringer FCB1010), with digital action
-// (i.e. can take two positions: pressed, or released.)
-// Such a pedal must be programmed (from the FCS1010) to send Midi Note ON events,
-// Each Digital Pedal is associated with a particular Note Number.
-// When this program receives Note ON event for Note Number "Number", the corresponding
-// OnPress and OnRelease callback functions are called. These callback functions must be
-// set up properly during the initialization of the TPedalDigital object.
-//
-// As of today, only Midi events sent on Midi Channel 2 are recognized.
+/**
+ * A pedal, from the pedalboard (Behringer FCB1010), with digital action
+ * (i.e. can take two positions: pressed, or released.)
+ * Such a pedal must be programmed (from the FCS1010) to send Midi Note ON events,
+ * Each Digital Pedal is associated with a particular Note Number.
+ * When this program receives Note ON event for Note Number "Number", the corresponding
+ * OnPress and OnRelease callback functions are called. These callback functions must be
+ * set up properly during the initialization of the TPedalDigital object.
+ *
+ * As of today, only Midi events sent on Midi Channel 2 are recognized.
+ */
 class TPedalDigital
 {
 private:
@@ -715,10 +740,11 @@ public:
 
 
 
-
-// A pedalboard is a collection of digital and analog pedals.
-// In the case of the Behringer FCB1010, there are 10 digital pedals
-// and 2 analog pedals.
+/**
+ * A pedalboard is a collection of digital and analog pedals.
+ * In the case of the Behringer FCB1010, there are 10 digital pedals
+ * and 2 analog pedals.
+ */
 class TPedalboard
 {
 public:
@@ -746,14 +772,16 @@ public:
 };
 
 
-// A Context is a collection of features that belong to a particular performance. In other
-// words, a context gathers everything that is needed to play a song:
-// Song name and Author are used to search through all the available Contexts,
-// Then the base tempo, arrangement of the pedalboards (i.e. which pedal does what), and
-// initialization (with the Init function) that is performed when that particular
-// context is activated.
-//
-// Only one context can be active at a point in time. Two contexts cannot be active at the same time.
+/**
+ * A Context is a collection of features that belong to a particular performance. In other
+ * words, a context gathers everything that is needed to play a song:
+ * Song name and Author are used to search through all the available Contexts,
+ * Then the base tempo, arrangement of the pedalboards (i.e. which pedal does what), and
+ * initialization (with the Init function) that is performed when that particular
+ * context is activated.
+ *
+ * Only one context can be active at a point in time. Two contexts cannot be active at the same time.
+ */
 class TContext
 {
 private:
@@ -782,35 +810,39 @@ public:
     }
 };
 
-// Very important variable:
-// Gather all the data about the playlist, sorted by arbitrary "playlist" order.
-// It is that variables that represents a playlist.
-// If is oksy to define several playlists, but then assign one to PlaylistData.
-// Reads: PlaylistData is a list of TContext pointers. Please note that PlaylistData
-// keeps track of pointer to contexts, not actual contexts. This is useful to generate
-// lists with different orders, yet keeping the pool of context objects the same, and only
-// REFERENCED by these lists (not copied into them).
+/**
+ * Very important variable:
+ * Gather all the data about the playlist, sorted by arbitrary "playlist" order.
+ * It is that variables that represents a playlist.
+ * If is oksy to define several playlists, but then assign one to PlaylistData.
+ * Reads: PlaylistData is a list of TContext pointers. Please note that PlaylistData
+ * keeps track of pointer to contexts, not actual contexts. This is useful to generate
+ * lists with different orders, yet keeping the pool of context objects the same, and only
+ * REFERENCED by these lists (not copied into them).
+ */
 std::list<TContext *> PlaylistData;
 
-// Take the raw information of PlaylistData, and sort alphabetically by Author
+/// Take the raw information of PlaylistData, and sort alphabetically by Author
 std::list<TContext *> PlaylistData_ByAuthor;
 
-// Same, sorted alphabetically by Song Name
+/// Take the raw information of PlaylistData, and sort alphabetically by Song Name
 std::list<TContext *> PlaylistData_BySongName;
 
-// Very important global variable: points to the current context in the playlist.
-// This is a list::iterator, so dereferencing it (e.g. *PlaylistPosition)
-// gives an element, that is a pointer to a Context. Then dereference another
-// time to get to the context.
-// E.g: TContext MyContext;
-//      MyContext = **PlaylistPosition;
-//      printf("%s", MyContext.SongName.c_str());
-
+/**
+ * Very important global variable: points to the current context in the playlist.
+ * This is a list::iterator, so dereferencing it (e.g. *PlaylistPosition)
+ * gives an element, that is a pointer to a Context. Then dereference another
+ * time to get to the context.
+ * E.g: TContext MyContext;
+ *      MyContext = **PlaylistPosition;
+ *      printf("%s", MyContext.SongName.c_str());
+ */
 std::list<TContext *>::iterator PlaylistPosition;
 
-
-// Here, the actual TContext objects are instanciated. One for each context, which
-// more or less represents one for each *song* in the playlist, in the band/musical sense.
+/**
+ * Here, the actual TContext objects are instantiated. One for each context, which
+ * more or less represents one for each *song* in the playlist, in the band/musical sense.
+ */
 TContext cFirstContext;
 TContext cRigUp;
 TContext cAveMaria;
@@ -877,11 +909,13 @@ TContext cEncoreUnMatin;
 TContext cQuandLaMusiqueEstBonne;
 TContext cDumbo;
 
-
-// This function is needed to sort lists of elements.
-// Sorting a list requires that a comparison function be provided.
-// But how can we say "that context comes before that one"? It depends on
-// how we want to sort, namely by Author...
+/**
+ * This function is needed to sort lists of elements.
+ * Sorting a list requires that a comparison function be provided.
+ * But how can we say "that context comes before that one"? It depends on
+ * how we want to sort, namely by Author
+ * \see CompareTContextBySongName
+ */
 bool CompareTContextByAuthor(const TContext* first, const TContext* second)
 {
     std::string first_nocase = first->Author;
@@ -892,7 +926,13 @@ bool CompareTContextByAuthor(const TContext* first, const TContext* second)
     return first_nocase < second_nocase;
 }
 
-// ... and by Song Name.
+/**
+ * This function is needed to sort lists of elements.
+ * Sorting a list requires that a comparison function be provided.
+ * But how can we say "that context comes before that one"? It depends on
+ * how we want to sort, namely by Song Name
+ * \see CompareTContextByAuthor
+ */
 bool CompareTContextBySongName(const TContext* first, const TContext* second)
 {
     std::string first_nocase = first->SongName;
@@ -903,10 +943,11 @@ bool CompareTContextBySongName(const TContext* first, const TContext* second)
     return first_nocase < second_nocase;
 }
 
-
-// This function is called each time one wants to go to the previous context.
-// Since a FCB1010 pedal is allocated to that (normally pedal 6), two events are generated:
-// When you press on the pedal...
+/**
+ * This function is called each time one wants to go to the previous context.
+ * Since a FCB1010 pedal is allocated to that (normally pedal 6), two events are generated:
+ * That one when you <b>press on</b> the pedal
+ */
 void ContextPreviousPress(void)
 {
     if (PlaylistPosition != PlaylistData.begin())
@@ -917,14 +958,17 @@ void ContextPreviousPress(void)
     }
 }
 
-// ... and when you release the pedal.
+/**
+ * This function is called each time one wants to go to the previous context.
+ * Since a FCB1010 pedal is allocated to that (normally pedal 6), two events are generated:
+ * That one when you <b>release</b> the pedal
+ */
 void ContextPreviousRelease(void)
 {
     // And in that case, do nothing.
 }
 
-// Sames goes with Pedal 7, go to go the next context (you'll say the *next song*...).
-
+/// Sames goes with Pedal 7, go to go the next context (you'll say the *next song*...).
 void ContextNextPress(void)
 {
     // Note that .end() returns an iterator that is already outside the bounds
@@ -940,7 +984,7 @@ void ContextNextPress(void)
     }
 }
 
-// What happens when the ContextNext pedal is released
+/// What happens when the ContextNext pedal is released
 void ContextNextRelease(void)
 {
     // In that case, do nothing.
@@ -982,9 +1026,10 @@ typedef enum
     nnMiBemol = 4
 } TNoteName;
 
-
-// Helper structure used to gather some information required to merely play a note.
-// Including how long it should last.
+/**
+ * Helper structure used to gather some information required to merely play a note.
+ * Including how long it should last.
+ */
 typedef struct
 {
     unsigned char NoteNumber;
@@ -994,27 +1039,31 @@ typedef struct
 } TPlayNoteMsg;
 
 
-// This class runs a state machine capable of processing MIDI input.
-// It instantiates a thread on its own (that runs the state machine).
-// A defined MIDI IN port must be assigned to it upon initialization.
-// Callback functions must be set up to process:
-// - Note events (from outside into this program)
-// - Controller Change events (from outside into this program)
-// It also implements the functions to send to MIDI OUT (from this program to outside world):
-// - Note events
-// - CC (Controller Change)
-// - PC (Program Change)
+/**
+ * This class runs a state machine capable of processing MIDI input.
+ * It instantiates a thread on its own (that runs the state machine).
+ * A defined MIDI IN port must be assigned to it upon initialization.
+ * Callback functions must be set up to process:
+ * - Note events (from outside into this program)
+ * - Controller Change events (from outside into this program)
+ * It also implements the functions to send to MIDI OUT (from this program to outside world):
+ * - Note events
+ * - CC (Controller Change)
+ * - PC (Program Change)
+ */
 class TMIDI_Port
 {
 
 public:
+    /// Constructor does nothing. Please call ::Init() prior to using member functions.
     TMIDI_Port(void) {};
 
-    // Hook function called whenever a Note ON event is received
+    /// Hook function called whenever a Note ON event is received
     typedef void (*THookProcessNoteONEvent)(unsigned int rxChannel, unsigned int rxNote_param, unsigned int rxVolume_param);
-    // Hook function called whenever a controller change event is received
+    /// Hook function called whenever a controller change event is received
     typedef void (*THookProcessControllerChangeEvent)(unsigned int rxChannel, unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
 
+    /// Initialize this object
     void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
     {
         name_midi_hw = name_midi_hw_param;
@@ -1041,17 +1090,6 @@ public:
             wprintw(win_debug_messages.GetRef(), "TProcessMidiInput::Init() called too often\n");
         }
     }
-    /*
-        snd_rawmidi_t * GetHandle_MIDI_In(void)
-        {
-            return handle_midi_hw_in;
-        }
-
-        snd_rawmidi_t * GetHandle_MIDI_Out(void)
-        {
-            return handle_midi_hw_out;
-        }
-    */
 
     // Send Note On Event on midi channel Channel (1-16), note number NoteNumber (0-127),
     // velocity Velocity (0-127).
