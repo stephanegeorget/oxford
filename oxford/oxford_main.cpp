@@ -22,7 +22,8 @@
 // and make sure that code blocks links with the library generated in ???
 // run ldconfig as root
 // you must also have the aubio library; go to aubio, then type make.
-// Navigate to the library and type ldconfig $(pwd) to add that path to the library search.
+// Navigate to the library (normally aubio-xxxx/build/src) and type ldconfig $(pwd)
+// to add that path to the library search.
 // [[OOLLDD: ./waf configure, ./waf build, ./waf install is not really needed,
 //  just have codeblocks link with the aubio library generated in: build/source/libaubio.so]]
 
@@ -51,6 +52,7 @@
 #include <vector>
 #include <map>
 #include <locale>
+#include "subrange.h"
 
 int stop = 0;
 
@@ -75,6 +77,38 @@ std::mutex ncurses_mutex;
 
 // Test XV5080 class
 #define TEST_XV5080
+
+
+typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::saturated_arithmetic> TInt_0_127;
+typedef subrange::subrange<subrange::ordinal_range<int, 1, 16>, subrange::saturated_arithmetic> TInt_1_16;
+
+void Test7bitInteger(void)
+{
+    TInt_0_127 SevenBitInt;
+    SevenBitInt = 10;
+    SevenBitInt++;
+
+    TInt_1_16 b;
+    b = 14;
+    b++;
+    b++;
+    b++;
+    b++;
+
+
+
+}
+
+#if 0
+
+std::ostream &operator <<(std::ostream &stream, IntRange ir)
+{
+    cout << ir.GetValue();
+    return stream;
+}
+
+#endif // 0
+
 
 
 // This is a ncurses cdk panel, with a boxed window on it, that can't
@@ -399,8 +433,8 @@ void ContextNextRelease(void);
 
 namespace Kungs_This_Girl
 {
-     void Sequence_1_Start_PedalPressed(void);
-     void Sequence_1_Start_PedalReleased(void);
+void Sequence_1_Start_PedalPressed(void);
+void Sequence_1_Start_PedalReleased(void);
 }
 
 
@@ -1057,20 +1091,20 @@ public:
     }
 
 
-/*
- Remark from the MIDI specifications:
- ------------------------------------
-MIDI provides two roughly equivalent means of turning off a note (voice).
-A note may be turned off either by sending a Note-Off message for the same note
-number and channel, or by sending a Note-On message for that note and channel
-with a velocity value of zero. The advantage to using "Note-On at zero velocity"
-is that it can avoid sending additional status bytes when Running Status is
-employed.
+    /*
+     Remark from the MIDI specifications:
+     ------------------------------------
+    MIDI provides two roughly equivalent means of turning off a note (voice).
+    A note may be turned off either by sending a Note-Off message for the same note
+    number and channel, or by sending a Note-On message for that note and channel
+    with a velocity value of zero. The advantage to using "Note-On at zero velocity"
+    is that it can avoid sending additional status bytes when Running Status is
+    employed.
 
-Due to this efficiency, sending Note-On messages with velocity values of zero is
-the most commonly used method.
+    Due to this efficiency, sending Note-On messages with velocity values of zero is
+    the most commonly used method.
 
-*/
+    */
 
 // Same for Note Off MIDI event.
 // If you want to send out some MIDI notes,
@@ -1163,7 +1197,7 @@ the most commonly used method.
     {
         for (auto x : data)
         {
-                wprintw(win_midi_out.GetRef(), "%02x\n", (int) x);
+            wprintw(win_midi_out.GetRef(), "%02x\n", (int) x);
         }
 
         if (handle_midi_hw_out != 0)
@@ -1265,7 +1299,7 @@ private:
     void StateMachineFunction(void)
     {
         // Change priority to top-most realtime
-        #ifdef REALTIME
+#ifdef REALTIME
         struct sched_param param;
         param.__sched_priority = sched_get_priority_max(SCHED_RR);
         //https://linux.die.net/man/3/pthread_setschedparam
@@ -1274,7 +1308,7 @@ private:
         {
             wprintw(win_debug_messages.GetRef(), "MIDI: error initializing thread priority, returned %i\n", s);
         }
-        #endif
+#endif
 
         wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", name_midi_hw.c_str());
 
@@ -1734,7 +1768,7 @@ public:
                 TPerformanceName(void) : TParameter() {};
                 void Set(std::string Name)
                 {
-                    for (unsigned int i = 0; i<12 ;i++)
+                    for (unsigned int i = 0; i<12 ; i++)
                     {
                         if (i < Name.length() )
                         {
@@ -1747,7 +1781,7 @@ public:
                         }
                     }
                 }
-             /*   TPerformanceName(void) : TParameter(0) {};*/
+                /*   TPerformanceName(void) : TParameter(0) {};*/
 
             } PerformanceName;
 
@@ -1815,7 +1849,7 @@ private:
 
     char ExclusiveMsgChecksum(std::vector<unsigned char> data)
     {
-         unsigned long int checksum_value = 0;
+        unsigned long int checksum_value = 0;
         for (auto x : data)
         {
             checksum_value += x;
@@ -1845,7 +1879,8 @@ private:
         chksum_data.insert(chksum_data.end(), v.begin() +6, v.end());
 
         v.push_back(ExclusiveMsgChecksum(chksum_data)); // ??H Data sum Checksum
-        v.push_back(0xF7); v.push_back(0xE0); // F7H EOX (End Of Exclusive)
+        v.push_back(0xF7);
+        v.push_back(0xE0); // F7H EOX (End Of Exclusive)
 
         pMIDI_Port->SendRawData(v);
     }
@@ -1860,9 +1895,9 @@ TXV5080 XV5080(&MIDI_A);
 std::vector<unsigned char> test1(void)
 {
 
-            std::vector<unsigned char> v;
-            v.push_back(0);
-            return v;
+    std::vector<unsigned char> v;
+    v.push_back(0);
+    return v;
 }
 
 void test_XV5080(void)
@@ -1884,11 +1919,11 @@ void test_XV5080(void)
     XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(3);
     XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);
     XV5080.System.SystemCommon.SystemTempo.Set(130);
-*/
+    */
     XV5080.System.SystemCommon.SystemTempo.Set(130);
 //    unsigned long int addr = XV5080.UserPerformances[1].TEST_GetOffsetAddress();
 
-  //  TXV5080::System::SystemCommon::SoundMode::Write(0);
+    //  TXV5080::System::SystemCommon::SoundMode::Write(0);
 
 }
 
@@ -2025,10 +2060,10 @@ void N(void * pVoid)
 void Z_p(void * pVoid)
 {
     //system("aplay ./wav/FXCarpenterLaserBig.wav &");
-/*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
-    XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
-    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
-    XV5080.System.SystemCommon.SystemTempo.Set(130);*/
+    /*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
+        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
+        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
+        XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     Kungs_This_Girl::Sequence_1_Start_PedalPressed();
 }
 
@@ -2453,7 +2488,7 @@ public:
                 pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
             }
             WatchdogFlag = true;
- //           ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+//           ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
         }
         else
         {
@@ -2789,7 +2824,6 @@ void Chord3_Off(void)
 }
 
 
-
 void Chord4_On(void)
 {
     Partial_On(48-1);
@@ -2802,74 +2836,73 @@ void Chord4_Off(void)
 
 }
 
-
 }
 
 
 namespace Kungs_This_Girl
 {
-    void Trumpet_On(int NoteNumber)
-    {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
-    }
+void Trumpet_On(int NoteNumber)
+{
+    MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+}
 
-    void Trumpet_Off(int NoteNumber)
-    {
-        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
-    }
+void Trumpet_Off(int NoteNumber)
+{
+    MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+}
 
-    TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
-    TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
-    TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
-    void Sequence_1_Start_PedalPressed(void)
-    {
-        Sequence_1.Start_PedalPressed();
-    }
+void Sequence_1_Start_PedalPressed(void)
+{
+    Sequence_1.Start_PedalPressed();
+}
 
-    void Sequence_1_Start_PedalReleased(void)
-    {
-        Sequence_1.Start_PedalReleased();
-    }
+void Sequence_1_Start_PedalReleased(void)
+{
+    Sequence_1.Start_PedalReleased();
+}
 
-    void Sequence_2_Start_PedalPressed(void)
-    {
-        Sequence_2.Start_PedalPressed();
-    }
+void Sequence_2_Start_PedalPressed(void)
+{
+    Sequence_2.Start_PedalPressed();
+}
 
-    void Sequence_2_Start_PedalReleased(void)
-    {
-        Sequence_2.Start_PedalReleased();
-    }
+void Sequence_2_Start_PedalReleased(void)
+{
+    Sequence_2.Start_PedalReleased();
+}
 
-    void Sequence_3_Start_PedalPressed(void)
-    {
-        Sequence_3.Start_PedalPressed();
-    }
+void Sequence_3_Start_PedalPressed(void)
+{
+    Sequence_3.Start_PedalPressed();
+}
 
-    void Sequence_3_Start_PedalReleased(void)
-    {
-        Sequence_3.Start_PedalReleased();
-    }
+void Sequence_3_Start_PedalReleased(void)
+{
+    Sequence_3.Start_PedalReleased();
+}
 
-    void Sequences_Stop(void)
-    {
-        Sequence_1.Stop_PedalPressed();
-        Sequence_2.Stop_PedalPressed();
-        Sequence_3.Stop_PedalPressed();
-    }
+void Sequences_Stop(void)
+{
+    Sequence_1.Stop_PedalPressed();
+    Sequence_2.Stop_PedalPressed();
+    Sequence_3.Stop_PedalPressed();
+}
 
-    void Init(void)
-    {
-        // Force XV5080 to performance mode
-        XV5080.System.SystemCommon.SoundMode.Perform();
-        XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85); //
-        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0); // Group A
-        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(3); // number 4
+void Init(void)
+{
+    // Force XV5080 to performance mode
+    XV5080.System.SystemCommon.SoundMode.Perform();
+    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85); //
+    XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0); // Group A
+    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(3); // number 4
 
-    }
+}
 }
 
 
@@ -3233,12 +3266,70 @@ void MIDI_A_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned
 
 // This hook function is called whenever a Note ON event was received on
 // MIDI B IN.
+// ************************************************************
+// Retransmit external Keyboard MIDI information to the XV5080.
+// ************************************************************
 void MIDI_B_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned int rxVolume)
 {
+    static unsigned int KeyboardNoteLow = 0;
+    static unsigned int KeyboardNoteHigh = 127;
+    static TInt_0_127 MasterVolume;
+    MasterVolume = 127;
+    static TInt_1_16 KbdMidiChannelTx;
+    KbdMidiChannelTx = 1;
+    static bool FirstRun = false;
+
+
+    // Calibrate keyboard size
+    // User must hit once the lowest key and the highest key of the keyboard.
+    if ((KeyboardNoteLow == 0 || KeyboardNoteHigh == 127))
+    {
+        if (rxNote < 64)
+        {
+            KeyboardNoteLow = rxNote;
+        }
+
+        if (rxNote > 64)
+        {
+            KeyboardNoteHigh = rxNote;
+        }
+        return;
+    }
+
     if (rxNote >= 1 && rxNote <= 127)
     {
+        if (rxNote == KeyboardNoteHigh) // Last key of the keyboard
+        {
+            MasterVolume = MasterVolume + 5;
+            Banner.SetMessage("KBD VOL +");
+            XV5080.System.SystemCommon.MasterLevel.Set(MasterVolume);
+            return;
+        }
+
+        if (rxNote == KeyboardNoteHigh -1) // Last key -1
+        {
+            MasterVolume = MasterVolume + (0 - 5);
+            Banner.SetMessage("KBD VOL -");
+            XV5080.System.SystemCommon.MasterLevel.Set(MasterVolume);
+            return;
+        }
+
+        if (rxNote == KeyboardNoteHigh -2) // Last key -2
+        {
+            KbdMidiChannelTx = KbdMidiChannelTx + 1;
+            Banner.SetMessage("KBD CHN" + std::to_string(KbdMidiChannelTx));
+            return;
+        }
+
+        if (rxNote == KeyboardNoteHigh -4) // Last key -4
+        {
+            KbdMidiChannelTx = KbdMidiChannelTx - 1;
+            Banner.SetMessage("KBD CHN" + std::to_string(KbdMidiChannelTx));
+            return;
+        }
+
         // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
-        MIDI_A.SendNoteOnEvent(rxChannel, rxNote, rxVolume);
+        MIDI_A.SendNoteOnEvent(KbdMidiChannelTx, rxNote, rxVolume);
     }
 }
 
@@ -3980,9 +4071,9 @@ int main(int argc, char** argv)
     std::thread thread4(MiniSynth::threadKeyboard);
 
 
-    #ifdef TEST_XV5080
+#ifdef TEST_XV5080
     test_XV5080();
-    #endif
+#endif
 
 #endif
 
