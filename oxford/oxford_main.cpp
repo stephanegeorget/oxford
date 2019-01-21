@@ -53,6 +53,10 @@
 #include <map>
 #include <locale>
 #include "subrange.h"
+#include <queue>
+#include <condition_variable>
+#include <chrono>
+#include <ctime>
 
 int stop = 0;
 
@@ -79,6 +83,9 @@ std::mutex ncurses_mutex;
 
 // Test XV5080 class
 #define TEST_XV5080
+
+// Test TSequence class
+#define TEST_TSEQUENCE
 
 
 
@@ -133,7 +140,7 @@ public:
     TBoxedWindow(void) {};
 
     /// Initialization of a boxed window
-    void Init(char* name, int height, int width, int starty, int startx)
+    void Init(char const * name, int height, int width, int starty, int startx)
     {
         std::lock_guard<std::mutex> lock(ncurses_mutex);
         BoxedWindow = newwin(height, width, starty, startx);
@@ -214,7 +221,6 @@ TBoxedWindow win_context_select_menu;
 TBoxedWindow win_big_message; ///< Window that displays a scrolling banner with a message made with large characters
 
 
-#pragma reentrant
 /// Pause thread execution for "milliseconds" milliseconds, with a fairly high resolution.
 void waitMilliseconds(int milliseconds)
 {
@@ -242,7 +248,6 @@ typedef struct
 } TExecuteAfterTimeoutStruct;
 
 
-#pragma reentrant
 /// Thread used to support the functionality of function ExecuteAfterTimeout.
 void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
 {
@@ -253,7 +258,6 @@ void ExecuteAfterTimeout_Thread(TExecuteAfterTimeoutStruct Message)
 }
 
 
-#pragma reentrant
 /**
  * This function, "ExecuteAfterTimeout", returns to the caller right away, but it spawns a thread,
  * that waits Timeout_ms milliseconds, and then makes a call to function pFunc, which must have the prototype: void MyFunction(void * myParam);
@@ -296,7 +300,7 @@ public:
         // -1 for the right side window, -1 for the left side window, and
         // we're just "flush".
         canvas_width = columns -2;
-        canvas = new(char[canvas_width*canvas_height]);
+        canvas = new char[canvas_width*canvas_height];
         char_displayed_on_canvas = canvas_width / char_width;
         display_time_ms = display_time_ms_param;
         std::thread t(BannerThread, this);
@@ -392,14 +396,13 @@ private:
     {
 
         init_pair(7, COLOR_WHITE, COLOR_BLUE);
-        int i=0;
 
         wattron(pBoxedWindow->GetRef(), COLOR_PAIR(7));
 
         mvwprintw(pBoxedWindow->GetRef(), 0, 0, "");
-        for (unsigned int lin = 0; lin < canvas_height; lin++)
+        for (int lin = 0; lin < canvas_height; lin++)
         {
-            for (unsigned int col = 0+offset; col < canvas_width+offset; col++)
+            for (int col = 0+offset; col < canvas_width+offset; col++)
             {
                 int teststring_index = col / char_width;
                 teststring_index %= message_size;
@@ -991,13 +994,6 @@ void ContextNextRelease(void)
 }
 
 
-// Shows usage - but real programmers don't need that; they look at the code :-)
-static void usage(void)
-{
-    wprintw(win_debug_messages.GetRef(), "usage: fix me\n");
-}
-
-
 // TODO: handle events passed to this program (i.e. CTRL+C, kill, etc.)
 void sighandler(int dum)
 {
@@ -1059,9 +1055,9 @@ public:
     TMIDI_Port(void) {};
 
     /// Hook function called whenever a Note ON event is received
-    typedef void (*THookProcessNoteONEvent)(unsigned int rxChannel, unsigned int rxNote_param, unsigned int rxVolume_param);
+    typedef void (*THookProcessNoteONEvent)(TInt_1_16 rxChannel, TInt_0_127 rxNote_param, TInt_0_127 rxVolume_param);
     /// Hook function called whenever a controller change event is received
-    typedef void (*THookProcessControllerChangeEvent)(unsigned int rxChannel, unsigned int rxControllerNumber_param, unsigned int rxControllerValue_param);
+    typedef void (*THookProcessControllerChangeEvent)(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber_param, TInt_0_127 rxControllerValue_param);
 
     /// Initialize this object
     void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
@@ -1274,8 +1270,12 @@ private:
     std::thread::native_handle_type ThreadNativeHandle = 0;
     int err;
     unsigned char ch;
-    unsigned int rxNote, rxVolume, rxControllerNumber, rxChannel,
-             rxControllerValue;
+    TInt_1_16 rxChannel;
+    TInt_0_127 rxVolume;
+    TInt_0_127 rxControllerNumber;
+    TInt_0_127 rxNote;
+    TInt_0_127 rxControllerValue;
+
     enum
     {
         smInit,
@@ -1377,7 +1377,7 @@ private:
                     {
                         // It's a Controller Change event.
                         // The channel is encoded offset by one. Bring back the value in the 0-16 range (+1 below)
-                        rxChannel = ch & 0x0F +1;
+                        rxChannel = (ch & 0x0F) +1;
                         stateMachine = smWaitMidiControllerChangeChar2;
                     }
                     break;
@@ -1517,7 +1517,7 @@ public:
                     Mask.push_back(true);
                 }
             }
-            printf("Mask size: %i\n", Mask.size());
+            printf("Mask size: %i\n", (int) Mask.size());
             if (Mask.size() % 8 != 0)
             {
                 printf("ERROR: TValue Mask not a multiple of 8 bits\n");
@@ -1924,19 +1924,10 @@ private:
     }
 };
 
-// Definition of static member in TXV5080
+// Definition of static member in TXV5080 must be done outside the class
 TXV5080 * TXV5080::pTXV5080 = 0;
 // Instance of the XV-5080 communication driver
 TXV5080 XV5080(&MIDI_A);
-
-
-std::vector<unsigned char> test1(void)
-{
-
-    std::vector<unsigned char> v;
-    v.push_back(0);
-    return v;
-}
 
 void test_XV5080(void)
 {
@@ -1965,6 +1956,113 @@ void test_XV5080(void)
 
 }
 
+/**
+Definition of the TScaleName type
+*/
+typedef std::string TScaleName;
+
+
+
+/**
+This class represents a music note
+*/
+class TNote__
+{
+public:
+    TNote__(std::string const NameUS_param,
+                std::string const NameEuropean_param,
+                float Frequency_param,
+                int MidiNote_param)
+    {
+        NameUS = NameUS_param;
+        NameEuropean = NameUS_param;
+        Frequency = Frequency_param;
+        MidiNote = MidiNote_param;
+    };
+
+    operator int()
+    {
+        return static_cast<int>(MidiNote);
+    }
+
+    operator std::string()
+    {
+        return "blah";
+    }
+
+    operator TInt_0_127()
+    {
+        return MidiNote;
+    }
+
+private:
+    static std::map<TScaleName, std::string[]> NoteNamesUS;
+//    static std::map<int,std::string> map_MidiNoteNumber__NameUS = {0, "C-2}
+
+    std::string NameUS;
+    std::string NameEuropean;
+    float Frequency;
+    TInt_0_127 MidiNote;
+
+    void Test(void)
+    {
+        TNote__ testNote("B", "Si", 1234, 20);
+    }
+
+};
+
+#if 0
+
+
+static std::map<TScaleName, std::vector<std::string>> NoteNamesUS =
+{
+    {"C", {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}},
+    {"Db", {"Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C"}},
+    {"Dmaj", {"D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"E", {"E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
+};
+
+//static std::map<int,std::string> TNote__::map_MidiNoteNumber__NameUS = {0, "C-2}
+
+#endif // 0
+
+/**
+This class represent a musical chord
+*/
+class TChord
+{
+public:
+    TChord(void) {};
+    void Set(TNote__ Note) {};
+    void Set(std::vector<TNote__> v_Notes) {};
+
+};
+
+
+/**
+This class allows to filter notes outside a given key or set of allowed notes.
+*/
+class TNoteFilter
+{
+public:
+    TNoteFilter(void) {};
+
+    void Allow(TChord) {};
+//    void Allow(std::vector<TToneHeight> v_ToneHeight) {};
+
+
+};
 
 
 //XV5080.SetSoundMode(sm_perform);
@@ -2084,7 +2182,7 @@ void Space(void * pVoid)
     SelectContextInPlaylist(PlaylistData, false);
 }
 
-void B(void* pVoid)
+void B(void * pVoid)
 {
     SelectContextInPlaylist(PlaylistData_BySongName, false);
 }
@@ -2113,9 +2211,6 @@ void Z_r(void * pVoid)
 // Scan keyboard for events, and process keypresses accordingly.
 void threadKeyboard(void)
 {
-    char *message;
-
-
     // create all the notes in
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_Q, StartNote, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_2, StartNote, (void *)1);
@@ -2344,7 +2439,6 @@ void AllSoundsOff(void)
 
 
 
-
 typedef struct
 {
 public:
@@ -2353,24 +2447,100 @@ public:
 } TNote;
 
 
-// Represents and plays a short sequence of notes
+class TSyncMsg
+{
+private:
+    std::condition_variable cv;
+    int msg = 0;
+    bool flag = false;
+    std::mutex m;
+public:
+    TSyncMsg(void) {};
 
-// If TimeoutFactor_param is set to 0, the sequence is played at the tempo
-// inferred (measured) from the time
-// that lapsed between the calls to Start_PedalPressed and Start_PedalReleased.
-// Upon Start_PedalPressed, it starts playing the sequence (first note),
-// Upon Start_PedalReleased, it continues to play the sequence at said tempo.
-// Of course, there is a requirement that the time duration between the first and second note
-// should be 1, i.e. one "unit of time", that lapsed between the pedal pressed and pedal released.
-// Stop_PedalPressed stops the sequence in progress, if any.
+    void Send(void)
+    {
+        Send(1);
+    }
 
-// If TimeoutFactor_param is non-zero, the sequence is played one note at a time,
-// each time Start_PedalPressed OR Start_PedalReleased is called. If the last note of the sequence
-// is played on a PedalPressed event, that is in the case of an odd number of notes in the sequence,
-// the next call to PedalReleased does no action, so the performer can release his/her foot from the pedal
-// to rest.
-// If no pedal action occurred within Timeout_param s, the whole sequence is cancelled, and it will resume
-// on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case it timed out while the pedal is pressed)
+    void Send(int msg_param)
+    {
+        {
+            std::lock_guard<std::mutex> lk(m);
+            msg = msg_param;
+            flag = true;
+        }
+        cv.notify_one();
+    }
+#if 0
+    int WaitTrue(int timeout_param)
+    {
+        return Wait(1, timeout_param);
+    }
+
+    int WaitTrue(void)
+    {
+        return Wait(1, 0);
+    }
+#endif
+    int Wait(int msg_param, int timeout_ms_param)
+    {
+        return Wait_OR(msg_param, msg_param, timeout_ms_param);
+    }
+
+    int Wait_OR(int msg_param1, int msg_param2, int timeout_ms_param)
+    {
+        if (timeout_ms_param == 0)
+        {
+            do
+            {
+                std::unique_lock<std::mutex> lk(m);
+                cv.wait(lk, [&]{return flag;});
+                flag = 0;
+            } while (!( (msg == msg_param1) || (msg == msg_param2)));
+            return msg;
+        }
+        else
+        {
+            do
+            {
+                std::unique_lock<std::mutex> lk(m);
+                if (cv.wait_for(lk, std::chrono::milliseconds(timeout_ms_param), [&]{return flag;}) == true)
+                {
+                    // predicate true
+                    flag = 0;
+                    return msg;
+                }
+                else
+                {
+                    flag = 0;
+                    return -1;
+                }
+            } while (!( (msg == msg_param1) || (msg == msg_param2) ));
+        }
+    }
+};
+
+
+/**
+Represents and plays a short sequence of notes
+
+If TimeoutFactor_param is set to 0, the sequence is played at the tempo
+inferred (measured) from the time
+that lapsed between the calls to Start_PedalPressed and Start_PedalReleased.
+Upon Start_PedalPressed, it starts playing the sequence (first note),
+Upon Start_PedalReleased, it continues to play the sequence at said tempo.
+Of course, there is a requirement that the time duration between the first and second note
+should be 1, i.e. one "unit of time", that lapsed between the pedal pressed and pedal released.
+Stop_PedalPressed stops the sequence in progress, if any.
+
+If TimeoutFactor_param is non-zero, the sequence is played one note at a time,
+each time Start_PedalPressed OR Start_PedalReleased is called. If the last note of the sequence
+is played on a PedalPressed event, that is in the case of an odd number of notes in the sequence,
+the next call to PedalReleased does no action, so the performer can release his/her foot from the pedal
+to rest.
+If no pedal action occurred within Timeout_param s, the whole sequence is cancelled, and it will resume
+on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case it timed out while the pedal is pressed)
+*/
 class TSequence
 {
 private:
@@ -2386,29 +2556,213 @@ private:
     float Timeout = 1;
     bool PhraseInProgress = false;
     bool WatchdogFlag = false;
+    std::queue<int> QueueNotesOn; // keep track of which notes have been turned ON - so as to not forget to turn them OFF later
+    typedef enum {btsmWaitStartingPulse, btsmWaitSecondPulse, btsmWaitNextPulse, btsmCancel} TBeatTimeStateMachine;
+    TBeatTimeStateMachine BeatTimeStateMachine = btsmWaitStartingPulse;
+    enum {msgBeatReceived = 10, msgReset = 20} MessageToPhraseSequencer;
+    typedef enum {pssmNote1, pssmNote2, pssmOtherNotes} TPhraseSequencerStateMachine;
+    TPhraseSequencerStateMachine PhraseSequencerStateMachine = pssmNote1;
+    enum {msgPedalPressed = 1, msgPedalReleased = 2} MessageToBeatTime;
+    TSyncMsg MsgToBeatTime;
+    TSyncMsg MsgToPhraseSequencer;
+    bool PedalEvent;
+    int PedalBeats = 0; // number of times the pedal sent an even used to compute beat time
 
 
-    static void * PhraseSequencerThread(void * pParam)
+    void TurnNoteOn(int value)
     {
-        TSequence * pSeq = (TSequence *) pParam;
-        pSeq->PhraseSequencer();
+        if (value != 999)
+        {
+            pFuncNoteOn(value);
+            QueueNotesOn.push(value);
+        }
+        else
+        {
+            pFuncNoteOff(value);
+            QueueNotesOn.push(value);
+        }
     }
 
-    void PhraseSequencer(void)
+    void TurnPreviousNoteOff(void)
     {
-        while(PhraseInProgress)
+        if (!QueueNotesOn.empty())
         {
-            pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-            it++;
-            if (it == MelodyNotes.end())
+            int NoteNumber = QueueNotesOn.front();
+            QueueNotesOn.pop();
+            if (NoteNumber == 999)
             {
-                PhraseInProgress = false;
+                return;
             }
             else
             {
+                pFuncNoteOff(NoteNumber);
+            }
+        }
+        else
+        {
+            // queue empty - do nothing
+            return;
+        }
+    }
+
+    static void GetBeatTimeFromPedalThreadStatic(TSequence * self)
+    {
+        self->GetBeatTimeFromPedalThread();
+    }
+
+    void GetBeatTimeFromPedalThread(void)
+    {
+        // TSyncMsg must be used after main() is called
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        while (1)
+        {
+            switch(BeatTimeStateMachine)
+            {
+            case btsmWaitStartingPulse:
+                PedalBeats = 0;
+                BeatTime_ms = 0;
+                MsgToBeatTime.Wait(msgPedalPressed, 0);
+                MsgToPhraseSequencer.Send(msgBeatReceived);
+                gettimeofday(&tv1, NULL);
+                BeatTimeStateMachine = btsmWaitSecondPulse;
+                break;
+
+            case btsmWaitSecondPulse:
+                if (MsgToBeatTime.Wait(msgPedalReleased, Timeout * 1000.0) == -1)
+                {
+                    // timeout
+                    BeatTimeStateMachine = btsmWaitStartingPulse;
+                    MsgToPhraseSequencer.Send(msgReset);
+                }
+                else
+                {
+                    // message received
+                    PedalBeats ++;
+                    // Upswing of the start sequencer pedal (step 2)
+                    gettimeofday(&tv2, NULL);
+                    // Compute time lapse between pedal down and pedal up
+                    // that will set our "one beat" tempo time
+                    BeatTime_ms = ((tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0) / ((float) PedalBeats);
+                    MsgToPhraseSequencer.Send(msgBeatReceived);
+                    BeatTimeStateMachine = btsmWaitNextPulse;
+                }
+                break;
+
+            case btsmWaitNextPulse:
+                if (MsgToBeatTime.Wait_OR(msgPedalPressed, msgPedalReleased, Timeout * 1000) == -1)
+                {
+                    // timeout =>  restart
+                    BeatTimeStateMachine = btsmWaitStartingPulse;
+                    MsgToPhraseSequencer.Send(msgReset);
+                }
+                else
+                {
+                    // message received - update beat time
+                    PedalBeats ++;
+                    // Upswing of the start sequencer pedal (step 2)
+                    gettimeofday(&tv2, NULL);
+                    // Compute time lapse between pedal down and pedal up
+                    // that will set our "one beat" tempo time
+                    BeatTime_ms = ((tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0) / ((float) PedalBeats);
+                    MsgToPhraseSequencer.Send(msgBeatReceived);
+                }
+                break;
+
+            default:
+                BeatTimeStateMachine = btsmWaitStartingPulse;
+            }
+        }
+    }
+
+    /// This member function run as a thread, as such it must be static.
+    static void PhraseSequencerThreadStatic(TSequence * self)
+    {
+        self->PhraseSequencerThread();
+    }
+
+
+    /// This function runs in its own thread ()
+    void PhraseSequencerThread(void)
+    {
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        wprintw(win_debug_messages.GetRef(), "THIS:%p\n", this);
+
+        std::chrono::system_clock::time_point TimeStart;
+
+        PhraseSequencerStateMachine = pssmNote1;
+
+        while(1)
+        {
+            switch(PhraseSequencerStateMachine)
+            {
+            case pssmNote1:
+                if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                {
+                    // Reset state machine
+                    TurnPreviousNoteOff();
+                    PhraseSequencerStateMachine = pssmNote1;
+                    break;
+                }
+                // First note
+                TimeStart = std::chrono::system_clock::now();
+                it = MelodyNotes.begin();
                 CurrentNote = *it;
-                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-                waitMilliseconds(CurrentNote.NoteDuration * (float)BeatTime_ms);
+                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                PhraseSequencerStateMachine = pssmNote2;
+                break;
+
+            case pssmNote2:
+                if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                {
+                    // Reset state machine
+                    TurnPreviousNoteOff();
+                    PhraseSequencerStateMachine = pssmNote1;
+                    break;
+                }
+
+                // Second note
+                TurnPreviousNoteOff();
+                it++;
+                CurrentNote = *it;
+                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                PhraseSequencerStateMachine = pssmOtherNotes;
+                break;
+
+
+            case pssmOtherNotes:
+                TurnPreviousNoteOff();
+                // Point to next note
+                it++;
+                if (it == MelodyNotes.end())
+                {
+                    // That was the end of the sequence
+                    PhraseSequencerStateMachine = pssmNote1;
+                    BeatTimeStateMachine = btsmCancel;
+                    break;
+                }
+                // else
+                CurrentNote = *it;
+                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+
+                // Fully recompute time to wait, from the beginning of the sequence.
+                // This is to accommodate any change in tempo
+                int FullLength_ms = 0;
+                for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
+                {
+                    TNote Note = *i;
+                    FullLength_ms += Note.NoteDuration * 1000.0;
+                    if (i == it)
+                    {
+                        // currently pointing to the note we're playing
+                        // we can end here
+                        break;
+                    }
+                }
+                std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds(FullLength_ms);
+                std::this_thread::sleep_until(TimeNext);
+                break;
             }
         }
     }
@@ -2436,62 +2790,25 @@ public:
         pFuncNoteOff = pFuncNoteOff_param;
         RootNoteNumber = RootNoteNumber_param;
         Timeout = Timeout_param;
+        std::thread th1(PhraseSequencerThreadStatic, this);
+        th1.detach();
+        std::thread th2(GetBeatTimeFromPedalThreadStatic, this);
+        th2.detach();
     }
 
 
     void Start_PedalPressed(void)
     {
-        if(Timeout == 0)
-        {
-            // Downswing of the start sequencer pedal (step 1)
-            PhraseInProgress = true;
-            it = MelodyNotes.begin();
-            CurrentNote = *it;
-            if (CurrentNote.NoteNumber != 99)
-            {
-                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-            }
-            else
-            {
-                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-            }
-            gettimeofday(&tv1, NULL);
-        }
-        else
-        {
-            PlayNextNote();
-        }
+        MsgToBeatTime.Send(msgPedalPressed);
     }
 
 
     void Start_PedalReleased(void)
     {
-        if (Timeout == 0)
-        {
-            // Upswing of the start sequencer pedal (step 2)
-            gettimeofday(&tv2, NULL);
-            // Compute time lapse between pedal down and pedal up
-            // that will set our "one beat" tempo time
-            BeatTime_ms = (tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0;
-
-            // Next, let the sequencer run in its own thread
-            int iret1;
-            iret1 = pthread_create(&thread, NULL, PhraseSequencerThread, this);
-            if (iret1)
-            {
-                fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
-                exit(EXIT_FAILURE);
-            }
-        }
-        else
-        {
-            if (PhraseInProgress == true)
-            {
-                PlayNextNote();
-            }
-        }
+        MsgToBeatTime.Send(msgPedalReleased);
     }
 
+    #if 0
     static void WatchdogStatic(void * pVoid)
     {
         TSequence * pSequence = (TSequence *) pVoid;
@@ -2517,24 +2834,14 @@ public:
             PhraseInProgress = true;
             it = MelodyNotes.begin();
             CurrentNote = *it;
-            if (CurrentNote.NoteNumber != 99)
-            {
-                pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-            }
-            else
-            {
-                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-            }
+            TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
             WatchdogFlag = true;
-//           ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+            ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
         }
         else
         {
             WatchdogFlag = true;
-            if (CurrentNote.NoteNumber != 99)
-            {
-                pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-            }
+            TurnPreviousNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
             it++;
             if (it == MelodyNotes.end())
             {
@@ -2543,18 +2850,13 @@ public:
             else
             {
                 CurrentNote = *it;
-                if (CurrentNote.NoteNumber != 99)
-                {
-                    pFuncNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-                }
-                else
-                {
-                    pFuncNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-                }
-//                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
             }
         }
     }
+
+    #endif
     // Stop sequencer
     void Stop_PedalPressed(void)
     {
@@ -2617,7 +2919,7 @@ void * Laser_Cycle(void * pMessage)
         //waitMilliseconds(30);
 
     }
-
+    return 0;
 }
 
 pthread_t thread;
@@ -2953,19 +3255,19 @@ extern "C" void pmidiStop(void);
 static int Tempo = 120;
 unsigned int SequencerRunning = 0;
 
-pthread_t thread_sequencer = NULL;
+pthread_t thread_sequencer = 0;
 
 
 // Stop the pmidi sequencer.
 void StopSequencer(void)
 {
-    if (thread_sequencer != NULL)
+    if (thread_sequencer != 0)
     {
 
         pmidiStop();
 
         pthread_cancel(thread_sequencer);
-        thread_sequencer = NULL;
+        thread_sequencer = 0;
 
         sleep(1);
 
@@ -2994,17 +3296,18 @@ void * ThreadSequencerFunction (void * params)
     main_TODO(argc, argv1, Tempo);
     MIDI_A.StartRawMidiOut();
 
-    thread_sequencer = NULL;
+    thread_sequencer = 0;
 
+    return 0;
 }
 
 // Start the full-fledged pmidi sequencer for file MidiFilename
 void StartSequencer(char * MidiFilename)
 {
     int iret1;
-    if(thread_sequencer == NULL)
+    if(thread_sequencer == 0)
     {
-        iret1 = pthread_create(&thread_sequencer, NULL, ThreadSequencerFunction, (void*) MidiFilename);
+        iret1 = pthread_create(&thread_sequencer, 0, ThreadSequencerFunction, (void*) MidiFilename);
         if (iret1)
         {
             fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
@@ -3024,7 +3327,7 @@ void StartSequencer(char * MidiFilename)
 // First call ChangeTempoSequencer, then call SetTempoSequencer.
 void SetTempoSequencer(void)
 {
-    if (thread_sequencer != NULL)
+    if (thread_sequencer != 0)
     {
         seq_midi_tempo_direct(Tempo);
     }
@@ -3268,7 +3571,7 @@ void Init(void)
 
 // This hook function is called whenever a Note ON event was received on
 // MIDI A IN.
-void MIDI_A_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned int rxVolume)
+void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
     if (rxChannel != 2)
     {
@@ -3307,16 +3610,14 @@ void MIDI_A_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned
 // ************************************************************
 // Retransmit external Keyboard MIDI information to the XV5080.
 // ************************************************************
-void MIDI_B_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned int rxVolume)
+void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
-    static unsigned int KeyboardNoteLow = 0;
-    static unsigned int KeyboardNoteHigh = 127;
+    static int KeyboardNoteLow = 0;
+    static int KeyboardNoteHigh = 127;
     static TInt_0_127 MasterVolume;
     MasterVolume = 127;
     static TInt_1_16 KbdMidiChannelTx;
     KbdMidiChannelTx = 1;
-    static bool FirstRun = false;
-
 
     // Calibrate keyboard size
     // User must hit once the lowest key and the highest key of the keyboard.
@@ -3375,7 +3676,7 @@ void MIDI_B_IN_NoteOnEvent(unsigned int rxChannel, unsigned int rxNote, unsigned
 
 // This hook function is called whenever a Controller Change event is
 // received on MIDI A IN
-void MIDI_A_IN_CC_Event(unsigned int rxChannel, unsigned int rxControllerNumber, unsigned int rxControllerValue)
+void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt_0_127 rxControllerValue)
 {
 
     TContext context;
@@ -3825,9 +4126,6 @@ void threadRedraw(void)
 }
 
 
-static const char *menulist[MAX_MENU_ITEMS][MAX_SUB_ITEMS];
-
-
 void SelectContextByName(void)
 {
 
@@ -3841,8 +4139,7 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
 
     char **item = 0;
     const char *mesg[5];
-    char temp[256];
-    int selection, count;
+    int selection;
     std::list<std::string> ListOfStrings;
 
     win_midi_in.Hide();
@@ -4054,9 +4351,8 @@ int main(int argc, char** argv)
     {
         printf("CANNOT SUPPORT COLORS");
     }
-    cbreak();                       /* Line buffering disabled, Pass on
-                                    /* every thing to me           */
-    keypad(stdscr, TRUE);           /* I need that nifty F1         */
+    cbreak(); // Disable line buffering, pass on all data
+    keypad(stdscr, TRUE); // support F- keys
 
 
 
