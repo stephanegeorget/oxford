@@ -2748,7 +2748,7 @@ private:
 
                 // Fully recompute time to wait, from the beginning of the sequence.
                 // This is to accommodate any change in tempo
-                int FullLength_ms = 0;
+                float FullLength_ms = 0;
                 for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
                 {
                     TNote Note = *i;
@@ -2760,7 +2760,10 @@ private:
                         break;
                     }
                 }
-                std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds(FullLength_ms);
+                // Adjust time as per current beat length
+                FullLength_ms *= (((float) BeatTime_ms) / 1000.0);
+                wprintw(win_debug_messages.GetRef(), "FullLength_ms %i\n", FullLength_ms);
+                std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
                 std::this_thread::sleep_until(TimeNext);
                 break;
             }
