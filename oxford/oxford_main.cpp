@@ -2451,7 +2451,8 @@ class TSyncMsg
 {
 private:
     std::condition_variable cv;
-    int msg = 0;
+    const int INVALID_MESSAGE = -999999;
+    int msg = INVALID_MESSAGE;
     bool flag = false;
     std::mutex m;
 public:
@@ -2489,6 +2490,7 @@ public:
 
     int Wait_OR(int msg_param1, int msg_param2, int timeout_ms_param)
     {
+        msg = INVALID_MESSAGE;
         if (timeout_ms_param == 0)
         {
             do
@@ -2614,6 +2616,7 @@ private:
     {
         // TSyncMsg must be used after main() is called
         std::this_thread::sleep_for(std::chrono::seconds(1));
+        BeatTime_ms = 0;
 
         while (1)
         {
@@ -2621,7 +2624,6 @@ private:
             {
             case btsmWaitStartingPulse:
                 PedalBeats = 0;
-                BeatTime_ms = 0;
                 MsgToBeatTime.Wait(msgPedalPressed, 0);
                 MsgToPhraseSequencer.Send(msgBeatReceived);
                 gettimeofday(&tv1, NULL);
@@ -2653,19 +2655,37 @@ private:
                 if (MsgToBeatTime.Wait_OR(msgPedalPressed, msgPedalReleased, Timeout * 1000) == -1)
                 {
                     // timeout =>  restart
-                    BeatTimeStateMachine = btsmWaitStartingPulse;
-                    MsgToPhraseSequencer.Send(msgReset);
+                    // Did sequencer finish it phrase already?
+                    if (BeatTimeStateMachine == btsmCancel)
+                    {
+                        // yes - back to beginning
+                        break;
+                    }
+                    else
+                    {
+                        BeatTimeStateMachine = btsmWaitStartingPulse;
+                        MsgToPhraseSequencer.Send(msgReset);
+                    }
                 }
                 else
                 {
-                    // message received - update beat time
-                    PedalBeats ++;
-                    // Upswing of the start sequencer pedal (step 2)
-                    gettimeofday(&tv2, NULL);
-                    // Compute time lapse between pedal down and pedal up
-                    // that will set our "one beat" tempo time
-                    BeatTime_ms = ((tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0) / ((float) PedalBeats);
-                    MsgToPhraseSequencer.Send(msgBeatReceived);
+                    // message received
+                    // Did sequencer finish it phrase already?
+                    if (BeatTimeStateMachine == btsmCancel)
+                    {
+                        // yes - back to beginning
+                        break;
+                    }
+                    else
+                    {// else: update beat time
+                        PedalBeats ++;
+                        // Upswing of the start sequencer pedal (step 2)
+                        gettimeofday(&tv2, NULL);
+                        // Compute time lapse between pedal down and pedal up
+                        // that will set our "one beat" tempo time
+                        BeatTime_ms = ((tv2.tv_sec - tv1.tv_sec) * 1000.0 + (tv2.tv_usec - tv1.tv_usec) / 1000.0) / ((float) PedalBeats);
+                        MsgToPhraseSequencer.Send(msgBeatReceived);
+                    }
                 }
                 break;
 
@@ -2709,6 +2729,7 @@ private:
                 TimeStart = std::chrono::system_clock::now();
                 it = MelodyNotes.begin();
                 CurrentNote = *it;
+                wprintw(win_debug_messages.GetRef(), "START\n");
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
                 PhraseSequencerStateMachine = pssmNote2;
                 break;
@@ -2723,11 +2744,13 @@ private:
                 }
 
                 // Second note
+/*
                 TurnPreviousNoteOff();
                 it++;
                 CurrentNote = *it;
-                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);*/
                 PhraseSequencerStateMachine = pssmOtherNotes;
+
                 break;
 
 
@@ -2739,7 +2762,8 @@ private:
                 {
                     // That was the end of the sequence
                     PhraseSequencerStateMachine = pssmNote1;
-                    BeatTimeStateMachine = btsmCancel;
+                    BeatTimeStateMachine = btsmCancel; // prepare message to thread
+                    MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
                     break;
                 }
                 // else
@@ -2748,6 +2772,7 @@ private:
 
                 // Fully recompute time to wait, from the beginning of the sequence.
                 // This is to accommodate any change in tempo
+                // NOTE - TODO: of course this is inefficient - rewrite that
                 float FullLength_ms = 0;
                 for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
                 {
@@ -2762,7 +2787,7 @@ private:
                 }
                 // Adjust time as per current beat length
                 FullLength_ms *= (((float) BeatTime_ms) / 1000.0);
-                wprintw(win_debug_messages.GetRef(), "FullLength_ms %i\n", FullLength_ms);
+                wprintw(win_debug_messages.GetRef(), "FullLength_ms %f\n", FullLength_ms);
                 std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
                 std::this_thread::sleep_until(TimeNext);
                 break;
@@ -3193,6 +3218,8 @@ void Trumpet_Off(int NoteNumber)
 {
     MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
 }
+
+
 
 TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
 
