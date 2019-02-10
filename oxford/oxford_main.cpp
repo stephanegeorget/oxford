@@ -87,6 +87,8 @@ std::mutex ncurses_mutex;
 // Test TSequence class
 #define TEST_TSEQUENCE
 
+#define TEST_TSEQUENCE_DEBUG
+
 
 
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::saturated_arithmetic> TInt_0_127;
@@ -911,6 +913,8 @@ TContext cThisGirl;
 TContext cEncoreUnMatin;
 TContext cQuandLaMusiqueEstBonne;
 TContext cDumbo;
+TContext cIFollowRivers;
+TContext cIsThisLove;
 
 /**
  * This function is needed to sort lists of elements.
@@ -1475,6 +1479,57 @@ TMIDI_Port MIDI_B;
 
 
 
+class TA
+{
+public:
+    TA(void) {};
+
+    class TOffset
+    {
+    public:
+        TOffset(int val) {offset = val;}
+        int offset;
+    };
+
+    class TB : TOffset
+    {
+    public:
+        TB(int val) : TOffset(val) {};
+        void printOffset(void)
+        {
+            printf("Offset: %i\n", offset);
+        }
+
+        class TC : TOffset
+        {
+            public:
+            TC(int val) : TOffset(val) {}; // the sum cannot be here - cannot access enclosing class variable unless static (can't be static in our case)
+            void printOffset(void)
+            {
+                printf("Offset: %i\n", offset);
+            }
+        } myC{30 + offset}; // The sum must be here
+    };
+
+    TB myB = TB(20);
+
+    void somefunction(void)
+    {
+
+    }
+};
+
+TA myA;
+
+
+void testA(void)
+{
+   myA.somefunction();
+   myA.myB.printOffset();
+   myA.myB.myC.printOffset();
+}
+
+
 /**
 XV-5080 driver
 
@@ -1492,6 +1547,42 @@ public:
         pMIDI_Port = pMIDI_Port_param;
         pTXV5080 = this;
     }
+
+    enum class PatchGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G,
+                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H,
+                        XB_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H};
+
+//                        enum RythmSetGoup {USER, PR_A, PR_B, PR_C};
+    enum class PerformanceGroup {USER, PR_A, PR_B,
+                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G_CD_H};
+
+
+    /**
+     * Switch to performance mode and jump to a specific performance
+     */
+    void PerformanceSelect(TXV5080::PerformanceGroup PerformanceGroup_param, TInt_0_127 PatchNumber_param)
+    {
+        System.SystemCommon.SoundMode.Perform();
+//        System.SystemCommon.PerformanceControlChannel.Set(1);
+        switch (PerformanceGroup_param)
+        {
+        case PerformanceGroup::USER:
+            // From user's manual page 21
+//            pMIDI_Port.SendControlChange(1, 0, 85);
+//            pMIDI_Port.SendControlChange(1, 32, 0);
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(0);
+            System.SystemCommon.PerformanceControlChannel.Set(PatchNumber_param);
+            break;
+
+        default:
+
+            break;
+
+       }
+
+    }
+
 
 
     class TParameter
@@ -1589,6 +1680,7 @@ public:
         {
             OffsetAddress = OffsetAddress_param;
         }
+    protected:
         int OffsetAddress;
     };
 
@@ -1599,19 +1691,24 @@ public:
         class TSystemCommon : TParameterSection
         {
         public:
-            TSystemCommon(void) : TParameterSection(OffsetAddress + 0x00000000) {};
+            TSystemCommon(int val) : TParameterSection(val) {};
             class TSoundMode : TParameter
             {
             public:
-                TSoundMode(void) : TParameter(OffsetAddress + 0x00000000, 0, 4, "0000 0aaa") {};
+                TSoundMode(int val) : TParameter(val + 0x00000000, 0, 4, "0000 0aaa") {};
                 void Perform(void)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(0));
                 }
+
+                /**
+                 * Merely switch to the patch mode
+                 */
                 void Patch(void)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(1));
                 }
+
                 void GM1(void)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(2));
@@ -1624,112 +1721,112 @@ public:
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(4));
                 }
-            } SoundMode;
+            } SoundMode{OffsetAddress};
 
             class TMasterTune : TParameter
             {
             public:
-                TMasterTune(void) : TParameter(OffsetAddress + 0x00000001, 24, 2024, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
+                TMasterTune(int val) : TParameter(val + 0x00000001, 24, 2024, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
                 /** -100.0 to +100.0 cent */
                 void Set(float Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param * 100 + 24 + 100));
                 }
-            } MasterTune;
+            } MasterTune{OffsetAddress};
 
 
             class TMasterKeyShift : TParameter
             {
             public:
-                TMasterKeyShift(void) : TParameter(OffsetAddress + 0x0005, 40, 88, "00aa aaaa") {};
+                TMasterKeyShift(int val) : TParameter(val + 0x0005, 40, 88, "00aa aaaa") {};
                 /** -24 to +24 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -40 -24));
                 }
-            } MasterKeyShift;
+            } MasterKeyShift{OffsetAddress};
 
             class TMasterLevel : TParameter
             {
             public:
-                TMasterLevel(void) : TParameter(OffsetAddress + 0x0006, 0, 127, "0aaa aaaa") {};
+                TMasterLevel(int val) : TParameter(val + 0x0006, 0, 127, "0aaa aaaa") {};
                 /** 0 to 127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } MasterLevel;
+            } MasterLevel{OffsetAddress};
 
             class TScaleTuneSwitch : TParameter
             {
             public:
-                TScaleTuneSwitch(void) : TParameter(OffsetAddress + 0x0007, 0, 1, "0000 000a") {};
+                TScaleTuneSwitch(int val) : TParameter(val + 0x0007, 0, 1, "0000 000a") {};
                 /** 0 = OFF, 1 = ON */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } ScaleTuneSwitch;
+            } ScaleTuneSwitch{OffsetAddress};
 
             class TPatchRemain : TParameter
             {
             public:
-                TPatchRemain(void) : TParameter(OffsetAddress + 0x0008, 0, 1, "0000 000a") {};
+                TPatchRemain(int val) : TParameter(val + 0x0008, 0, 1, "0000 000a") {};
                 /** 0 = OFF, 1 = ON */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PatchRemain;
+            } PatchRemain{OffsetAddress};
 
             class TMixParallel : TParameter
             {
             public:
-                TMixParallel(void) : TParameter(OffsetAddress + 0x0009, 0, 1, "0000 000a") {};
+                TMixParallel(int val) : TParameter(val + 0x0009, 0, 1, "0000 000a") {};
                 /** 0 = Mix, 1 = Parallel */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } MixParallel;
+            } MixParallel{OffsetAddress};
 
             class TMFXSwitch : TParameter
             {
             public:
-                TMFXSwitch(void) : TParameter(OffsetAddress + 0x000A, 0, 1, "0000 000a") {};
+                TMFXSwitch(int val) : TParameter(val + 0x000A, 0, 1, "0000 000a") {};
                 /** 0 = BYPASS, 1 = ON */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } MFXSwitch;
+            } MFXSwitch{OffsetAddress};
 
             class TChorusSwitch : TParameter
             {
             public:
-                TChorusSwitch(void) : TParameter(OffsetAddress + 0x000B, 0, 1, "0000 000a") {};
+                TChorusSwitch(int val) : TParameter(val + 0x000B, 0, 1, "0000 000a") {};
                 /** 0 = OFF, 1 = ON */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } ChorusSwitch;
+            } ChorusSwitch{OffsetAddress};
 
             class TReverbSwitch : TParameter
             {
             public:
-                TReverbSwitch(void) : TParameter(OffsetAddress + 0x000C, 0, 1, "0000 000a") {};
+                TReverbSwitch(int val) : TParameter(val + 0x000C, 0, 1, "0000 000a") {};
                 /** 0 = OFF, 1 = ON */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } ReverbSwitch;
+            } ReverbSwitch{OffsetAddress};
 
             class TPerformanceControlChannel : TParameter
             {
             public:
-                TPerformanceControlChannel(void) : TParameter(OffsetAddress + 0x000D, 0, 16, "000a aaaa") {};
+                TPerformanceControlChannel(int val) : TParameter(val + 0x000D, 0, 16, "000a aaaa") {};
                 /** 1-16=Channels 1-16, 0=OFF */
                 void Set(int Value_param)
                 {
@@ -1742,52 +1839,52 @@ public:
                         pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(16)); // Corresponds to OFF
                     }
                 }
-            } PerformanceControlChannel;
+            } PerformanceControlChannel{OffsetAddress};
 
             class TPerformanceBankSelectMSB : TParameter
             {
             public:
-                TPerformanceBankSelectMSB(void) : TParameter(OffsetAddress + 0x000E, 0, 127, "0aaa aaaa") {};
+                TPerformanceBankSelectMSB(int val) : TParameter(val + 0x000E, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PerformanceBankSelectMSB;
+            } PerformanceBankSelectMSB{OffsetAddress};
 
             class TPerformanceBankSelectLSB : TParameter
             {
             public:
-                TPerformanceBankSelectLSB(void) : TParameter(OffsetAddress + 0x000F, 0, 127, "0aaa aaaa") {};
+                TPerformanceBankSelectLSB(int val) : TParameter(val + 0x000F, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PerformanceBankSelectLSB;
+            } PerformanceBankSelectLSB{OffsetAddress};
 
             class TPerformanceProgramNumber : TParameter
             {
             public:
-                TPerformanceProgramNumber(void) : TParameter(OffsetAddress + 0x0010, 0, 127, "0aaa aaaa") {};
+                TPerformanceProgramNumber(int val) : TParameter(val + 0x0010, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PerformanceProgramNumber;
+            } PerformanceProgramNumber{OffsetAddress};
 
             class TSystemTempo : TParameter
             {
             public:
-                TSystemTempo(void) : TParameter(OffsetAddress + 0x0016, 20, 250, "0000 aaaa 0000 bbbb") {};
+                TSystemTempo(int val) : TParameter(val + 0x0016, 20, 250, "0000 aaaa 0000 bbbb") {};
                 /** 20-250 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } SystemTempo;
-        } SystemCommon;
+            } SystemTempo{OffsetAddress};
+         } SystemCommon{OffsetAddress + 0x000000};
     } System;
 
 
@@ -1799,18 +1896,17 @@ public:
         class TPerformanceCommon : TParameterSection
         {
         public:
-            TPerformanceCommon(void) : TParameterSection(OffsetAddress + 0x000000) {};
+            TPerformanceCommon(int val) : TParameterSection(val + 0x0000) {};
             class TPerformanceName : TParameter
             {
             public:
-                TPerformanceName(void) : TParameter() {};
+                TPerformanceName(int val) : TParameter(val + 0x0000, 32, 127, "0aaa aaaa") {};
                 void Set(std::string Name)
                 {
                     for (unsigned int i = 0; i<12 ; i++)
                     {
                         if (i < Name.length() )
                         {
-                            TParameter(0 + i, 32, 127, "0aaa aaaa");
                             pTXV5080->ExclusiveMsgSetParameter(OffsetAddress +i, GetDataBytes(Name[i]));
                         }
                         else
@@ -1819,62 +1915,587 @@ public:
                         }
                     }
                 }
-                /*   TPerformanceName(void) : TParameter(0) {};*/
-
-            } PerformanceName;
+            } PerformanceName{OffsetAddress};
 
             class TSoloPartSelect : TParameter
             {
             public:
-                TSoloPartSelect(void) : TParameter(0x000C, 0, 32, "00aa aaaa") {};
+                TSoloPartSelect(int val) : TParameter(val + 0x000C, 0, 32, "00aa aaaa") {};
                 /** 0 = OFF, 1-32 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } SoloPartSelect;
-        } PerformanceCommon;
+            } SoloPartSelect{OffsetAddress};
+
+
+
+        } PerformanceCommon{OffsetAddress};
+
+        class TPerformanceMIDI : TParameterSection
+        {
+        public:
+            TPerformanceMIDI(int val) : TParameterSection(val) {};
+// receive program change, receive bank selsect, receive bender, receive polyphonic key pressure, receive channel pressure, receive modulation, receive volume, receive pan, receive expression, receive hold-1, phoase lock velocity curve type
+            class TReceiveProgramChange : TParameter
+            {
+                public:
+                TReceiveProgramChange(int val) : TParameter(val + 0x0000, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveProgramChange {OffsetAddress};
+
+            class TReceiveBankSelect : TParameter
+            {
+                public:
+                TReceiveBankSelect(int val) : TParameter(val + 0x0001, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveBankSelect{OffsetAddress};
+
+            class TReceiveBender : TParameter
+            {
+                public:
+                TReceiveBender(int val) : TParameter(val + 0x0002, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveBender {OffsetAddress};
+
+            class TReceivePolyphonicKeyPressure : TParameter
+            {
+                public:
+                TReceivePolyphonicKeyPressure(int val) : TParameter(val + 0x0003, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceivePolyphonicKeyPressure{OffsetAddress};
+
+            class TReceiveChannelPressure : TParameter
+            {
+            public:
+                TReceiveChannelPressure(int val) : TParameter(val + 0x0004, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveChannelPressure {OffsetAddress};
+
+            class TReceiveModulation : TParameter
+            {
+            public:
+                TReceiveModulation(int val) : TParameter(val + 0x0005, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveModulation{OffsetAddress};
+
+            class TReceiveVolume : TParameter
+            {
+            public:
+                TReceiveVolume(int val) : TParameter(val + 0x0006, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveVolume{OffsetAddress};
+
+            class TReceivePan : TParameter
+            {
+
+            public:
+                TReceivePan(int val) : TParameter(val + 0x0007, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceivePan{OffsetAddress};
+
+            class TReceiveExpression : TParameter
+            {
+            public:
+                TReceiveExpression(int val) : TParameter(val + 0x0008, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveExpression{OffsetAddress};
+
+            class TReceiveHold_1 : TParameter
+            {
+            public:
+                TReceiveHold_1(int val) : TParameter(val + 0x0009, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveHold_1{OffsetAddress};
+
+            class TPhaseLock : TParameter
+            {
+            public:
+                TPhaseLock(int val) : TParameter(val + 0x000A, 0, 1, "0000 000a") {};
+                /** 0 = OFF, 1 = ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PhaseLock{OffsetAddress};
+
+            class TVelocityCurveType : TParameter
+            {
+            public:
+                TVelocityCurveType(int val) : TParameter(val + 0x000B, 0, 4, "0000 0aaa") {};
+                /** 0 = OFF, 1 = type 1, 2 = type 2, 3 = type 3, 4 = type 4 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } VelocityCurveType{OffsetAddress};
+
+        };
+
+        std::array<TPerformanceMIDI, 16> PerformanceMidi = {OffsetAddress + 0x1000, OffsetAddress + 0x1100, OffsetAddress + 0x1200, OffsetAddress + 0x1300, OffsetAddress + 0x1400, OffsetAddress + 0x1500, OffsetAddress + 0x1600, OffsetAddress + 0x1700,
+                                                            OffsetAddress + 0x1800, OffsetAddress + 0x1900, OffsetAddress + 0x1A00, OffsetAddress + 0x1B00, OffsetAddress + 0x1C00, OffsetAddress + 0x1D00, OffsetAddress + 0x1E00, OffsetAddress + 0x1F00};
+
 
         class TPerformancePart : TParameterSection
         {
         public:
-            TPerformancePart(int Offset_param) : TParameterSection(Offset_param) {};
+            TPerformancePart(int val) : TParameterSection(val) {};
+
+            class TReceiveChannel : TParameter
+            {
+            public:
+                TReceiveChannel(int val) : TParameter(val + 0x0000, 0, 15, "0000 aaaa") {};
+                /** Set channel number. Value between 1 and 16. */
+                void Set_1_16(int Value_param)
+                {
+                    // Value_param is between 1 and 16 but the binary value is 0-15 hence -1
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -1));
+                }
+            } ReceiveChannel{OffsetAddress};
+
+            class TReceiveSwitch : TParameter
+            {
+            public:
+                TReceiveSwitch(int val) : TParameter(val + 0x0001, 0, 1, "0000 000a") {};
+                /** 0=OFF or 1=ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveSwitch{OffsetAddress};
+
+            class TReceiveMIDI1 : TParameter
+            {
+            public:
+                TReceiveMIDI1(int val) : TParameter(val + 0x0002, 0, 1, "0000 000a") {};
+                /** 0=OFF or 1=ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveMIDI1{OffsetAddress};
+
+            class TReceiveMIDI2 : TParameter
+            {
+            public:
+                TReceiveMIDI2(int val) : TParameter(val + 0x0003, 0, 1, "0000 000a") {};
+                /** 0=OFF or 1=ON */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReceiveMIDI2{OffsetAddress};
+
+
+            class TPartLevel : TParameter
+            {
+            public:
+                TPartLevel(int val) : TParameter(val + 0x0007, 0, 127, "0aaa aaaa") {};
+                /** Set Part Level (0-127) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PartLevel{OffsetAddress};
+
+            class TPartPan : TParameter
+            {
+            public:
+                TPartPan(int val) : TParameter(val + 0x0008, 0, 127, "0aaa aaaa") {};
+                /** Set Part Pan (0=L64, 64=CENTERED, 127=R63) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PartPan{OffsetAddress};
+
+            class TPartCoarseTune : TParameter
+            {
+            public:
+                TPartCoarseTune(int val) : TParameter(val + 0x0009, 16, 112, "0aaa aaaa") {};
+                /** Set Coarse Tune for this Part (-48 .. +48) */
+                void Set(int Value_param)
+                {
+                    // 16 == -48
+                    // 112 == +48
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 64));
+                }
+            } PartCoarseTune{OffsetAddress};
+
+            class TPartFineTune : TParameter
+            {
+            public:
+                TPartFineTune(int val) : TParameter(val + 0x000A, 14, 114, "0aaa aaaa") {};
+                /** Set Fine Tune for this Part (-50 .. +50) */
+                void Set(int Value_param)
+                {
+                    // 14 == -50
+                    // 114 == +50
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 64));
+                }
+            } PartFineTune{OffsetAddress};
+
+            class TPartMonoPoly : TParameter
+            {
+            public:
+                TPartMonoPoly(int val) : TParameter(val + 0x000B, 0, 2, "0000 00aa") {};
+                /** 0=MONO, 1=POLY, 2=PATCH */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PartMonoPoly{OffsetAddress};
+
+            class TPartOctaveShift : TParameter
+            {
+            public:
+                TPartOctaveShift(int val) : TParameter(val + 0x0015, 61, 67, "0aaa aaaa") {};
+                /** -3 .. +3 */
+                void Set(int Value_param)
+                {
+                    // 61 = -3
+                    // 67 = +3
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param +64));
+                }
+            } PartOctaveShift{OffsetAddress};
+
+            class TPartVelocitySensOffset : TParameter
+            {
+            public:
+                TPartVelocitySensOffset(int val) : TParameter(val + 0x0016, 1, 127, "0aaa aaaa") {};
+                /** -63 .. +63 */
+                void Set(int Value_param)
+                {
+                    // 1 = -63
+                    // 127 = +63
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param +64));
+                }
+            } PartVelocitySensOffset{OffsetAddress};
+
+            class TKeyboardRangeLower : TParameter
+            {
+            public:
+                TKeyboardRangeLower(int val) : TParameter(val + 0x0017, 0, 127, "0aaa aaaa") {};
+                /** C-1 - UPPER */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } KeyboardRangeLower{OffsetAddress};
+
+            class TKeyboardRangeUpper : TParameter
+            {
+            public:
+                TKeyboardRangeUpper(int val) : TParameter(val + 0x0018, 0, 127, "0aaa aaaa") {};
+                /** LOWER - G9 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } KeyboardRangeUpper{OffsetAddress};
+
+
+            class TKeyboardFadeWithLower : TParameter
+            {
+            public:
+                TKeyboardFadeWithLower(int val) : TParameter(val + 0x0019, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } KeyboardFadeWithLower{OffsetAddress};
+
+            class TKeyboardFadeWithUpper : TParameter
+            {
+            public:
+                TKeyboardFadeWithUpper(int val) : TParameter(val + 0x0020, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } KeyboardFadeWithUpper{OffsetAddress};
+
+
+            void SelectPatch(TXV5080::PatchGroup PatchGroup_param, int PatchNumber)
+            {
+                SelectPatch(PatchGroup_param, TInt_0_127(PatchNumber));
+            }
+
+            void SelectPatch(TXV5080::PatchGroup PatchGroup_param, TInt_0_127 const PatchNumber_param)
+            {
+                switch(PatchGroup_param)
+                {
+                    case PatchGroup::PR_A:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(64);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_B:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(65);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_C:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(66);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_D:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(67);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_E:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(68);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_F:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(69);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_G:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(70);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_A:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(32);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_B:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(33);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_C:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(34);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_D:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(35);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_E:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(36);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_F:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(37);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_G:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(38);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::CD_H:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(39);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+                }
+            }
 
             class TPatchBankSelectMSB : TParameter
             {
             public:
-                TPatchBankSelectMSB(void) : TParameter(OffsetAddress + 0x0004, 0, 127, "0aaa aaaa") {};
+                TPatchBankSelectMSB(int val) : TParameter(val + 0x0004, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PatchBankSelectMSB;
+            } PatchBankSelectMSB{OffsetAddress};
 
             class TPatchBankSelectLSB : TParameter
             {
             public:
-                TPatchBankSelectLSB(void) : TParameter(OffsetAddress + 0x0005, 0, 127, "0aaa aaaa") {};
+                TPatchBankSelectLSB(int val) : TParameter(val + 0x0005, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PatchBankSelectLSB;
+            } PatchBankSelectLSB{OffsetAddress};
 
             class TPatchProgramNumber : TParameter
             {
             public:
-                TPatchProgramNumber(void) : TParameter(OffsetAddress + 0x0006, 0, 127, "0aaa aaaa") {};
+                TPatchProgramNumber(int val) : TParameter(val + 0x0006, 0, 127, "0aaa aaaa") {};
                 /** 0-127 */
                 void Set(int Value_param)
                 {
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
-            } PatchProgramNumber;
-        } PerformancePart[4] = {0x2000, 0x2100, 0x2200, 0x2300}; // only 4 listed - normally there are 32
-
+            } PatchProgramNumber{OffsetAddress};
+        };
+        std::array<TPerformancePart, 32> PerformancePart = {OffsetAddress + 0x2000, OffsetAddress + 0x2100, OffsetAddress + 0x2200, OffsetAddress + 0x2300, OffsetAddress + 0x2400,
+                                                            OffsetAddress + 0x2500, OffsetAddress + 0x2600, OffsetAddress + 0x2700, OffsetAddress + 0x2800, OffsetAddress + 0x2900,
+                                                            OffsetAddress + 0x2A00, OffsetAddress + 0x2B00, OffsetAddress + 0x2C00, OffsetAddress + 0x2D00, OffsetAddress + 0x2E00,
+                                                            OffsetAddress + 0x2F00, OffsetAddress + 0x3000, OffsetAddress + 0x3100, OffsetAddress + 0x3200, OffsetAddress + 0x3300,
+                                                            OffsetAddress + 0x3400, OffsetAddress + 0x3500, OffsetAddress + 0x3600, OffsetAddress + 0x3700, OffsetAddress + 0x3800,
+                                                            OffsetAddress + 0x3900, OffsetAddress + 0x3A00, OffsetAddress + 0x3B00, OffsetAddress + 0x3C00, OffsetAddress + 0x3D00,
+                                                            OffsetAddress + 0x3E00, OffsetAddress + 0x3F00}; // only 4 listed - normally there are 32
     };
+
+    class TPatch : TParameterSection
+    {
+    public:
+        TPatch(int val) : TParameterSection(val + 0x0000) {};
+
+        class TPatchCommon : TParameterSection
+        {
+        public:
+            TPatchCommon(int Offset_param) : TParameterSection(Offset_param + 0x0000) {};
+            class TPatchName : TParameter
+            {
+            public:
+                TPatchName(int val) : TParameter(val, 32, 127, "0aaa aaaa") {};
+                void Set(std::string Name)
+                {
+                    for (unsigned int i = 0; i<12 ; i++)
+                    {
+                        if (i < Name.length() )
+                        {
+                            pTXV5080->ExclusiveMsgSetParameter(OffsetAddress +i, GetDataBytes(Name[i]));
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            } PatchName{OffsetAddress};
+
+            class TPatchCategory : TParameter
+            {
+            public:
+                TPatchCategory(int val) : TParameter(val + 0x000C, 0, 127, "0aaa aaaa") {};
+            } PatchCategory{OffsetAddress};
+
+            class TToneType : TParameter
+            {
+            public:
+                TToneType(int val) : TParameter(val + 0x000D,0, 1, "0000 000a") {};
+                void Set(bool Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+
+            } ToneType{OffsetAddress};
+
+            class TPatchLevel : TParameter
+            {
+            public:
+                TPatchLevel(int val) : TParameter(val + 0x000E, 0, 127, "0aaa aaaa") {};
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchLevel{OffsetAddress};
+
+            class TPatchPan : TParameter
+            {
+            public:
+                TPatchPan(int val) : TParameter(val + 0x000F, 0, 127, "0aaa aaaa") {};
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchPan{OffsetAddress};
+        } PatchCommon{OffsetAddress};
+    };
+
+    class TRhythm : TParameterSection
+    {
+    public:
+        TRhythm(int val) : TParameterSection(val + 0x0000) {};
+        class TRhythmCommon : TParameterSection
+        {
+        public:
+            TRhythmCommon(int val) : TParameterSection(val + 0x0000) {};
+            void NotImplemented(void) {};
+        } RhythmCommon{OffsetAddress};
+    };
+
+    class TTemporaryPatchRhythm : TParameterSection
+    {
+    public:
+        TTemporaryPatchRhythm(int val) : TParameterSection(val + 0x0000) {};
+        TPatch TemporaryPatch{OffsetAddress + 0x000000};
+        TRhythm TemporaryRhythm{OffsetAddress + 0x100000};
+    } TemporaryPatchRhythm_InPatchMode{0x1F000000};
+
+    TPerformance TemporaryPerformance = TPerformance(0x10000000);
+    // Note the start address does not agree with XV5080 manual - it says it ends at 18600000 - I can't see how.
+    std::array<TTemporaryPatchRhythm, 32> TemporaryPatchRhythm_InPerformanceMode = {
+        0x11000000, 0x11200000, 0x11400000, 0x11600000, 0x11800000, 0x11A00000, 0x11C00000, 0x11E00000,
+        0x12000000, 0x12200000, 0x12400000, 0x12600000, 0x12800000, 0x12A00000, 0x12C00000, 0x12E00000,
+        0x13000000, 0x13200000, 0x13400000, 0x13600000, 0x13800000, 0x13A00000, 0x13C00000, 0x13E00000,
+        0x14000000, 0x14200000, 0x14400000, 0x14600000, 0x14800000, 0x14A00000, 0x14C00000, 0x14E00000};
 
     // Normally a total of 64 user performances - only 4 are listed here
     std::array<TPerformance, 4> UserPerformances = {0x20000000, 0x20010000, 0x20020000, 0x20030000};
@@ -1931,7 +2552,7 @@ TXV5080 XV5080(&MIDI_A);
 
 void test_XV5080(void)
 {
-    /*
+
     XV5080.System.SystemCommon.SoundMode.Patch();
     XV5080.System.SystemCommon.SoundMode.Perform();
     XV5080.System.SystemCommon.MasterTune.Set(6.5);
@@ -1943,13 +2564,31 @@ void test_XV5080(void)
     XV5080.System.SystemCommon.MFXSwitch.Set(1);
     XV5080.System.SystemCommon.ChorusSwitch.Set(1);
     XV5080.System.SystemCommon.ReverbSwitch.Set(1);
-    XV5080.System.SystemCommon.PerformanceControlChannel.Set(1);
+    /*XV5080.System.SystemCommon.PerformanceControlChannel.Set(1);
     XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(1);
     XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(3);
-    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);
+    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);*/
     XV5080.System.SystemCommon.SystemTempo.Set(130);
-    */
+
+    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_0_127(43));
+
+    XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("Blah");
+    XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::CD_A, 43);
+
+    //XV5080.UserPerformances
+//    XV5080.PatchSelect(XV5080::PatchGroup::USER, 43);
+/*
+    XV5080.System.SystemCommon.PerformanceSelect(XV5080::PerformanceGroup::USER, 43);
+    XV5080.System.SystemCommon.PerformanceSelect(XV5080::PerformanceGroup::PR_A, 32);
+    XV5080.System.SystemCommon.PerformanceSelect(XV5080::PerformanceGroup::PR_B, 12);
+    XV5080.System.SystemCommon.PerformanceSelect(XV5080::PerformanceGroup::CD_A, 12);
+    XV5080.System.SystemCommon.PerformanceSelect(XV5080::PerformanceGroup::CD_B, 12);
+*/
     XV5080.System.SystemCommon.SystemTempo.Set(130);
+    XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("This is a test");
+    //XV5080.TemporaryPerformance.PerformanceCommon.
+
+    //XV5080.TemporaryPatchRhythm_InPatchMode.TemporaryPatch.PatchCommon.ToneType.Set(true);
 //    unsigned long int addr = XV5080.UserPerformances[1].TEST_GetOffsetAddress();
 
     //  TXV5080::System::SystemCommon::SoundMode::Write(0);
@@ -2542,6 +3181,9 @@ the next call to PedalReleased does no action, so the performer can release his/
 to rest.
 If no pedal action occurred within Timeout_param s, the whole sequence is cancelled, and it will resume
 on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case it timed out while the pedal is pressed)
+
+It is the user's responsibility to call Init() after main() is running, to spawn the threads required by
+this object.
 */
 class TSequence
 {
@@ -2569,6 +3211,7 @@ private:
     TSyncMsg MsgToPhraseSequencer;
     bool PedalEvent;
     int PedalBeats = 0; // number of times the pedal sent an even used to compute beat time
+    bool ThreadsStartedFlag = false;
 
 
     void TurnNoteOn(int value)
@@ -2615,7 +3258,7 @@ private:
     void GetBeatTimeFromPedalThread(void)
     {
         // TSyncMsg must be used after main() is called
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
         BeatTime_ms = 0;
 
         while (1)
@@ -2706,8 +3349,8 @@ private:
     void PhraseSequencerThread(void)
     {
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        wprintw(win_debug_messages.GetRef(), "THIS:%p\n", this);
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
+        //wprintw(win_debug_messages.GetRef(), "THIS:%p\n", this);
 
         std::chrono::system_clock::time_point TimeStart;
 
@@ -2818,12 +3461,23 @@ public:
         pFuncNoteOff = pFuncNoteOff_param;
         RootNoteNumber = RootNoteNumber_param;
         Timeout = Timeout_param;
-        std::thread th1(PhraseSequencerThreadStatic, this);
-        th1.detach();
-        std::thread th2(GetBeatTimeFromPedalThreadStatic, this);
-        th2.detach();
     }
 
+    void Init(void)
+    {
+        if (ThreadsStartedFlag == false)
+        {
+            ThreadsStartedFlag = true;
+            std::thread th1(PhraseSequencerThreadStatic, this);
+            th1.detach();
+            std::thread th2(GetBeatTimeFromPedalThreadStatic, this);
+            th2.detach();
+        }
+        else
+        {
+            // Threads were already started earlier
+        }
+    }
 
     void Start_PedalPressed(void)
     {
@@ -2955,6 +3609,7 @@ pthread_t thread;
 
 void Init(void)
 {
+    Sequence.Init();
     // For a reason that eludes me, changing the variation of the part
     // must be sent twice...
     // We want to select the LaserGun (program 128, variation 2)
@@ -3266,6 +3921,10 @@ void Sequences_Stop(void)
 
 void Init(void)
 {
+    Sequence_1.Init();
+    Sequence_2.Init();
+    Sequence_3.Init();
+
     // Force XV5080 to performance mode
     XV5080.System.SystemCommon.SoundMode.Perform();
     XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85); //
@@ -4015,6 +4674,12 @@ void InitializePlaylist(void)
     cDumbo.Author = "Viannay";
     cDumbo.SongName = "Dumbo";
 
+    cIFollowRivers.Author = "Likke Li";
+    cIFollowRivers.SongName = "I Follow Rivers";
+
+    cIsThisLove.Author = "Bob Marley";
+    cIsThisLove.SongName = "Is This Love";
+
 
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
@@ -4094,6 +4759,8 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cEncoreUnMatin);
     PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cDumbo);
+    PlaylistData.push_back(&cIFollowRivers);
+    PlaylistData.push_back(&cIsThisLove);
 
 
     // Set the current active context here.
@@ -4363,6 +5030,8 @@ void threadMetronome (void)
 int main(int argc, char** argv)
 {
     int term_lines, term_cols;
+
+    testA();
 
 #if 1
     InitializePlaylist();
