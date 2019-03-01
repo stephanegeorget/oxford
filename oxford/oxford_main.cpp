@@ -3188,7 +3188,6 @@ private:
         }
         else
         {
-            pFuncNoteOff(value);
             QueueNotesOn.push(value);
         }
     }
