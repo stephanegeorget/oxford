@@ -82,12 +82,14 @@ std::mutex ncurses_mutex;
 
 
 // Test XV5080 class
-#define TEST_XV5080
+#undef TEST_XV5080
 
 // Test TSequence class
 #define TEST_TSEQUENCE
 
 #define TEST_TSEQUENCE_DEBUG
+
+#undef MIDI_KEYBOARD_CONTROLS_ON_KEYS
 
 
 
@@ -455,7 +457,7 @@ void ContextPreviousRelease(void);
 void ContextNextPress(void);
 void ContextNextRelease(void);
 
-namespace Kungs_This_Girl
+namespace I_Follow_Rivers
 {
 void Sequence_1_Start_PedalPressed(void);
 void Sequence_1_Start_PedalReleased(void);
@@ -915,6 +917,8 @@ TContext cQuandLaMusiqueEstBonne;
 TContext cDumbo;
 TContext cIFollowRivers;
 TContext cIsThisLove;
+TContext cPeople;
+TContext cTakeOnMe;
 
 /**
  * This function is needed to sort lists of elements.
@@ -1478,58 +1482,6 @@ TMIDI_Port MIDI_A;
 TMIDI_Port MIDI_B;
 
 
-
-class TA
-{
-public:
-    TA(void) {};
-
-    class TOffset
-    {
-    public:
-        TOffset(int val) {offset = val;}
-        int offset;
-    };
-
-    class TB : TOffset
-    {
-    public:
-        TB(int val) : TOffset(val) {};
-        void printOffset(void)
-        {
-            printf("Offset: %i\n", offset);
-        }
-
-        class TC : TOffset
-        {
-            public:
-            TC(int val) : TOffset(val) {}; // the sum cannot be here - cannot access enclosing class variable unless static (can't be static in our case)
-            void printOffset(void)
-            {
-                printf("Offset: %i\n", offset);
-            }
-        } myC{30 + offset}; // The sum must be here
-    };
-
-    TB myB = TB(20);
-
-    void somefunction(void)
-    {
-
-    }
-};
-
-TA myA;
-
-
-void testA(void)
-{
-   myA.somefunction();
-   myA.myB.printOffset();
-   myA.myB.myC.printOffset();
-}
-
-
 /**
 XV-5080 driver
 
@@ -1554,7 +1506,7 @@ public:
 
 //                        enum RythmSetGoup {USER, PR_A, PR_B, PR_C};
     enum class PerformanceGroup {USER, PR_A, PR_B,
-                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G_CD_H};
+                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H};
 
 
     /**
@@ -2398,7 +2350,7 @@ public:
                                                             OffsetAddress + 0x2F00, OffsetAddress + 0x3000, OffsetAddress + 0x3100, OffsetAddress + 0x3200, OffsetAddress + 0x3300,
                                                             OffsetAddress + 0x3400, OffsetAddress + 0x3500, OffsetAddress + 0x3600, OffsetAddress + 0x3700, OffsetAddress + 0x3800,
                                                             OffsetAddress + 0x3900, OffsetAddress + 0x3A00, OffsetAddress + 0x3B00, OffsetAddress + 0x3C00, OffsetAddress + 0x3D00,
-                                                            OffsetAddress + 0x3E00, OffsetAddress + 0x3F00}; // only 4 listed - normally there are 32
+                                                            OffsetAddress + 0x3E00, OffsetAddress + 0x3F00};
     };
 
     class TPatch : TParameterSection
@@ -2497,11 +2449,21 @@ public:
         0x13000000, 0x13200000, 0x13400000, 0x13600000, 0x13800000, 0x13A00000, 0x13C00000, 0x13E00000,
         0x14000000, 0x14200000, 0x14400000, 0x14600000, 0x14800000, 0x14A00000, 0x14C00000, 0x14E00000};
 
-    // Normally a total of 64 user performances - only 4 are listed here
-    std::array<TPerformance, 4> UserPerformances = {0x20000000, 0x20010000, 0x20020000, 0x20030000};
+    #ifdef TXV5080_USER_PERFORMANCES
+    // 64 user performances
+    std::array<TPerformance, 64> UserPerformances = {0x20000000, 0x20010000, 0x20020000, 0x20030000, 0x20040000, 0x20050000, 0x20060000, 0x20070000,
+                                                     0x20080000, 0x20090000, 0x200A0000, 0x200B0000, 0x200C0000, 0x200D0000, 0x200E0000, 0x200F0000,
+                                                     0x20100000, 0x20110000, 0x20120000, 0x20130000, 0x20140000, 0x20150000, 0x20160000, 0x20170000,
+                                                     0x20180000, 0x20190000, 0x201A0000, 0x201B0000, 0x201C0000, 0x201D0000, 0x201E0000, 0x201F0000,
+                                                     0x20200000, 0x20210000, 0x20220000, 0x20230000, 0x20240000, 0x20250000, 0x20260000, 0x20270000,
+                                                     0x20280000, 0x20290000, 0x202A0000, 0x202B0000, 0x202C0000, 0x202D0000, 0x202E0000, 0x202F0000,
+                                                     0x20300000, 0x20310000, 0x20320000, 0x20330000, 0x20340000, 0x20350000, 0x20360000, 0x20370000,
+                                                     0x20380000, 0x20390000, 0x203A0000, 0x203B0000, 0x203C0000, 0x203D0000, 0x203E0000, 0x203F0000};
 
+    #endif // TXV5080_USER_PERFORMANCES
 
 private:
+
     // Record which MIDI port should be used for communication
     TMIDI_Port * pMIDI_Port;
     static TXV5080 * pTXV5080;
@@ -2586,7 +2548,8 @@ void test_XV5080(void)
 */
     XV5080.System.SystemCommon.SystemTempo.Set(130);
     XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("This is a test");
-    //XV5080.TemporaryPerformance.PerformanceCommon.
+    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::CD_C, 87);
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
 
     //XV5080.TemporaryPatchRhythm_InPatchMode.TemporaryPatch.PatchCommon.ToneType.Set(true);
 //    unsigned long int addr = XV5080.UserPerformances[1].TEST_GetOffsetAddress();
@@ -2839,12 +2802,14 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
-    Kungs_This_Girl::Sequence_1_Start_PedalPressed();
+    //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
+    I_Follow_Rivers::Sequence_1_Start_PedalPressed();
 }
 
 void Z_r(void * pVoid)
 {
-    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
+    //Kungs_This_Girl::Sequence_1_Start_PedalReleased();
+    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -3927,13 +3892,66 @@ void Init(void)
 
     // Force XV5080 to performance mode
     XV5080.System.SystemCommon.SoundMode.Perform();
-    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(85); //
-    XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(0); // Group A
-    XV5080.System.SystemCommon.PerformanceProgramNumber.Set(3); // number 4
-
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
 }
 }
 
+
+
+namespace I_Follow_Rivers
+{
+    void SynthTom_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+    }
+
+    void SynthTom_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+
+    // Rhythm:
+    //
+    //   x   O       x     x     x   x x x x   x
+    //   | | | | | | | | | | | | | | | | | | | |------
+    //   v   ^   v   ^   v   ^   v   ^   v   ^  (v)---
+    //
+    // Pulse lengths:
+    //   x---O------x-----x-----x---x-x-x-x---x
+    //     1    2     1.5   1.5   1 .5.5.5  1   (0.5 to terminate last note)
+    // Note names:
+    // Re Fa# Fa# Fa# Mi Re Mi Re Re
+    //
+    // Note numbers, assuming root is Re = 74
+    // 12 5   5   5   3  1  3  1  1
+    //
+    // Note there must be a note event on the first press and first release - in our case,
+    // the first release is simple a note OFF (special value 999)
+
+    TSequence Sequence_1({{12, 1}, {999, 2}, {5, 1.5}, {5, 1.5}, {5, 1}, {3, 0.5}, {1, 0.5}, {3, 0.5}, {1, 1}, {1, 0.5}}, SynthTom_ON, SynthTom_OFF, 74, 1.5);
+
+    void Sequence_1_Start_PedalPressed(void)
+    {
+        Sequence_1.Start_PedalPressed();
+    }
+
+    void Sequence_1_Start_PedalReleased(void)
+    {
+        Sequence_1.Start_PedalReleased();
+    }
+
+    void Init(void)
+    {
+        Sequence_1.Init();
+
+        // Force XV5080 to performance mode
+        XV5080.System.SystemCommon.SoundMode.Perform();
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::CD_H, 210); // Melo. Tom1
+    }
+
+}
 
 
 extern "C" void showlist(void);
@@ -4308,6 +4326,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     static TInt_1_16 KbdMidiChannelTx;
     KbdMidiChannelTx = 1;
 
+
     // Calibrate keyboard size
     // User must hit once the lowest key and the highest key of the keyboard.
     if ((KeyboardNoteLow == 0 || KeyboardNoteHigh == 127))
@@ -4326,6 +4345,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 
     if (rxNote >= 1 && rxNote <= 127)
     {
+        #if MIDI_KEYBOARD_CONTROLS_ON_KEYS
         if (rxNote == KeyboardNoteHigh) // Last key of the keyboard
         {
             MasterVolume = MasterVolume + 5;
@@ -4356,11 +4376,48 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
             return;
         }
 
+        #endif // MIDI_KEYBOARD_CONTROLS_ON_KEYS
+
         // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
         MIDI_A.SendNoteOnEvent(KbdMidiChannelTx, rxNote, rxVolume);
     }
 }
 
+
+// This hook function is called whenever the master keyboard sends a Controller Change event
+void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxControllerNumber, TInt_0_127 const rxControllerValue)
+{
+    // Put here code to handle CC events
+    switch (rxChannel)
+    {
+    case 1:
+        // This is the default value of the keyboard
+        switch (rxControllerNumber)
+        {
+        case 10:
+            // Volume for first patch assigned to master keyboard
+            XV5080.TemporaryPerformance.PerformancePart[3].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 11:
+            // Volume for second patch assigned to master keyboard
+            XV5080.TemporaryPerformance.PerformancePart[4].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 12:
+            // Volume for third patch assigned to master keyboard
+            XV5080.TemporaryPerformance.PerformancePart[5].PartLevel.Set(rxControllerValue);
+            break;
+
+        }
+        break;
+
+    default:
+        break;
+        // Do nothing
+        // MIDI_A.SendControlChange(rxChannel, rxControllerNumber, rxControllerValue); // Just forward to XV5080
+    }
+}
 
 
 // This hook function is called whenever a Controller Change event is
@@ -4652,7 +4709,7 @@ void InitializePlaylist(void)
     cAllumerLeFeu.SongName = "Allumer Le Feu";
 
     cAllInYou.Author = "Synapson";
-    cAllInYou.SongName = "All InYou";
+    cAllInYou.SongName = "All In You";
 
     cChandelier.Author = "Sia";
     cChandelier.SongName = "Chandelier";
@@ -4676,10 +4733,17 @@ void InitializePlaylist(void)
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
+    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
+    cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
 
     cIsThisLove.Author = "Bob Marley";
     cIsThisLove.SongName = "Is This Love";
 
+    cPeople.Author = "Birdie";
+    cPeople.SongName = "People Help The People";
+
+    cTakeOnMe.Author = "A-ha";
+    cTakeOnMe.SongName = "Take On Me";
 
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
@@ -4691,43 +4755,47 @@ void InitializePlaylist(void)
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
-    PlaylistData.push_back(&cLockedOutOfHeaven);
+
     PlaylistData.push_back(&cBackToBlack);
+    PlaylistData.push_back(&cBillieJean);
+    PlaylistData.push_back(&c25years);
+    PlaylistData.push_back(&cILoveRockNRoll);
     PlaylistData.push_back(&cProudMary);
+    PlaylistData.push_back(&cNewYorkAvecToi);
+    PlaylistData.push_back(&cHuman);
+    PlaylistData.push_back(&cLockedOutOfHeaven);
+    PlaylistData.push_back(&cManDown);
+    PlaylistData.push_back(&cGetLucky);
+    PlaylistData.push_back(&cJammin);
+    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cLesFillesDesForges);
+    PlaylistData.push_back(&cHighwayToHell);
+    PlaylistData.push_back(&cShouldIStay);
+    PlaylistData.push_back(&cPeople);
+    PlaylistData.push_back(&cTakeOnMe);
+    PlaylistData.push_back(&cAllumerLeFeu);
+    PlaylistData.push_back(&cAllInYou);
+
+
     PlaylistData.push_back(&cMonAmantDeSaintJean);
     PlaylistData.push_back(&cLongTrainRunning);
     PlaylistData.push_back(&cGetBack);
     PlaylistData.push_back(&cThatsAllRight);
     PlaylistData.push_back(&cWhatsUp);
     PlaylistData.push_back(&cLesCitesDOr);
-    PlaylistData.push_back(&cHuman);
-    PlaylistData.push_back(&cNewYorkAvecToi);
-
     PlaylistData.push_back(&cUptownFunk);
     PlaylistData.push_back(&cLeFreak);
     PlaylistData.push_back(&cRappersDelight);
     PlaylistData.push_back(&cMachistador);
     PlaylistData.push_back(&cAnotherOneBiteTheDust);
     PlaylistData.push_back(&cWot);
-    PlaylistData.push_back(&cManDown);
-    PlaylistData.push_back(&cBillieJean);
-    PlaylistData.push_back(&cILoveRockNRoll);
     PlaylistData.push_back(&cCapitaineFlam);
     PlaylistData.push_back(&cAllShookUp);
     PlaylistData.push_back(&cUnchainMyHeart);
     PlaylistData.push_back(&cIsntSheLovely);
     PlaylistData.push_back(&cRehab);
-    PlaylistData.push_back(&cIFeelGood);
-    PlaylistData.push_back(&cGetLucky);
-    PlaylistData.push_back(&cJammin);
-    PlaylistData.push_back(&cLesFillesDesForges);
     PlaylistData.push_back(&cKnockOnWood);
-    PlaylistData.push_back(&cShouldIStay);
-    PlaylistData.push_back(&cHighwayToHell);
     PlaylistData.push_back(&cMercy);
-
-
-
     PlaylistData.push_back(&cFlyMeToTheMoon);
     PlaylistData.push_back(&cAllOfMe);
     PlaylistData.push_back(&cCryMeARiver);
@@ -4750,11 +4818,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cGangstaParadise);
     PlaylistData.push_back(&cBeatIt);
     PlaylistData.push_back(&cLady);
-
-    PlaylistData.push_back(&c25years);
-    PlaylistData.push_back(&cAllumerLeFeu);
     PlaylistData.push_back(&cChandelier);
-    PlaylistData.push_back(&cAllInYou);
     PlaylistData.push_back(&cThisGirl);
     PlaylistData.push_back(&cEncoreUnMatin);
     PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
@@ -4805,10 +4869,9 @@ void threadRedraw(void)
             while(it != Context.Pedalboard.PedalsAnalog.end())
             {
                 TPedalAnalog PedalAnalog = *it;
-                wprintw(win_context_usage.GetRef(), "Expressionm CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
+                wprintw(win_context_usage.GetRef(), "Expression CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
                 it++;
             }
-
         }
 
         win_context_current.Refresh();
@@ -5031,8 +5094,6 @@ int main(int argc, char** argv)
 {
     int term_lines, term_cols;
 
-    testA();
-
 #if 1
     InitializePlaylist();
 
@@ -5090,7 +5151,7 @@ int main(int argc, char** argv)
     MIDI_A.Init(name_midi_hw_MIDISPORT_A, MIDI_A_IN_NoteOnEvent, MIDI_A_IN_CC_Event);
 
     // Same for MIDI port B
-    MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_NoteOnEvent);
+    MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_CC_Event);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
