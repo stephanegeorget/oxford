@@ -3181,13 +3181,14 @@ private:
 
     void TurnNoteOn(int value)
     {
-        if (value != 999)
+        if (value < 128)
         {
             pFuncNoteOn(value);
             QueueNotesOn.push(value);
         }
         else
         {
+            // Silent note
             QueueNotesOn.push(value);
         }
     }
@@ -3198,8 +3199,9 @@ private:
         {
             int NoteNumber = QueueNotesOn.front();
             QueueNotesOn.pop();
-            if (NoteNumber == 999)
+            if (NoteNumber > 127)
             {
+                // Silent note
                 return;
             }
             else
@@ -3947,7 +3949,10 @@ namespace I_Follow_Rivers
 
         // Force XV5080 to performance mode
         XV5080.System.SystemCommon.SoundMode.Perform();
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::CD_H, 210); // Melo. Tom1
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 96); // Ethno metal
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+
     }
 
 }
