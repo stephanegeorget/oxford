@@ -58,6 +58,8 @@
 #include <chrono>
 #include <ctime>
 
+static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 and up on XV5080
+
 int stop = 0;
 
 // midi sequencer name
@@ -95,6 +97,8 @@ std::mutex ncurses_mutex;
 
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::saturated_arithmetic> TInt_0_127;
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 16>, subrange::saturated_arithmetic> TInt_1_16;
+typedef subrange::subrange<subrange::ordinal_range<int, 1, 128>, subrange::saturated_arithmetic> TInt_1_128;
+
 
 void Test7bitInteger(void)
 {
@@ -1064,14 +1068,17 @@ public:
 
     /// Hook function called whenever a Note ON event is received
     typedef void (*THookProcessNoteONEvent)(TInt_1_16 rxChannel, TInt_0_127 rxNote_param, TInt_0_127 rxVolume_param);
+    /// Hook function called whenever a Note OFF event is received
+    typedef void (*THookProcessNoteOFFEvent)(TInt_1_16 rxChannel, TInt_0_127 rxNote_param, TInt_0_127 rxVolume_param);
     /// Hook function called whenever a controller change event is received
     typedef void (*THookProcessControllerChangeEvent)(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber_param, TInt_0_127 rxControllerValue_param);
 
     /// Initialize this object
-    void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
+    void Init(std::string name_midi_hw_param, THookProcessNoteONEvent HookProcessNoteONEvent_param, THookProcessNoteOFFEvent HookProcessNoteOFFEvent_param, THookProcessControllerChangeEvent HookProcessControllerChangeEvent_param)
     {
         name_midi_hw = name_midi_hw_param;
         HookProcessNoteONEvent = HookProcessNoteONEvent_param;
+        HookProcessNoteOFFEvent = HookProcessNoteOFFEvent_param;
         HookProcessControllerChangeEvent = HookProcessControllerChangeEvent_param;
         // Spawn new thread that takes care of processing MIDI packets
         if (ThreadNativeHandle == 0)
@@ -1292,10 +1299,11 @@ private:
         smWaitMidiControllerChangeChar3,
         smProcessControllerChange,
         smWaitMidiNoteChar2,
+        smWaitMidiNoteOffChar2,
         smWaitMidiNoteChar3,
+        smWaitMidiNoteOffChar3,
         smProcessNoteEvent,
-        smInterpretMidiNote,
-        smSendMidiNotes
+        smProcessNoteOffEvent,
     } stateMachine = smInit;
 
     // Keep track of MIDI IN ALSA Handle
@@ -1306,6 +1314,8 @@ private:
 
     // Hook function called whenever a note ON event is received
     THookProcessNoteONEvent HookProcessNoteONEvent = 0;
+    // Hook function called whenever a note OFF event is received
+    THookProcessNoteOFFEvent HookProcessNoteOFFEvent = 0;
     // Hook function called whenever a controller change event is received
     THookProcessControllerChangeEvent HookProcessControllerChangeEvent = 0;
 
@@ -1381,6 +1391,12 @@ private:
                         rxChannel = (ch & 0x0F) +1;
                         stateMachine = smWaitMidiNoteChar2;
                     }
+                    if ( ( (ch) & 0xF0 ) == 0x80 && HookProcessNoteOFFEvent)
+                    {
+                        // It's a note OFF event. Get the least significant nibble, that's the channel
+                        rxChannel = (ch & 0x0F) +1;
+                        stateMachine = smWaitMidiNoteOffChar2;
+                    }
                     if ( ( (ch) & 0xF0 ) == 0xb0 && HookProcessControllerChangeEvent)
                     {
                         // It's a Controller Change event.
@@ -1390,7 +1406,22 @@ private:
                     }
                     break;
 
-                case smWaitMidiNoteChar2:
+                case smWaitMidiNoteOffChar2:
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if (ch >= 0 && ch <= 127)
+                    {
+                        stateMachine = smWaitMidiNoteOffChar3;
+                        rxNote = ch;
+                    }
+                    else
+                    {
+                        // Value out of bounds
+                        stateMachine = smWaitMidiChar1;
+                    }
+                    break;
+
+                    case smWaitMidiNoteChar2:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
                     wprintw(win_midi_in.GetRef(), "0x%02x", ch);
                     if (ch >= 0 && ch <= 127)
@@ -1404,6 +1435,22 @@ private:
                         stateMachine = smWaitMidiChar1;
                     }
                     break;
+
+                case smWaitMidiNoteOffChar3:
+                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    if (ch >= 0 && ch <= 127)
+                    {
+                        rxVolume = ch;
+                        stateMachine = smProcessNoteOffEvent;
+                    }
+                    else
+                    {
+                        // Value out of bounds
+                        stateMachine = smWaitMidiChar1;
+                    }
+                    break;
+
 
                 case smWaitMidiNoteChar3:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
@@ -1451,6 +1498,12 @@ private:
                 stateMachine = smWaitMidiChar1;
                 break;
 
+                case smProcessNoteOffEvent:
+                {
+                    HookProcessNoteOFFEvent(rxChannel, rxNote, rxVolume);
+                }
+                stateMachine = smWaitMidiChar1;
+                break;
 
                 case smProcessControllerChange:
                 {
@@ -1512,7 +1565,7 @@ public:
     /**
      * Switch to performance mode and jump to a specific performance
      */
-    void PerformanceSelect(TXV5080::PerformanceGroup PerformanceGroup_param, TInt_0_127 PatchNumber_param)
+    void PerformanceSelect(TXV5080::PerformanceGroup PerformanceGroup_param, TInt_1_128 const PatchNumber_param)
     {
         System.SystemCommon.SoundMode.Perform();
 //        System.SystemCommon.PerformanceControlChannel.Set(1);
@@ -1524,7 +1577,7 @@ public:
 //            pMIDI_Port.SendControlChange(1, 32, 0);
             System.SystemCommon.PerformanceBankSelectMSB.Set(85);
             System.SystemCommon.PerformanceBankSelectLSB.Set(0);
-            System.SystemCommon.PerformanceControlChannel.Set(PatchNumber_param);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
             break;
 
         default:
@@ -1819,10 +1872,10 @@ public:
             {
             public:
                 TPerformanceProgramNumber(int val) : TParameter(val + 0x0010, 0, 127, "0aaa aaaa") {};
-                /** 0-127 */
+                /** 1-128 */
                 void Set(int Value_param)
                 {
-                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -1));
                 }
             } PerformanceProgramNumber{OffsetAddress};
 
@@ -2212,10 +2265,10 @@ public:
 
             void SelectPatch(TXV5080::PatchGroup PatchGroup_param, int PatchNumber)
             {
-                SelectPatch(PatchGroup_param, TInt_0_127(PatchNumber));
+                SelectPatch(PatchGroup_param, TInt_1_128(PatchNumber));
             }
 
-            void SelectPatch(TXV5080::PatchGroup PatchGroup_param, TInt_0_127 const PatchNumber_param)
+            void SelectPatch(TXV5080::PatchGroup PatchGroup_param, TInt_1_128 const PatchNumber_param)
             {
                 switch(PatchGroup_param)
                 {
@@ -2337,10 +2390,10 @@ public:
             {
             public:
                 TPatchProgramNumber(int val) : TParameter(val + 0x0006, 0, 127, "0aaa aaaa") {};
-                /** 0-127 */
+                /** 1-128 */
                 void Set(int Value_param)
                 {
-                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -1));
                 }
             } PatchProgramNumber{OffsetAddress};
         };
@@ -2532,7 +2585,7 @@ void test_XV5080(void)
     XV5080.System.SystemCommon.PerformanceProgramNumber.Set(5);*/
     XV5080.System.SystemCommon.SystemTempo.Set(130);
 
-    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_0_127(43));
+    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(43));
 
     XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("Blah");
     XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::CD_A, 43);
@@ -4328,7 +4381,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     static TInt_0_127 MasterVolume;
     MasterVolume = 127;
     static TInt_1_16 KbdMidiChannelTx;
-    KbdMidiChannelTx = 1;
+    KbdMidiChannelTx = 2;
 
 
     // Calibrate keyboard size
@@ -4387,6 +4440,17 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     }
 }
 
+// This hook function is called whenever a Note OFF event was received on
+// MIDI B IN.
+void MIDI_B_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
+{
+    TInt_1_16 KbdMidiChannelTx;
+    KbdMidiChannelTx = 2;
+
+    MIDI_A.SendNoteOffEvent(KbdMidiChannelTx, rxNote, rxVolume);
+}
+
+
 
 // This hook function is called whenever the master keyboard sends a Controller Change event
 void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxControllerNumber, TInt_0_127 const rxControllerValue)
@@ -4398,19 +4462,24 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
         // This is the default value of the keyboard
         switch (rxControllerNumber)
         {
-        case 10:
+        case 73:
             // Volume for first patch assigned to master keyboard
-            XV5080.TemporaryPerformance.PerformancePart[3].PartLevel.Set(rxControllerValue);
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].PartLevel.Set(rxControllerValue);
             break;
 
-        case 11:
+        case 75:
             // Volume for second patch assigned to master keyboard
-            XV5080.TemporaryPerformance.PerformancePart[4].PartLevel.Set(rxControllerValue);
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].PartLevel.Set(rxControllerValue);
             break;
 
-        case 12:
+        case 79:
             // Volume for third patch assigned to master keyboard
-            XV5080.TemporaryPerformance.PerformancePart[5].PartLevel.Set(rxControllerValue);
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 72:
+            // Volume for third patch assigned to master keyboard
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].PartLevel.Set(rxControllerValue);
             break;
 
         }
@@ -4594,7 +4663,7 @@ void InitializePlaylist(void)
     cThatsAllRight.SongName = "That's all right";
     cThatsAllRight.BaseTempo = 163;
 
-    cJohnnyBeGood.Author = "";
+    cJohnnyBeGood.Author = "Chuck Berry";
     cJohnnyBeGood.SongName = "Johnny be good";
     cJohnnyBeGood.BaseTempo = 165;
 
@@ -5152,10 +5221,10 @@ int main(int argc, char** argv)
 
     // Create thread that scans midi messages
     // Initialize MIDI port A - this will spawn a new thread that parses MIDI IN
-    MIDI_A.Init(name_midi_hw_MIDISPORT_A, MIDI_A_IN_NoteOnEvent, MIDI_A_IN_CC_Event);
+    MIDI_A.Init(name_midi_hw_MIDISPORT_A, MIDI_A_IN_NoteOnEvent, NULL, MIDI_A_IN_CC_Event);
 
     // Same for MIDI port B
-    MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_CC_Event);
+    MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_NoteOffEvent, MIDI_B_IN_CC_Event);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
@@ -5168,6 +5237,27 @@ int main(int argc, char** argv)
     // Create thread that scans the keyboard
     std::thread thread4(MiniSynth::threadKeyboard);
 
+    // Setup the Master Keyboard default patches on each part
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 1);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
+
+    XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
 
 #ifdef TEST_XV5080
     test_XV5080();
