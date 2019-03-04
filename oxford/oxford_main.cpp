@@ -60,6 +60,13 @@
 
 static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 and up on XV5080
 
+// Midi Channel, on XV5080, that receives MIDI traffic from the master keyboard
+// Normally set to 2. This program forwards all master keyboard traffic to channel 2
+// on the XV5080. On the XV5080 side, the parts that are link to the master keyboard
+// all listen to channel 2.
+static int const MASTER_KBD_XV5080_MIDI_CHANNEL = 2;
+
+
 int stop = 0;
 
 // midi sequencer name
@@ -783,6 +790,8 @@ public:
 };
 
 
+void ResetKeyboardPerformance(void);
+
 /**
  * A Context is a collection of features that belong to a particular performance. In other
  * words, a context gathers everything that is needed to play a song:
@@ -808,6 +817,9 @@ public:
     {
         // Upon a context change, always first re-initialize the Eleven Rack
         ElevenRack::Init();
+        // Initialize the XV5080 performance
+        ResetKeyboardPerformance();
+
         if(InitFunc != NULL)
         {
             // Then call the user-defined initialization function
@@ -3947,7 +3959,17 @@ void Init(void)
     // Force XV5080 to performance mode
     XV5080.System.SystemCommon.SoundMode.Perform();
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
-    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
+    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 126); // 2 Trumpets
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+
+    // Set up keyboard for Ani:
+    // First Part is a piano, second part is a pad, third part is the trumpet
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_E, 55); // Ethereal Strings
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_B, 126); // 2 trumpets
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
+
 }
 }
 
@@ -3984,7 +4006,7 @@ namespace I_Follow_Rivers
     // Note there must be a note event on the first press and first release - in our case,
     // the first release is simple a note OFF (special value 999)
 
-    TSequence Sequence_1({{12, 1}, {999, 2}, {5, 1.5}, {5, 1.5}, {5, 1}, {3, 0.5}, {1, 0.5}, {3, 0.5}, {1, 1}, {1, 0.5}}, SynthTom_ON, SynthTom_OFF, 74, 1.5);
+    TSequence Sequence_1({{12, 1}, {999, 2}, {3, 1.5}, {3, 1.5}, {3, 1}, {2, 0.5}, {0, 0.5}, {2, 0.5}, {0, 1}, {0, 0.5}}, SynthTom_ON, SynthTom_OFF, 74, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4000,16 +4022,29 @@ namespace I_Follow_Rivers
     {
         Sequence_1.Init();
 
-        // Force XV5080 to performance mode
-        XV5080.System.SystemCommon.SoundMode.Perform();
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 96); // Ethno metal
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 61); // Hammer Bell
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
 
-    }
+        // Ani's piano is a piano with a bit of reverb
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
 
+    }
 }
 
+
+namespace People_Help_The_People
+{
+    void Init(void)
+    {
+        // Ani's piano is a piano with strings
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_E, 2); // Contemplate Piano
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_E, 73); // Lush Strings
+        // Then Ani will do the mix herself
+
+    }
+}
 
 extern "C" void showlist(void);
 extern "C" int main_TODO(int argc, char const **argv, int Tempo);
@@ -4219,6 +4254,14 @@ void Solo_On_Off(void)
 
 }
 
+namespace AllumerLeFeu
+{
+    void Init(void)
+    {
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
+    }
+}
+
 namespace ElevenRack
 {
 
@@ -4381,11 +4424,12 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     static TInt_0_127 MasterVolume;
     MasterVolume = 127;
     static TInt_1_16 KbdMidiChannelTx;
-    KbdMidiChannelTx = 2;
+    KbdMidiChannelTx = MASTER_KBD_XV5080_MIDI_CHANNEL;
 
 
     // Calibrate keyboard size
     // User must hit once the lowest key and the highest key of the keyboard.
+    #if KBD_CALIBRATE
     if ((KeyboardNoteLow == 0 || KeyboardNoteHigh == 127))
     {
         if (rxNote < 64)
@@ -4399,6 +4443,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
         }
         return;
     }
+    #endif
 
     if (rxNote >= 1 && rxNote <= 127)
     {
@@ -4445,7 +4490,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 void MIDI_B_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
     TInt_1_16 KbdMidiChannelTx;
-    KbdMidiChannelTx = 2;
+    KbdMidiChannelTx = MASTER_KBD_XV5080_MIDI_CHANNEL;
 
     MIDI_A.SendNoteOffEvent(KbdMidiChannelTx, rxNote, rxVolume);
 }
@@ -4482,11 +4527,13 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].PartLevel.Set(rxControllerValue);
             break;
 
+        default:
+            // Forward CC events as they are
+            MIDI_A.SendControlChange(rxChannel, rxControllerNumber, rxControllerValue);
+            break;
         }
         break;
 
-    default:
-        break;
         // Do nothing
         // MIDI_A.SendControlChange(rxChannel, rxControllerNumber, rxControllerValue); // Just forward to XV5080
     }
@@ -4780,6 +4827,7 @@ void InitializePlaylist(void)
 
     cAllumerLeFeu.Author = "Johnny Halliday";
     cAllumerLeFeu.SongName = "Allumer Le Feu";
+    cAllumerLeFeu.SetInitFunc(AllumerLeFeu::Init);
 
     cAllInYou.Author = "Synapson";
     cAllInYou.SongName = "All In You";
@@ -4814,6 +4862,7 @@ void InitializePlaylist(void)
 
     cPeople.Author = "Birdie";
     cPeople.SongName = "People Help The People";
+    cPeople.SetInitFunc(People_Help_The_People::Init);
 
     cTakeOnMe.Author = "A-ha";
     cTakeOnMe.SongName = "Take On Me";
@@ -4829,27 +4878,31 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
 
-    PlaylistData.push_back(&cBackToBlack);
-    PlaylistData.push_back(&cBillieJean);
-    PlaylistData.push_back(&c25years);
-    PlaylistData.push_back(&cILoveRockNRoll);
-    PlaylistData.push_back(&cProudMary);
-    PlaylistData.push_back(&cNewYorkAvecToi);
-    PlaylistData.push_back(&cHuman);
     PlaylistData.push_back(&cLockedOutOfHeaven);
-    PlaylistData.push_back(&cManDown);
     PlaylistData.push_back(&cGetLucky);
-    PlaylistData.push_back(&cJammin);
-    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cIllusion);
+    PlaylistData.push_back(&cManDown);
+    PlaylistData.push_back(&cBackToBlack);
+    PlaylistData.push_back(&cILoveRockNRoll);
+    PlaylistData.push_back(&c25years);
+    PlaylistData.push_back(&cHuman);
+    PlaylistData.push_back(&cPeople);
+    PlaylistData.push_back(&cIFollowRivers);
+    PlaylistData.push_back(&cTakeOnMe);
     PlaylistData.push_back(&cLesFillesDesForges);
     PlaylistData.push_back(&cHighwayToHell);
-    PlaylistData.push_back(&cShouldIStay);
-    PlaylistData.push_back(&cPeople);
-    PlaylistData.push_back(&cTakeOnMe);
     PlaylistData.push_back(&cAllumerLeFeu);
+    PlaylistData.push_back(&cProudMary);
+
+
+    PlaylistData.push_back(&cBillieJean);
+    PlaylistData.push_back(&cNewYorkAvecToi);
+    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cShouldIStay);
     PlaylistData.push_back(&cAllInYou);
 
 
+    PlaylistData.push_back(&cJammin);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
     PlaylistData.push_back(&cLongTrainRunning);
     PlaylistData.push_back(&cGetBack);
@@ -4880,7 +4933,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cMasterBlaster);
     PlaylistData.push_back(&cAuxChampsElysees);
     PlaylistData.push_back(&cAroundTheWorld);
-    PlaylistData.push_back(&cIllusion);
     PlaylistData.push_back(&cDockOfTheBay);
     PlaylistData.push_back(&cJohnnyBeGood);
     PlaylistData.push_back(&cBebopALula);
@@ -4896,7 +4948,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cEncoreUnMatin);
     PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cDumbo);
-    PlaylistData.push_back(&cIFollowRivers);
     PlaylistData.push_back(&cIsThisLove);
 
 
@@ -5163,6 +5214,29 @@ void threadMetronome (void)
 }
 
 
+void ResetKeyboardPerformance(void)
+{
+    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59);
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(2);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
+
+    XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
+}
+
+
 int main(int argc, char** argv)
 {
     int term_lines, term_cols;
@@ -5240,24 +5314,9 @@ int main(int argc, char** argv)
     // Setup the Master Keyboard default patches on each part
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
-    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
+    ResetKeyboardPerformance();
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 1);
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59);
-
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
-
-    XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
 
 #ifdef TEST_XV5080
     test_XV5080();
