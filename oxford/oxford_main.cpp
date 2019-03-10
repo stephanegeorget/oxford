@@ -106,6 +106,7 @@ typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::satur
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 16>, subrange::saturated_arithmetic> TInt_1_16;
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 128>, subrange::saturated_arithmetic> TInt_1_128;
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 16383>, subrange::saturated_arithmetic> TInt_14bits;
+typedef subrange::subrange<subrange::ordinal_range<int, 1, 4>, subrange::saturated_arithmetic> TInt_1_4;
 
 void Test7bitInteger(void)
 {
@@ -1055,7 +1056,7 @@ typedef struct
     unsigned char NoteNumber;
     unsigned char Velocity;
     unsigned char Channel;
-    unsigned int DurationMS;
+    int DurationMS;
 } TPlayNoteMsg;
 
 
@@ -1432,7 +1433,7 @@ private:
 
                 case smWaitMidiChar1:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if ( ( (ch) & 0xF0 ) == 0x90 && HookProcessNoteONEvent)
                     {
                         // It's a note ON event. Get the least significant nibble, that's the channel
@@ -1464,7 +1465,7 @@ private:
 
                 case smWaitPitchBendChar2:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smWaitPitchBendChar3;
@@ -1479,7 +1480,7 @@ private:
 
                 case smWaitPitchBendChar3:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smProcessPitchBendChangeEvent;
@@ -1499,7 +1500,7 @@ private:
 
                 case smWaitMidiNoteOffChar2:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smWaitMidiNoteOffChar3;
@@ -1514,7 +1515,7 @@ private:
 
                     case smWaitMidiNoteChar2:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smWaitMidiNoteChar3;
@@ -1529,7 +1530,7 @@ private:
 
                 case smWaitMidiNoteOffChar3:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         rxVolume = ch;
@@ -1545,7 +1546,7 @@ private:
 
                 case smWaitMidiNoteChar3:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         rxVolume = ch;
@@ -1560,7 +1561,7 @@ private:
 
                 case smWaitMidiControllerChangeChar2:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smWaitMidiControllerChangeChar3;
@@ -1576,7 +1577,7 @@ private:
 
                 case smWaitMidiControllerChangeChar3:
                     snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
-                    wprintw(win_midi_in.GetRef(), "0x%02x", ch);
+                    wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     stateMachine = smProcessControllerChange;
                     rxControllerValue = ch;
                     wprintw(win_debug_messages.GetRef(), "Controller Change: Control Number %i; Control Value %i\n", rxControllerNumber, rxControllerValue);
@@ -1646,7 +1647,10 @@ public:
 
     enum class PatchGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G,
                         CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H,
-                        XB_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H};
+                        XP_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H};
+
+    enum class RhythmSetGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G,
+                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H};
 
 //                        enum RythmSetGoup {USER, PR_A, PR_B, PR_C};
     enum class PerformanceGroup {USER, PR_A, PR_B,
@@ -2027,6 +2031,49 @@ public:
 
 
         } PerformanceCommon{OffsetAddress};
+
+        class TPerformanceCommonReverb_ : TParameterSection
+        {
+            public:
+            TPerformanceCommonReverb_(int val) : TParameterSection(val + 0x0600) {};
+
+
+            class TReverbType_ : TParameter
+            {
+                public:
+                TReverbType_(int val) : TParameter(val + 0x0000, 0, 4, "0000 aaaa") {};
+                /** Value between 0 and 4 */
+                void Set(int Value_param)
+                {
+                    if (Value_param >= 0 && Value_param <=4)
+                    {
+                       pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                    }
+                }
+            } ReverbType_{OffsetAddress};
+
+            class TReverbLevel_ : TParameter
+            {
+                public:
+                TReverbLevel_(int val) : TParameter(val + 0x0001, 0, 127, "0aaa aaaa") {};
+                /** Value between 0 and 127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReverbLevel_{OffsetAddress};
+
+            class TReverbOutputAssign_ : TParameter
+            {
+                public:
+                TReverbOutputAssign_(int val) : TParameter(val + 0x0002, 0, 3, "0000 00aa") {};
+                /** Value between 0 and 3. 0=A, 1=B, 2=C, 3=D */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReverbOutputAssign_{OffsetAddress};
+        } PerformanceCommonReverb_{OffsetAddress};
 
         class TPerformanceMIDI : TParameterSection
         {
@@ -2455,6 +2502,108 @@ public:
                 }
             }
 
+            void SelectRhythmSet(TXV5080::RhythmSetGroup RhythmSetGroup_param, int PatchNumber)
+            {
+                SelectRhythmSet(RhythmSetGroup_param, TInt_1_4(PatchNumber));
+            }
+
+            void SelectRhythmSet(TXV5080::RhythmSetGroup RhythmSetGroup_param, TInt_1_4 const RhythmSetNumber_param)
+            {
+                switch(RhythmSetGroup_param)
+                {
+                    case RhythmSetGroup::PR_A:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(64);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_B:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(65);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_C:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(66);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_D:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(67);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_E:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(68);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_F:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(69);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::PR_G:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(70);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_A:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(32);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_B:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(33);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_C:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(34);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_D:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(35);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_E:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(36);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_F:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(37);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_G:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(38);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+                    case RhythmSetGroup::CD_H:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(39);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+                }
+            }
+
+
             class TPatchBankSelectMSB : TParameter
             {
             public:
@@ -2487,6 +2636,95 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param -1));
                 }
             } PatchProgramNumber{OffsetAddress};
+
+            class TPartReverbSendLevel : TParameter
+            {
+                public:
+                TPartReverbSendLevel(int val) : TParameter(val + 0x001E, 0, 127, "0aaa aaaa") {};
+                /** 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PartReverbSendLevel{OffsetAddress};
+
+            class TPartOutputAssign : TParameter
+            {
+                public:
+                TPartOutputAssign(int val) : TParameter(val + 0x001F, 0, 13, "0000 aaaa") {};
+                /** 0=MFX, 1=(A), 2=(B), .. 3=(D), 4=(1), 5=(2), 11=(8), 12, C, D, 4=(1), (2), (3)
+
+                 */
+                void ToMFX(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(0));
+                }
+
+                void ToOutputA(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(1));
+                }
+
+                void ToOutputB(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(2));
+                }
+
+                void ToOutputC(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(3));
+                }
+
+                void ToOutputD(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(4));
+                }
+
+                void ToOutput1(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(5));
+                }
+
+                void ToOutput2(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(6));
+                }
+
+                void ToOutput3(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(7));
+                }
+
+                void ToOutput4(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(8));
+                }
+
+                void ToOutput5(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(9));
+                }
+
+                void ToOutput6(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(10));
+                }
+
+                void ToOutput7(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(11));
+                }
+
+                void ToOutput8(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(12));
+                }
+
+                void ToPatch(void)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(13));
+                }
+            } PartOutputAssign {OffsetAddress};
         };
         std::array<TPerformancePart, 32> PerformancePart = {OffsetAddress + 0x2000, OffsetAddress + 0x2100, OffsetAddress + 0x2200, OffsetAddress + 0x2300, OffsetAddress + 0x2400,
                                                             OffsetAddress + 0x2500, OffsetAddress + 0x2600, OffsetAddress + 0x2700, OffsetAddress + 0x2800, OffsetAddress + 0x2900,
@@ -2563,6 +2801,47 @@ public:
                 }
             } PatchPan{OffsetAddress};
         } PatchCommon{OffsetAddress};
+
+        class TPatchCommonReverb : TParameterSection
+        {
+            public:
+            TPatchCommonReverb(int val) : TParameterSection(val + 0x0600) {};
+            class TReverbType : TParameter
+            {
+                public:
+                TReverbType(int val) : TParameter(val + 0x0000, 0, 4, "0000 aaaa") {};
+                /** Value between 0 and 4 */
+                void Set(int Value_param)
+                {
+                    if (Value_param >= 0 && Value_param <=4)
+                    {
+                       pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                    }
+                }
+            } ReverbType{OffsetAddress};
+
+            class TReverbLevel : TParameter
+            {
+                public:
+                TReverbLevel(int val) : TParameter(val + 0x0001, 0, 127, "0aaa aaaa") {};
+                /** Value between 0 and 127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReverbLevel{OffsetAddress};
+
+            class TReverbOutputAssign : TParameter
+            {
+                public:
+                TReverbOutputAssign(int val) : TParameter(val + 0x0002, 0, 3, "0000 00aa") {};
+                /** Value between 0 and 3. 0=A, 1=B, 2=C, 3=D */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ReverbOutputAssign{OffsetAddress};
+        } PatchCommonReverb{OffsetAddress};
     };
 
     class TRhythm : TParameterSection
@@ -3108,6 +3387,15 @@ void LoPassFilterDisable(void)
 }
 namespace Rihanna
 {
+
+    namespace ManDown
+    {
+        void BoatSiren(void)
+        {
+            PlayNote(16, 21, 2000, 127);
+        }
+    }
+
 namespace WildThoughts
 {
 void Chord1_On(void)
@@ -3777,22 +4065,28 @@ namespace LockedOutOfHeaven
 {
 void Yeah(void)
 {
-    system("aplay ./wav/yeah_001.wav &");
+//    system("aplay ./wav/yeah_001.wav &");
+    // Sample is on note 27 of the "all samples" Rhythm Set, which should listen on channel 16.
+    PlayNote(16, 27, 500, 127);
 }
 
 void Hooh(void)
 {
-    system("aplay ./wav/hooh_echo_001.wav &");
+//    system("aplay ./wav/hooh_echo_001.wav &");
+    PlayNote(16, 28, 500, 127);
+
 }
 
 void Siren(void)
 {
-    system("aplay ./wav/alarm_001.wav &");
+//    system("aplay ./wav/alarm_001.wav &");
+    PlayNote(16, 22, 2000, 127);
+
 }
 
 void Cuica(void)
 {
-    system("aplay ./wav/cuica_001.wav &");
+//    system("aplay ./wav/cuica_001.wav &");
 }
 }
 }
@@ -4085,7 +4379,7 @@ namespace I_Follow_Rivers
     // Note there must be a note event on the first press and first release - in our case,
     // the first release is simple a note OFF (special value 999)
 
-    TSequence Sequence_1({{12, 1}, {999, 2}, {3, 1.5}, {3, 1.5}, {3, 1}, {2, 0.5}, {0, 0.5}, {2, 0.5}, {0, 1}, {0, 0.5}}, SynthTom_ON, SynthTom_OFF, 74, 1.5);
+    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4101,7 +4395,7 @@ namespace I_Follow_Rivers
     {
         Sequence_1.Init();
 
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 61); // Hammer Bell
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 106); // Dyno Toms
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
 
@@ -4588,22 +4882,70 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
         {
         case 73:
             // Volume for first patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
+            }
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].PartLevel.Set(rxControllerValue);
             break;
 
         case 75:
             // Volume for second patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+            }
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].PartLevel.Set(rxControllerValue);
             break;
 
         case 79:
             // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
+            }
+
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].PartLevel.Set(rxControllerValue);
             break;
 
         case 72:
             // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(1);
+            }
+
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 74: // first potentiometer
+            // Reverb for first patch assigned to master keyboard
+            if (rxControllerValue != 0)
+            {
+                XV5080.System.SystemCommon.ReverbSwitch.Set(1);
+            }
+            XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbType_.Set(1);
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].PartReverbSendLevel.Set(rxControllerValue);
+            XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbLevel_.Set(rxControllerValue);
+            XV5080.TemporaryPatchRhythm_InPerformanceMode[MASTER_KBD_PART_INDEX].TemporaryPatch.PatchCommonReverb.ReverbType.Set(1);
+            XV5080.TemporaryPatchRhythm_InPerformanceMode[MASTER_KBD_PART_INDEX].TemporaryPatch.PatchCommonReverb.ReverbLevel.Set(rxControllerValue);
+
             break;
 
         default:
@@ -4621,15 +4963,14 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
 
 void MIDI_B_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBendChangeValue_param)
 {
-    MIDI_A.SendPitchBendChange(rxChannel, rxPitchBendChangeValue_param);
-
+    // Disregard rxChannel. Forward to XV5080 parts attributed to the master keyboard.
+    MIDI_A.SendPitchBendChange(MASTER_KBD_XV5080_MIDI_CHANNEL, rxPitchBendChangeValue_param);
 }
 
 // This hook function is called whenever a Controller Change event is
 // received on MIDI A IN
 void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt_0_127 rxControllerValue)
 {
-
     TContext context;
     context = **PlaylistPosition;
     for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
@@ -4834,6 +5175,7 @@ void InitializePlaylist(void)
     cManDown.Author = "Rihanna";
     cManDown.SongName = "Man Down";
     cManDown.BaseTempo = 145;
+    cManDown.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::ManDown::BoatSiren, NULL, "Boat Siren"));
 
     cShouldIStay.Author = "The Clash";
     cShouldIStay.SongName = "Should I stay";
@@ -5307,18 +5649,35 @@ void ResetKeyboardPerformance(void)
     XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4); // Nice Piano
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59); // Warmth
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(2);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_B, 126);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_E, 55); // Ethereal Strings
+    //TXV5080::PatchGroup::PR_C, 36); // Warm Strings
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
 
     XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
+
+    // All samples are located in a single Rhythm Set.
+    // The samples are read from the XV5080 memory card to the internal RAM.
+    // Then, Drum Kit CD-A:001 is supposed to play those samples.
+    // Add Drum Kit CD-A:001 to the temporary performance, make sure MIDI Rx is ON
+    // Let's put it on Part 16 (numbered 15 below).
+    // Let's set Part 16 MIDI Rx channel to be 16 too.
+    // So to play a sample, just send midi nodes to MIDI channel 16.
+    XV5080.TemporaryPerformance.PerformancePart[15].SelectRhythmSet(TXV5080::RhythmSetGroup::CD_A, 1);
+    XV5080.TemporaryPerformance.PerformancePart[15].ReceiveMIDI1.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[15].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[15].ReceiveChannel.Set_1_16(16);
 }
 
 
