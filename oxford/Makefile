@@ -11,10 +11,10 @@ AR = ar
 LD = g++
 WINDRES = 
 
-INC = -Icdk-5.0-20171209/include -Iaubio-560fc50/src
+INC = -Icdk-5.0-20171209/include
 CFLAGS = -Wall -fexceptions
 RESINC = 
-LIBDIR = -Lcdk-5.0-20171209 -Laubio-560fc50/build/src
+LIBDIR = -Lcdk-5.0-20171209
 LIB = -lpthread -lasound -lncurses -lcdk -lpanel
 LDFLAGS = 
 
