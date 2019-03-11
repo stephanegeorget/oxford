@@ -40,7 +40,6 @@
 			<Add library="ncurses" />
 			<Add library="cdk" />
 			<Add library="panel" />
-			<Add library="aubio" />
 			<Add directory="cdk-5.0-20171209" />
 			<Add directory="aubio-560fc50/build/src" />
 		</Linker>
@@ -48,7 +47,6 @@
 		<Unit filename="pmidi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="tempo_extraction.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

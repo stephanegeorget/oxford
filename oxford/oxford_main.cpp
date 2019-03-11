@@ -3,9 +3,9 @@
 // Roland XV5080 Midi In 1          == connected to ==   MidiSport port A Out
 // Eleven Rack (11R) Midi In        == connected to ==   MidiSport port B Out
 // Behringer FCB1010 Midi Out       == connected to ==   MidiSport port A In
-// Keyboard Midi Out                == connected to ==   MidiSport port B In
+// Arturia Master Keyboard Midi Out == connected to ==   MidiSport port B In
 // MidiSport USB                    == connected to ==   Raspberry Pi USB
-
+// Sonuus B2M                       == connected to ==   ???
 
 // Assuming that ALSA is used throughout.
 // Make sure you have installed libasound2-dev, to get the headers
@@ -27,6 +27,10 @@
 // [[OOLLDD: ./waf configure, ./waf build, ./waf install is not really needed,
 //  just have codeblocks link with the aubio library generated in: build/source/libaubio.so]]
 
+// If running into issues with missing libraries, 3 options:
+// 1/ make sure the library is in a "common" place with all other system libraries
+// 2/ /lib/ld-linux.so.2 --library-path PATH EXECUTABLE
+// 3/ export LD_LIBRARY_PATH=/usr/local/lib
 
 
 
@@ -108,22 +112,6 @@ typedef subrange::subrange<subrange::ordinal_range<int, 1, 128>, subrange::satur
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 16383>, subrange::saturated_arithmetic> TInt_14bits;
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 4>, subrange::saturated_arithmetic> TInt_1_4;
 
-void Test7bitInteger(void)
-{
-    TInt_0_127 SevenBitInt;
-    SevenBitInt = 10;
-    SevenBitInt++;
-
-    TInt_1_16 b;
-    b = 14;
-    b++;
-    b++;
-    b++;
-    b++;
-
-
-
-}
 
 #if 0
 
@@ -140,8 +128,8 @@ std::ostream &operator <<(std::ostream &stream, IntRange ir)
 /** This is a ncurses cdk panel, with a boxed window on it, that can't
 be touched, and a "free text" window inside the boxed window.
 It makes it easy to manage showing (and hiding, thanks panel), of
-text, including automatically scrolling it, _inside_ a nice clean
-window with a box.
+text, including automatically scrolling it, _inside_ a nice framed (boxed)
+window.
 To get a reference to the inner window (on which to display text), for instance
 with wprinw, use ::GetRef(). E.g.: wprintw(MyBoxedWindow.GetRef(), "Hello World!\n");
 Of course, call ::Init(...) beforehand. */
@@ -605,7 +593,8 @@ void Initialize(void)
     if (fd == -1)
     {
         fprintf(stdout, "Cannot open %s: %s.\n", dev, strerror(errno));
-        exit(10);
+        fprintf(stdout, "Computer keyboard (e.g. AZERTY...) is not connected?\n");
+        return;
     }
 
     // create separate thread for the keyboard scan
@@ -5567,8 +5556,12 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
     win_context_user_specific.Show();
 }
 
-extern float PCMInputTempoConfidence;
-extern float PCMInputTempoValue;
+// Fixme: create routine that computes tempo
+// In the past, was using aubio library, but that did not work well enough
+// Use MIDI events instead
+// Not implemented yet
+float PCMInputTempoConfidence = 0;
+float PCMInputTempoValue = 0;
 
 // Display a metronome on the User Specific window.
 void threadMetronome (void)
