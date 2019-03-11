@@ -15,7 +15,7 @@ INC = -Icdk-5.0-20171209/include -Iaubio-560fc50/src
 CFLAGS = -Wall -fexceptions
 RESINC = 
 LIBDIR = -Lcdk-5.0-20171209 -Laubio-560fc50/build/src
-LIB = -lpthread -lasound -lncurses -lcdk -lpanel -laubio
+LIB = -lpthread -lasound -lncurses -lcdk -lpanel
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/oxford
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/oxford_main.o $(OBJDIR_DEBUG)/pmidi.o $(OBJDIR_DEBUG)/tempo_extraction.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/oxford_main.o $(OBJDIR_DEBUG)/pmidi.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/oxford_main.o $(OBJDIR_RELEASE)/pmidi.o $(OBJDIR_RELEASE)/tempo_extraction.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/oxford_main.o $(OBJDIR_RELEASE)/pmidi.o
 
 all: debug release
 
@@ -65,9 +65,6 @@ $(OBJDIR_DEBUG)/oxford_main.o: oxford_main.cpp
 $(OBJDIR_DEBUG)/pmidi.o: pmidi.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c pmidi.c -o $(OBJDIR_DEBUG)/pmidi.o
 
-$(OBJDIR_DEBUG)/tempo_extraction.o: tempo_extraction.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tempo_extraction.cpp -o $(OBJDIR_DEBUG)/tempo_extraction.o
-
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
@@ -89,9 +86,6 @@ $(OBJDIR_RELEASE)/oxford_main.o: oxford_main.cpp
 
 $(OBJDIR_RELEASE)/pmidi.o: pmidi.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c pmidi.c -o $(OBJDIR_RELEASE)/pmidi.o
-
-$(OBJDIR_RELEASE)/tempo_extraction.o: tempo_extraction.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tempo_extraction.cpp -o $(OBJDIR_RELEASE)/tempo_extraction.o
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
