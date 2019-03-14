@@ -4923,6 +4923,68 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].PartLevel.Set(rxControllerValue);
             break;
 
+        case 80:
+            // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(1);
+            }
+
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 81:
+            // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(1);
+            }
+
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 82:
+            // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(1);
+            }
+
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 83:
+            // Volume for third patch assigned to master keyboard
+            if (rxControllerValue < 5)
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
+            }
+            else
+            {
+                XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(1);
+            }
+
+            XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].PartLevel.Set(rxControllerValue);
+            break;
+
+        case 85:
+//            XV5080.TemporaryPerformance.PerformanceCommonReverb_.
+            break;
+
+
+
         case 74: // first potentiometer
             // Reverb for first patch assigned to master keyboard
             if (rxControllerValue != 0)
@@ -4934,7 +4996,6 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbLevel_.Set(rxControllerValue);
             XV5080.TemporaryPatchRhythm_InPerformanceMode[MASTER_KBD_PART_INDEX].TemporaryPatch.PatchCommonReverb.ReverbType.Set(1);
             XV5080.TemporaryPatchRhythm_InPerformanceMode[MASTER_KBD_PART_INDEX].TemporaryPatch.PatchCommonReverb.ReverbLevel.Set(rxControllerValue);
-
             break;
 
         default:
@@ -5637,7 +5698,7 @@ void threadMetronome (void)
 void ResetKeyboardPerformance(void)
 {
     XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
-    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
 
@@ -5645,18 +5706,36 @@ void ResetKeyboardPerformance(void)
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4); // Nice Piano
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59); // Warmth
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_E, 55); // Ethereal Strings
+
     //TXV5080::PatchGroup::PR_C, 36); // Warm Strings
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].SelectPatch(TXV5080::PatchGroup::PR_E, 14); // Rhodes tremolo
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].SelectPatch(TXV5080::PatchGroup::PR_E, 98); // New R&R Brass
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].SelectPatch(TXV5080::PatchGroup::PR_F, 75); // Andreas' Cave
+
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].SelectPatch(TXV5080::PatchGroup::PR_F, 75); // Andreas' Cave
+
 
     XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
 

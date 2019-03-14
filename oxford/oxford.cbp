@@ -32,7 +32,6 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 			<Add directory="cdk-5.0-20171209/include" />
-			<Add directory="aubio-560fc50/src" />
 		</Compiler>
 		<Linker>
 			<Add library="pthread" />
@@ -41,7 +40,6 @@
 			<Add library="cdk" />
 			<Add library="panel" />
 			<Add directory="cdk-5.0-20171209" />
-			<Add directory="aubio-560fc50/build/src" />
 		</Linker>
 		<Unit filename="oxford_main.cpp" />
 		<Unit filename="pmidi.c">
