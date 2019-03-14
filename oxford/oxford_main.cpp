@@ -5734,7 +5734,7 @@ void ResetKeyboardPerformance(void)
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].SelectPatch(TXV5080::PatchGroup::PR_F, 75); // Andreas' Cave
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].SelectRhythmSet(TXV5080::RhythmSetGroup::CD_A, 1);
 
 
     XV5080.TemporaryPerformance.PerformanceCommon.PerformanceName.Set("OXFORD      ");
