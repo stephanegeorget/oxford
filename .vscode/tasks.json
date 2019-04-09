@@ -4,6 +4,24 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "make debug",
+            "type": "shell",
+            "options": {"cwd": "${workspaceFolder}/oxford"},
+            "command": "make",
+            "args": [
+                "debug"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/oxford"],
+            },
+    
+        },
+        {
             "label": "make all",
             "type": "shell",
             "options": {"cwd": "${workspaceFolder}/oxford"},

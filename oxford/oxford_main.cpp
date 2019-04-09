@@ -84,6 +84,14 @@ const std::string name_midi_hw_MIDISPORT_A = "hw:1,0,0";
 // obtained with amidi -l
 const std::string name_midi_hw_MIDISPORT_B = "hw:1,0,1";
 
+// String name of the hardware device for the first midi port (IN3/OUT3)
+// obtained with amidi -l
+const std::string name_midi_hw_MIDISPORT_C = "hw:1,0,2";
+
+// String name of the hardware device for the first midi port (IN4/OUT4)
+// obtained with amidi -l
+const std::string name_midi_hw_MIDISPORT_D = "hw:1,0,3";
+
 // Mutex used to prevent ncurses refresh routines from being called from
 // concurrent threads.
 std::mutex ncurses_mutex;
@@ -96,15 +104,11 @@ std::mutex ncurses_mutex;
 // Test XV5080 class
 #undef TEST_XV5080
 
-// Test TSequence class
-#define TEST_TSEQUENCE
-
-#define TEST_TSEQUENCE_DEBUG
-
 #undef MIDI_KEYBOARD_CONTROLS_ON_KEYS
 
 
 
+// Subrange types defined here
 typedef subrange::subrange<subrange::ordinal_range<int, 0, 127>, subrange::saturated_arithmetic> TInt_0_127;
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 16>, subrange::saturated_arithmetic> TInt_1_16;
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 128>, subrange::saturated_arithmetic> TInt_1_128;
@@ -924,6 +928,7 @@ TContext cIFollowRivers;
 TContext cIsThisLove;
 TContext cPeople;
 TContext cTakeOnMe;
+TContext cMorrissonJig;
 
 /**
  * This function is needed to sort lists of elements.
@@ -4407,6 +4412,63 @@ namespace People_Help_The_People
     }
 }
 
+
+namespace MorrissonJig
+{
+    void Init(void)
+    {
+        // For the morrisson jig, we need a bagpipe controlled by the FCB1010.
+        // We'll use XV5080 Part #1, indexed at 0
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 77); // Not a bagpipe for now, problem, bagpipe is PR_H, don't know how to reach that from performance
+    }
+
+    void BagpipeLow(void)
+    {
+        static bool flag = false;
+        flag = !flag;
+
+        if(flag)
+        {
+            MIDI_A.SendNoteOnEvent(1, 52, 100);
+        }
+        else
+        {
+            MIDI_A.SendNoteOffEvent(1, 52, 0);
+        }
+    }
+
+    void BagpipeMid(void)
+    {
+        static bool flag = false;
+        flag = !flag;
+
+        if(flag)
+        {
+            MIDI_A.SendNoteOnEvent(1, 64, 100);
+        }
+        else
+        {
+            MIDI_A.SendNoteOffEvent(1, 64, 0);
+        }
+    }
+
+    void BagpipeHigh(void)
+    {
+        static bool flag = false;
+        flag = !flag;
+
+        if(flag)
+        {
+            MIDI_A.SendNoteOnEvent(1, 76, 100);
+        }
+        else
+        {
+            MIDI_A.SendNoteOffEvent(1, 76, 0);
+        }
+    }
+}
+
+
 extern "C" void showlist(void);
 extern "C" int main_TODO(int argc, char const **argv, int Tempo);
 extern "C" void seq_midi_tempo_direct(int Tempo);
@@ -5343,6 +5405,13 @@ void InitializePlaylist(void)
     cTakeOnMe.Author = "A-ha";
     cTakeOnMe.SongName = "Take On Me";
 
+    cMorrissonJig.Author = "Rose Carbone";
+    cMorrissonJig.SongName = "Morisson Jig";
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
+    
+
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
@@ -5425,6 +5494,8 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cDumbo);
     PlaylistData.push_back(&cIsThisLove);
+    PlaylistData.push_back(&cMorrissonJig);
+
 
 
     // Set the current active context here.
