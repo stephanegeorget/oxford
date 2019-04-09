@@ -1,9 +1,8 @@
 // Hardware:
-// [[OBSOLETE]] Roland Sound Canvas == connected to ==   MidiSport port A Out
-// Roland XV5080 Midi In 1          == connected to ==   MidiSport port A Out
-// Eleven Rack (11R) Midi In        == connected to ==   MidiSport port B Out
 // Behringer FCB1010 Midi Out       == connected to ==   MidiSport port A In
+// Roland XV5080 Midi In 1          == connected to ==   MidiSport port A Out
 // Arturia Master Keyboard Midi Out == connected to ==   MidiSport port B In
+// Eleven Rack (11R) Midi In        == connected to ==   MidiSport port B Out
 // MidiSport USB                    == connected to ==   Raspberry Pi USB
 // Sonuus B2M                       == connected to ==   ???
 
