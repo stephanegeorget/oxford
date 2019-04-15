@@ -116,17 +116,6 @@ typedef subrange::subrange<subrange::ordinal_range<int, 0, 16383>, subrange::sat
 typedef subrange::subrange<subrange::ordinal_range<int, 1, 4>, subrange::saturated_arithmetic> TInt_1_4;
 
 
-#if 0
-
-std::ostream &operator <<(std::ostream &stream, IntRange ir)
-{
-    cout << ir.GetValue();
-    return stream;
-}
-
-#endif // 0
-
-
 
 /** This is a ncurses cdk panel, with a boxed window on it, that can't
 be touched, and a "free text" window inside the boxed window.
@@ -1638,7 +1627,7 @@ public:
         pTXV5080 = this;
     }
 
-    enum class PatchGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G,
+    enum class PatchGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G, PR_H,
                         CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H,
                         XP_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H};
 
@@ -2443,6 +2432,20 @@ public:
                     PatchBankSelectMSB.Set(87);
                     PatchBankSelectLSB.Set(70);
                     PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
+                    case PatchGroup::PR_H:
+                    PatchBankSelectMSB.Set(87);
+                    if (PatchNumber_param <= 128)
+                    {
+                        PatchBankSelectLSB.Set(71);
+                        PatchProgramNumber.Set(PatchNumber_param);
+                    }
+                    else
+                    {
+                        PatchBankSelectLSB.Set(72);
+                        PatchProgramNumber.Set(PatchNumber_param-128);
+                    }
                     break;
 
                     case PatchGroup::CD_A:
@@ -4418,8 +4421,19 @@ namespace MorrissonJig
     void Init(void)
     {
         // For the morrisson jig, we need a bagpipe controlled by the FCB1010.
-        // We'll use XV5080 Part #1, indexed at 0
+        // We'll use XV5080 Part #1, indexed at 0, set it up as MIDI Channel #1.
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 77); // Not a bagpipe for now, problem, bagpipe is PR_H, don't know how to reach that from performance
+        XV5080.TemporaryPerformance.PerformanceMidi[0].ReceiveVolume.Set(1); // Enable reception of volume change events
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        // We'll also modulate the bagpipe sound level from a spare analog pedal on the FCB1010.
+    }
+
+    void BagpipeVelocity(int Level)
+    {
+        // This function is called to change the sound level of our bagpipe.
+        // We'll use MIDI CC 07 (Channel Volume):
+        MIDI_A.SendControlChange(1, 0x07, Level);
     }
 
     void BagpipeLow(void)
@@ -5407,10 +5421,12 @@ void InitializePlaylist(void)
 
     cMorrissonJig.Author = "Rose Carbone";
     cMorrissonJig.SongName = "Morisson Jig";
+    cMorrissonJig.SetInitFunc(MorrissonJig::Init);
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
-    
+    cMorrissonJig.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, MorrissonJig::BagpipeVelocity, "Bagpipe Level"));
+
 
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
@@ -5764,7 +5780,10 @@ void threadMetronome (void)
     }
 }
 
-
+/**
+ * On the XV5080, reset the Parts of the Performance tied to the
+ * MIDI keyboard to default Patches.
+ */
 void ResetKeyboardPerformance(void)
 {
     XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
