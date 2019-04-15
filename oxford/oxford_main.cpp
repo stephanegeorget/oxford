@@ -67,7 +67,11 @@ static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 a
 // Normally set to 2. This program forwards all master keyboard traffic to channel 2
 // on the XV5080. On the XV5080 side, the parts that are link to the master keyboard
 // all listen to channel 2.
-static int const MASTER_KBD_XV5080_MIDI_CHANNEL = 2;
+static int const MIDI_CHANNEL_MASTER_KBD_XV5080 = 2;
+
+// Midi Channel, on XV5080, that receives MIDI traffic from the B2M (bass to MIDI) converter,
+// used to perform the "bass synth" sound.
+static int const MIDI_CHANNEL_BASS_SYNTH = 3;
 
 
 int stop = 0;
@@ -1435,10 +1439,9 @@ private:
                         rxChannel = (ch & 0x0F) +1;
                         stateMachine = smWaitMidiControllerChangeChar2;
                     }
-                    if ( ( (ch) & 0xF0 ) == 0xe0 && HookProcessControllerChangeEvent)
+                    if ( ( (ch) & 0xF0 ) == 0xe0 && HookProcessPitchBendChangeEvent)
                     {
                         // It's a Pitch Bend Change event.
-                        // The channel is encoded offset by one. Bring back the value in the 0-16 range (+1 below)
                         rxChannel = (ch & 0x0F) +1;
                         stateMachine = smWaitPitchBendChar2;
                     }
@@ -1567,21 +1570,30 @@ private:
 
                 case smProcessNoteEvent:
                 {
-                    HookProcessNoteONEvent(rxChannel, rxNote, rxVolume);
+                    if (HookProcessNoteONEvent != 0)
+                    {
+                        HookProcessNoteONEvent(rxChannel, rxNote, rxVolume);
+                    }
                 }
                 stateMachine = smWaitMidiChar1;
                 break;
 
                 case smProcessNoteOffEvent:
                 {
-                    HookProcessNoteOFFEvent(rxChannel, rxNote, rxVolume);
+                    if (HookProcessNoteOFFEvent != 0)
+                    {
+                        HookProcessNoteOFFEvent(rxChannel, rxNote, rxVolume);
+                    }
                 }
                 stateMachine = smWaitMidiChar1;
                 break;
 
                 case smProcessControllerChange:
                 {
-                    HookProcessControllerChangeEvent(rxChannel, rxControllerNumber, rxControllerValue);
+                    if (HookProcessControllerChangeEvent != 0)
+                    {
+                        HookProcessControllerChangeEvent(rxChannel, rxControllerNumber, rxControllerValue);
+                    }
                 }
                 stateMachine = smWaitMidiChar1;
 
@@ -1607,6 +1619,9 @@ TMIDI_Port MIDI_A;
 
 // MIDI port B
 TMIDI_Port MIDI_B;
+
+// MIDI port C
+TMIDI_Port MIDI_C;
 
 
 /**
@@ -4422,7 +4437,7 @@ namespace MorrissonJig
     {
         // For the morrisson jig, we need a bagpipe controlled by the FCB1010.
         // We'll use XV5080 Part #1, indexed at 0, set it up as MIDI Channel #1.
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 77); // Not a bagpipe for now, problem, bagpipe is PR_H, don't know how to reach that from performance
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_H, 200); // problem, bagpipe is PR_H, don't know how to reach that from performance
         XV5080.TemporaryPerformance.PerformanceMidi[0].ReceiveVolume.Set(1); // Enable reception of volume change events
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
@@ -4850,6 +4865,34 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 
 
 // This hook function is called whenever a Note ON event was received on
+// MIDI C IN.
+// ************************************************************
+// Retransmit B2M (Bass to MIDI converter) MIDI information to the XV5080.
+// ************************************************************
+void MIDI_C_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
+{
+    // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
+    MIDI_A.SendNoteOnEvent(MIDI_CHANNEL_BASS_SYNTH, rxNote, rxVolume);
+}
+
+
+// This hook function is called whenever a Note OFF event was received on
+// MIDI C IN.
+void MIDI_C_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
+{
+    MIDI_A.SendNoteOffEvent(MIDI_CHANNEL_BASS_SYNTH, rxNote, rxVolume);
+}
+
+// This hook function is called whenever a Pitch Bend event was received on
+// MIDI C IN.
+void MIDI_C_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBendChangeValue_param)
+{
+    // Disregard rxChannel. Forward to XV5080 parts attributed to the master keyboard.
+    MIDI_A.SendPitchBendChange(MIDI_CHANNEL_BASS_SYNTH, rxPitchBendChangeValue_param);
+}
+
+
+// This hook function is called whenever a Note ON event was received on
 // MIDI B IN.
 // ************************************************************
 // Retransmit external Keyboard MIDI information to the XV5080.
@@ -4861,7 +4904,7 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     static TInt_0_127 MasterVolume;
     MasterVolume = 127;
     static TInt_1_16 KbdMidiChannelTx;
-    KbdMidiChannelTx = MASTER_KBD_XV5080_MIDI_CHANNEL;
+    KbdMidiChannelTx = MIDI_CHANNEL_MASTER_KBD_XV5080;
 
 
     // Calibrate keyboard size
@@ -4922,12 +4965,13 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     }
 }
 
+
 // This hook function is called whenever a Note OFF event was received on
 // MIDI B IN.
 void MIDI_B_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
     TInt_1_16 KbdMidiChannelTx;
-    KbdMidiChannelTx = MASTER_KBD_XV5080_MIDI_CHANNEL;
+    KbdMidiChannelTx = MIDI_CHANNEL_MASTER_KBD_XV5080;
 
     MIDI_A.SendNoteOffEvent(KbdMidiChannelTx, rxNote, rxVolume);
 }
@@ -5089,7 +5133,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
 void MIDI_B_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBendChangeValue_param)
 {
     // Disregard rxChannel. Forward to XV5080 parts attributed to the master keyboard.
-    MIDI_A.SendPitchBendChange(MASTER_KBD_XV5080_MIDI_CHANNEL, rxPitchBendChangeValue_param);
+    MIDI_A.SendPitchBendChange(MIDI_CHANNEL_MASTER_KBD_XV5080, rxPitchBendChangeValue_param);
 }
 
 // This hook function is called whenever a Controller Change event is
@@ -5792,37 +5836,37 @@ void ResetKeyboardPerformance(void)
     XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4); // Nice Piano
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59); // Warmth
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_E, 55); // Ethereal Strings
 
     //TXV5080::PatchGroup::PR_C, 36); // Warm Strings
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].SelectPatch(TXV5080::PatchGroup::PR_E, 14); // Rhodes tremolo
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].SelectPatch(TXV5080::PatchGroup::PR_E, 98); // New R&R Brass
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].SelectPatch(TXV5080::PatchGroup::PR_F, 75); // Andreas' Cave
 
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveChannel.Set_1_16(MASTER_KBD_XV5080_MIDI_CHANNEL);
+    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].SelectRhythmSet(TXV5080::RhythmSetGroup::CD_A, 1);
 
 
@@ -5904,6 +5948,9 @@ int main(int argc, char** argv)
 
     // Same for MIDI port B
     MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_NoteOffEvent, MIDI_B_IN_CC_Event, MIDI_B_IN_PB_Event);
+
+    // Same for MIDI port C
+    MIDI_C.Init(name_midi_hw_MIDISPORT_C, MIDI_C_IN_NoteOnEvent, MIDI_C_IN_NoteOffEvent, NULL, MIDI_C_IN_PB_Event);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
