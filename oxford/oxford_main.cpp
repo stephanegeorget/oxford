@@ -776,7 +776,7 @@ public:
 };
 
 
-void ResetKeyboardPerformance(void);
+void ResetXV5080Performance(void);
 
 /**
  * A Context is a collection of features that belong to a particular performance. In other
@@ -804,7 +804,7 @@ public:
         // Upon a context change, always first re-initialize the Eleven Rack
         ElevenRack::Init();
         // Initialize the XV5080 performance
-        ResetKeyboardPerformance();
+        ResetXV5080Performance();
 
         if(InitFunc != NULL)
         {
@@ -5467,8 +5467,8 @@ void InitializePlaylist(void)
     cMorrissonJig.SongName = "Morisson Jig";
     cMorrissonJig.SetInitFunc(MorrissonJig::Init);
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(2 MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
     cMorrissonJig.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, MorrissonJig::BagpipeVelocity, "Bagpipe Level"));
 
 
@@ -5828,7 +5828,7 @@ void threadMetronome (void)
  * On the XV5080, reset the Parts of the Performance tied to the
  * MIDI keyboard to default Patches.
  */
-void ResetKeyboardPerformance(void)
+void ResetXV5080Performance(void)
 {
     XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
@@ -5883,6 +5883,16 @@ void ResetKeyboardPerformance(void)
     XV5080.TemporaryPerformance.PerformancePart[15].ReceiveMIDI1.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[15].ReceiveSwitch.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[15].ReceiveChannel.Set_1_16(16);
+
+
+
+    // BASS SYNTH - from the B2M module, as an insert loop in the Avid Eleven Rack
+    // Part #15 (identified as 14 below) will receive data with MIDI channel MIDI_CHANNEL_BASS_SYNTH
+    XV5080.TemporaryPerformance.PerformancePart[14].SelectPatch(TXV5080::PatchGroup::PR_A, TInt_1_128(40)); // This is the default patch used for the bass synth
+    XV5080.TemporaryPerformance.PerformancePart[14].ReceiveMIDI1.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[14].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[14].ReceiveChannel.Set_1_16(MIDI_CHANNEL_BASS_SYNTH);
+
 }
 
 
@@ -5966,7 +5976,7 @@ int main(int argc, char** argv)
     // Setup the Master Keyboard default patches on each part
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    ResetKeyboardPerformance();
+    ResetXV5080Performance();
 
 
 
