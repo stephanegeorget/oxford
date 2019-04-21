@@ -2450,7 +2450,7 @@ public:
                     break;
 
                     case PatchGroup::PR_H:
-                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectMSB.Set(88);
                     if (PatchNumber_param <= 128)
                     {
                         PatchBankSelectLSB.Set(71);
@@ -2811,6 +2811,17 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } PatchPan{OffsetAddress};
+
+            class TAnalogFeel : TParameter
+            {
+            public:
+                TAnalogFeel(int val) : TParameter(val + 0x0015, 0, 127, "0aaa aaaa") {};
+                /** Set Analog Feel: 0-127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } AnalogFeel{OffsetAddress};
         } PatchCommon{OffsetAddress};
 
         class TPatchCommonReverb : TParameterSection
@@ -4437,7 +4448,11 @@ namespace MorrissonJig
     {
         // For the morrisson jig, we need a bagpipe controlled by the FCB1010.
         // We'll use XV5080 Part #1, indexed at 0, set it up as MIDI Channel #1.
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_H, 200); // problem, bagpipe is PR_H, don't know how to reach that from performance
+        // problem, bagpipe is PR_H #200, don't know how to reach that from performance
+        // So we select "french bags" instead
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 123);
+        // But the "analog feel" value is set a bit too high - it's too dissonant for us. Tune that a bit:
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.AnalogFeel.Set(30);
         XV5080.TemporaryPerformance.PerformanceMidi[0].ReceiveVolume.Set(1); // Enable reception of volume change events
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
@@ -4458,7 +4473,7 @@ namespace MorrissonJig
 
         if(flag)
         {
-            MIDI_A.SendNoteOnEvent(1, 52, 100);
+            MIDI_A.SendNoteOnEvent(1, 52, 80);
         }
         else
         {
@@ -4473,7 +4488,7 @@ namespace MorrissonJig
 
         if(flag)
         {
-            MIDI_A.SendNoteOnEvent(1, 64, 100);
+            MIDI_A.SendNoteOnEvent(1, 64, 70);
         }
         else
         {
@@ -4488,7 +4503,7 @@ namespace MorrissonJig
 
         if(flag)
         {
-            MIDI_A.SendNoteOnEvent(1, 76, 100);
+            MIDI_A.SendNoteOnEvent(1, 76, 80);
         }
         else
         {
@@ -5467,7 +5482,7 @@ void InitializePlaylist(void)
     cMorrissonJig.SongName = "Morisson Jig";
     cMorrissonJig.SetInitFunc(MorrissonJig::Init);
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(2 MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
+    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
     cMorrissonJig.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, MorrissonJig::BagpipeVelocity, "Bagpipe Level"));
 
