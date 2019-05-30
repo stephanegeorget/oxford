@@ -3836,13 +3836,7 @@ private:
                 }
 
                 // Second note
-/*
-                TurnPreviousNoteOff();
-                it++;
-                CurrentNote = *it;
-                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);*/
                 PhraseSequencerStateMachine = pssmOtherNotes;
-
                 break;
 
 
@@ -3877,15 +3871,35 @@ private:
                         break;
                     }
                 }
-                // Adjust time as per current beat length
-                FullLength_ms *= (((float) BeatTime_ms) / 1000.0);
-                wprintw(win_debug_messages.GetRef(), "FullLength_ms %f\n", FullLength_ms);
-                std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
-                std::this_thread::sleep_until(TimeNext);
+                if (Timeout != 0)
+                {
+                    // Adjust time as per current beat length
+                    FullLength_ms *= (((float) BeatTime_ms) / 1000.0);
+                    wprintw(win_debug_messages.GetRef(), "FullLength_ms %f\n", FullLength_ms);
+                    std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
+                    std::this_thread::sleep_until(TimeNext);
+                }
+                else
+                {
+                    // Don't sleep - just wait the next event
+                    if(MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                    {
+                        // Reset state machine
+                        TurnPreviousNoteOff();
+                        PhraseSequencerStateMachine = pssmNote1;
+                        break;
+                    }
+                    else
+                    {
+                        // looping in the state machine will naturally play the next note.
+                        // nothing to do here
+                    }
+                }
                 break;
             }
         }
     }
+
 
 
 
@@ -3930,13 +3944,29 @@ public:
 
     void Start_PedalPressed(void)
     {
-        MsgToBeatTime.Send(msgPedalPressed);
+        if (Timeout != 0)
+        {
+            // Pedal controls the beat time
+            MsgToBeatTime.Send(msgPedalPressed);
+        }
+        else
+        {
+            // Pedal controls the sequencer directly
+            MsgToPhraseSequencer.Send(msgBeatReceived);
+        }
     }
 
 
     void Start_PedalReleased(void)
     {
-        MsgToBeatTime.Send(msgPedalReleased);
+        if (Timeout != 0)
+        {
+            MsgToBeatTime.Send(msgPedalReleased);
+        }
+        else
+        {
+            MsgToPhraseSequencer.Send(msgBeatReceived);
+        }
     }
 
     #if 0
@@ -4459,6 +4489,19 @@ namespace I_Follow_Rivers
 
 namespace People_Help_The_People
 {
+    // 45 48 41
+    void Bell_ON(int note)
+    {
+        MIDI_A.SendNoteOnEvent(4, note, 127);
+    }
+
+    void Bell_OFF(int note)
+    {
+        MIDI_A.SendNoteOnEvent(4, note, 0);
+    }
+
+    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 0, 0);
+
     void Init(void)
     {
         // Ani's piano is a piano with strings
@@ -4475,6 +4518,14 @@ namespace People_Help_The_People
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 61); // Deep Strings
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+
+        // Bells on part 2, midi channel 4
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_F, 70); // Chime bell
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+        Sequence_1.Init();
     }
 
     int CurrentNote = 0;
@@ -4515,12 +4566,23 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
+        Sequence_1.Stop_PedalPressed();
         CurrentNote = 0;        
     }
 
     void Strings_Volume(int Value)
     {
         MIDI_A.SendControlChange(1, 0x07, Value);
+    }
+
+    void BellPedalPressed()
+    {
+        Sequence_1.Start_PedalPressed();
+    }
+
+    void BellPedalReleased()
+    {
+        Sequence_1.Start_PedalReleased();
     }
 }
 
@@ -5635,6 +5697,8 @@ void InitializePlaylist(void)
     cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, People_Help_The_People::Strings_A, NULL, "Strings F"));
     cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, People_Help_The_People::Strings_OFF, NULL, "Strings STOP"));
     cPeople.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, People_Help_The_People::Strings_Volume, "Strings Volume"));
+    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, People_Help_The_People::BellPedalPressed, People_Help_The_People::BellPedalReleased, "Bells"));
+
 
 
     cTakeOnMe.Author = "A-ha";
