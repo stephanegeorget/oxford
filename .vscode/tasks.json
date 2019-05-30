@@ -18,8 +18,7 @@
             "problemMatcher": {
                 "base": "$gcc",
                 "fileLocation": ["relative", "${workspaceFolder}/oxford"],
-            },
-    
+            }
         },
         {
             "label": "make all",
@@ -32,6 +31,10 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/oxford"],
             }
         },
         {
@@ -46,6 +49,10 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/oxford"],
             }
         }
     ]

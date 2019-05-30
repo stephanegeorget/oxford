@@ -73,6 +73,9 @@ static int const MIDI_CHANNEL_MASTER_KBD_XV5080 = 2;
 // used to perform the "bass synth" sound.
 static int const MIDI_CHANNEL_BASS_SYNTH = 3;
 
+static int const BASS_SYNTH_PART_INDEX = 14; // Bass synth uses part 15 (of 1..16)
+
+
 
 int stop = 0;
 
@@ -462,6 +465,12 @@ void Sequence_1_Start_PedalReleased(void);
 
 namespace ElevenRack
 {
+void FXLoopON(void);
+void FXLoopOFF(void);
+void FXLoopToggle(void);
+void FX1_ON(void);
+void FX1_OFF(void);
+void FX1_Toggle(void);
 void DistON(void);
 void DistOFF(void);
 void DistToggle(void);
@@ -742,6 +751,12 @@ public:
 };
 
 
+namespace BassSynth
+{
+    void SetVolume(int Value);
+    TInt_0_127 Volume;
+}
+
 
 
 /**
@@ -764,14 +779,16 @@ public:
         PedalsDigital.push_back(TPedalDigital(7, ContextNextPress, ContextNextRelease, "Playlist: next song"));
 
         // Let's also reserve more pedals to control the Rack Eleven:
-        // Pedal 8 for distortion
-        // Pedal 9 for mod
+        // Pedal 8 for FX loop, normally the B2M synth
+        // Pedal 9 for FX1, normally a compressor
         // Pedal 10 for wah
         // Analog pedal 2 for wah value
-        PedalsDigital.push_back(TPedalDigital(8, ElevenRack::DistToggle, NULL, "11R DIST"));
-        PedalsDigital.push_back(TPedalDigital(9, ElevenRack::ModToggle, NULL, "11R MOD"));
+        // Analog pedal 1 for the B2M synth volume
+        PedalsDigital.push_back(TPedalDigital(8, ElevenRack::FXLoopToggle, NULL, "11R+XV5080 Synth"));
+        PedalsDigital.push_back(TPedalDigital(9, ElevenRack::FX1_Toggle, NULL, "11R COMP"));
         PedalsDigital.push_back(TPedalDigital(10, ElevenRack::WahToggle, NULL, "11R WAH"));
         PedalsAnalog.push_back(TPedalAnalog(2, ElevenRack::WahSetValue, "11R WAH VAL"));
+        PedalsAnalog.push_back(TPedalAnalog(1, BassSynth::SetVolume, "BASS SYNTH VOL"));
     }
 };
 
@@ -803,7 +820,8 @@ public:
     {
         // Upon a context change, always first re-initialize the Eleven Rack
         ElevenRack::Init();
-        // Initialize the XV5080 performance
+
+        // Reset XV5080 sounds
         ResetXV5080Performance();
 
         if(InitFunc != NULL)
@@ -3003,6 +3021,17 @@ void test_XV5080(void)
 
 }
 
+
+void BassSynth::SetVolume(int Value)
+{
+// Expensive way to do it:   XV5080.TemporaryPerformance.PerformancePart[BASS_SYNTH_PART_INDEX].PartLevel.Set(Value);
+    // This function is called to change the sound level of our synth bass, accessed from its midi channel.
+    // We'll use MIDI CC 07 (Channel Volume):
+    MIDI_A.SendControlChange(MIDI_CHANNEL_BASS_SYNTH, 0x07, Value); 
+    BassSynth::Volume = Value;
+}
+
+
 /**
 Definition of the TScaleName type
 */
@@ -4438,7 +4467,57 @@ namespace People_Help_The_People
         XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_E, 73); // Lush Strings
         // Then Ani will do the mix herself
 
+//        XV5080.TemporaryPerformance.PerformancePart[BASS_SYNTH_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_C, 109); // Vektogram
+        // Bass effect using the effects loop and B2M
+        XV5080.TemporaryPerformance.PerformancePart[BASS_SYNTH_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_C, 61); // Deep Strings
+
+        // Same on channel 1
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 61); // Deep Strings
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
     }
+
+    int CurrentNote = 0;
+
+    void Strings_F(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 29;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_G(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 31;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_A(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 33;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_OFF(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 0;        
+    }
+
 }
 
 
@@ -4653,7 +4732,11 @@ void Init(void)
     MIDI_A.SendControlChange(2, 0, 8);
     MIDI_A.SendProgramChange(2, 81);
     MIDI_A.SendControlChange(2, 0, 8);
+
+    // Initialize the XV5080 performance
+    ResetXV5080Performance();
 }
+
 
 void WhiteNoiseUniform(void)
 {
@@ -4731,6 +4814,66 @@ namespace AllumerLeFeu
 
 namespace ElevenRack
 {
+
+void FXLoopOFF(void)
+{
+    // Midi channel 1, controller number 107, value 0, send to Midisport port B
+    MIDI_B.SendControlChange(1, 107, 0);
+    Banner.SetMessage("FXLoop OFF");
+}
+
+void FXLoopON(void)
+{
+    MIDI_B.SendControlChange(1, 107, 127);
+    Banner.SetMessage("FXLoop ON");
+}
+
+
+void FXLoopToggle(void)
+{
+    static unsigned int flag; // static => initialized at 0 by compiler
+    if(flag == 0)
+    {
+        flag = 1;
+        FXLoopON();
+    }
+    else
+    {
+        flag = 0;
+        FXLoopOFF();
+    }
+}
+
+
+void FX1_OFF(void)
+{
+    // Midi channel 1, controller number 63, value 0, send to Midisport port B
+    MIDI_B.SendControlChange(1, 63, 0);
+    Banner.SetMessage("FX1(COMP) OFF");
+}
+
+void FX1_ON(void)
+{
+    MIDI_B.SendControlChange(1, 63, 127);
+    Banner.SetMessage("FX1(COMP) ON");
+}
+
+
+void FX1_Toggle(void)
+{
+    static unsigned int flag; // static => initialized at 0 by compiler
+    if(flag == 0)
+    {
+        flag = 1;
+        FX1_ON();
+    }
+    else
+    {
+        flag = 0;
+        FX1_OFF();
+    }
+}
+
 
 void DistOFF(void)
 {
@@ -4838,6 +4981,8 @@ void Init(void)
     DistOFF();
     ModOFF();
     WahOFF();
+    FX1_OFF();
+    FXLoopOFF();
 }
 
 }
@@ -4887,7 +5032,11 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 void MIDI_C_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
     // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
+    // But the volume does not come from the B2M: volume comes from the FCB1010 pedal
+  //  rxVolume = 127;
     MIDI_A.SendNoteOnEvent(MIDI_CHANNEL_BASS_SYNTH, rxNote, rxVolume);
+
+
 }
 
 
@@ -4895,6 +5044,9 @@ void MIDI_C_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 // MIDI C IN.
 void MIDI_C_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
+    // rxVolume is probably already equal to zero. But we override this here to make
+    // sure the note is turned OFF.
+ //   rxVolume = 0;
     MIDI_A.SendNoteOffEvent(MIDI_CHANNEL_BASS_SYNTH, rxNote, rxVolume);
 }
 
@@ -5474,6 +5626,11 @@ void InitializePlaylist(void)
     cPeople.Author = "Birdie";
     cPeople.SongName = "People Help The People";
     cPeople.SetInitFunc(People_Help_The_People::Init);
+    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, People_Help_The_People::Strings_F, NULL, "Strings F"));
+    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, People_Help_The_People::Strings_G, NULL, "Strings F"));
+    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, People_Help_The_People::Strings_A, NULL, "Strings F"));
+    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, People_Help_The_People::Strings_OFF, NULL, "Strings STOP"));
+
 
     cTakeOnMe.Author = "A-ha";
     cTakeOnMe.SongName = "Take On Me";
@@ -5850,37 +6007,29 @@ void ResetXV5080Performance(void)
     XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_A, 4); // Nice Piano
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].SelectPatch(TXV5080::PatchGroup::PR_C, 59); // Warmth
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].SelectPatch(TXV5080::PatchGroup::PR_E, 55); // Ethereal Strings
 
     //TXV5080::PatchGroup::PR_C, 36); // Warm Strings
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].SelectPatch(TXV5080::PatchGroup::PR_E, 14); // Rhodes tremolo
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].SelectPatch(TXV5080::PatchGroup::PR_E, 98); // New R&R Brass
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].SelectPatch(TXV5080::PatchGroup::PR_F, 75); // Andreas' Cave
 
-    XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveChannel.Set_1_16(MIDI_CHANNEL_MASTER_KBD_XV5080);
     XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].SelectRhythmSet(TXV5080::RhythmSetGroup::CD_A, 1);
 
