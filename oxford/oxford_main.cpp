@@ -4518,6 +4518,10 @@ namespace People_Help_The_People
         CurrentNote = 0;        
     }
 
+    void Strings_Volume(int Value)
+    {
+        MIDI_A.SendControlChange(1, 0x07, Value);
+    }
 }
 
 
@@ -5630,6 +5634,7 @@ void InitializePlaylist(void)
     cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, People_Help_The_People::Strings_G, NULL, "Strings F"));
     cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, People_Help_The_People::Strings_A, NULL, "Strings F"));
     cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, People_Help_The_People::Strings_OFF, NULL, "Strings STOP"));
+    cPeople.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, People_Help_The_People::Strings_Volume, "Strings Volume"));
 
 
     cTakeOnMe.Author = "A-ha";
