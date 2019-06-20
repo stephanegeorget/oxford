@@ -462,6 +462,12 @@ void Sequence_1_Start_PedalPressed(void);
 void Sequence_1_Start_PedalReleased(void);
 }
 
+namespace People_Help_The_People
+{
+    void BellPedalPressed(void);
+    void BellPedalReleased(void);
+}
+
 
 namespace ElevenRack
 {
@@ -1144,7 +1150,7 @@ public:
         charArray[0] = (NoteOnField << 4) + ((Channel - 1) & 0x0F);
         charArray[1] = NoteNumber & 0x7F;
         charArray[2] = Velocity;
-        wprintw(win_debug_messages.GetRef(), "Note ON number: %i\n", (int) charArray[1]);
+        wprintw(win_debug_messages.GetRef(), "Note ON num=%i,vel=%i\n", (int) charArray[1], (int) charArray[2]);
 
         wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
         if (handle_midi_hw_out != 0)
@@ -3277,13 +3283,15 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    I_Follow_Rivers::Sequence_1_Start_PedalPressed();
+    //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
+    People_Help_The_People::BellPedalPressed();
 }
 
 void Z_r(void * pVoid)
 {
     //Kungs_This_Girl::Sequence_1_Start_PedalReleased();
-    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+    //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+    People_Help_The_People::BellPedalReleased();
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -3601,6 +3609,7 @@ public:
                 }
                 else
                 {
+                    // timeout
                     flag = 0;
                     return -1;
                 }
@@ -3613,7 +3622,7 @@ public:
 /**
 Represents and plays a short sequence of notes
 
-If TimeoutFactor_param is set to 0, the sequence is played at the tempo
+If InferTempo_param is set to true, the sequence is played at the tempo
 inferred (measured) from the time
 that lapsed between the calls to Start_PedalPressed and Start_PedalReleased.
 Upon Start_PedalPressed, it starts playing the sequence (first note),
@@ -3622,11 +3631,12 @@ Of course, there is a requirement that the time duration between the first and s
 should be 1, i.e. one "unit of time", that lapsed between the pedal pressed and pedal released.
 Stop_PedalPressed stops the sequence in progress, if any.
 
-If TimeoutFactor_param is non-zero, the sequence is played one note at a time,
+If InferTempo_param is set to false, the sequence is played one note at a time,
 each time Start_PedalPressed OR Start_PedalReleased is called. If the last note of the sequence
 is played on a PedalPressed event, that is in the case of an odd number of notes in the sequence,
 the next call to PedalReleased does no action, so the performer can release his/her foot from the pedal
 to rest.
+
 If no pedal action occurred within Timeout_param s, the whole sequence is cancelled, and it will resume
 on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case it timed out while the pedal is pressed)
 
@@ -3646,7 +3656,7 @@ private:
     void (*pFuncNoteOff)(int NoteNumber) = NULL;
     int RootNoteNumber = 60;
     float Timeout = 1;
-    bool PhraseInProgress = false;
+    bool InferTempo = false;
     bool WatchdogFlag = false;
     std::queue<int> QueueNotesOn; // keep track of which notes have been turned ON - so as to not forget to turn them OFF later
     typedef enum {btsmWaitStartingPulse, btsmWaitSecondPulse, btsmWaitNextPulse, btsmCancel} TBeatTimeStateMachine;
@@ -3827,18 +3837,21 @@ private:
                 break;
 
             case pssmNote2:
-                if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                switch(MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, (int)(Timeout * 1000.0)))
                 {
+                    case msgReset: // reset
+                    case -1: // timeout
                     // Reset state machine
                     TurnPreviousNoteOff();
                     PhraseSequencerStateMachine = pssmNote1;
                     break;
+
+                    case msgBeatReceived:
+                    // Second note
+                    PhraseSequencerStateMachine = pssmOtherNotes;
+                    break;
                 }
-
-                // Second note
-                PhraseSequencerStateMachine = pssmOtherNotes;
                 break;
-
 
             case pssmOtherNotes:
                 TurnPreviousNoteOff();
@@ -3856,23 +3869,23 @@ private:
                 CurrentNote = *it;
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
 
-                // Fully recompute time to wait, from the beginning of the sequence.
-                // This is to accommodate any change in tempo
-                // NOTE - TODO: of course this is inefficient - rewrite that
-                float FullLength_ms = 0;
-                for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
+                if (InferTempo)
                 {
-                    TNote Note = *i;
-                    FullLength_ms += Note.NoteDuration * 1000.0;
-                    if (i == it)
+                    // Fully recompute time to wait, from the beginning of the sequence.
+                    // This is to accommodate any change in tempo
+                    // NOTE - TODO: of course this is inefficient - rewrite that
+                    float FullLength_ms = 0;
+                    for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
                     {
-                        // currently pointing to the note we're playing
-                        // we can end here
-                        break;
+                        TNote Note = *i;
+                        FullLength_ms += Note.NoteDuration * 1000.0;
+                        if (i == it)
+                        {
+                            // currently pointing to the note we're playing
+                            // we can end here
+                            break;
+                        }
                     }
-                }
-                if (Timeout != 0)
-                {
                     // Adjust time as per current beat length
                     FullLength_ms *= (((float) BeatTime_ms) / 1000.0);
                     wprintw(win_debug_messages.GetRef(), "FullLength_ms %f\n", FullLength_ms);
@@ -3881,18 +3894,21 @@ private:
                 }
                 else
                 {
-                    // Don't sleep - just wait the next event
-                    if(MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                    // Just wait the next event
+                    switch(MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, (int)(Timeout * 1000.0)))
                     {
+                        case msgReset:
+                        case -1:
                         // Reset state machine
                         TurnPreviousNoteOff();
                         PhraseSequencerStateMachine = pssmNote1;
                         break;
-                    }
-                    else
-                    {
+
+                        case msgBeatReceived:
+                        // If we come here, it means we received a msgBeatReceived event;
                         // looping in the state machine will naturally play the next note.
                         // nothing to do here
+                        break;
                     }
                 }
                 break;
@@ -3900,30 +3916,28 @@ private:
         }
     }
 
-
-
-
-public:
-
-    TSequence(std::list<TNote> MelodyNotes_param,
-              void (*pFuncNoteOn_param)(int NoteNumber),
-              void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param)
+   void ResetSequencer(void)
     {
-        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param, RootNoteNumber_param, 0);
+        MsgToPhraseSequencer.Send(msgReset);
     }
 
-
+public:
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, float Timeout_param)
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
         pFuncNoteOff = pFuncNoteOff_param;
         RootNoteNumber = RootNoteNumber_param;
         Timeout = Timeout_param;
+        if (Timeout == 0)
+        {
+            // Timeout should not be zero
+            Timeout = 1;
+        }
+        InferTempo = InferTempo_param;
     }
 
     void Init(void)
@@ -3944,7 +3958,7 @@ public:
 
     void Start_PedalPressed(void)
     {
-        if (Timeout != 0)
+        if (InferTempo)
         {
             // Pedal controls the beat time
             MsgToBeatTime.Send(msgPedalPressed);
@@ -3959,70 +3973,30 @@ public:
 
     void Start_PedalReleased(void)
     {
-        if (Timeout != 0)
+        if (InferTempo)
         {
             MsgToBeatTime.Send(msgPedalReleased);
         }
         else
         {
-            MsgToPhraseSequencer.Send(msgBeatReceived);
-        }
-    }
-
-    #if 0
-    static void WatchdogStatic(void * pVoid)
-    {
-        TSequence * pSequence = (TSequence *) pVoid;
-        pSequence->Watchdog();
-    }
-
-    void Watchdog(void)
-    {
-        if(WatchdogFlag == false && PhraseInProgress == true)
-        {
-            Stop_PedalPressed();
-        }
-        else
-        {
-            WatchdogFlag = false;
-        }
-    }
-
-    void PlayNextNote(void)
-    {
-        if (PhraseInProgress == false)
-        {
-            PhraseInProgress = true;
-            it = MelodyNotes.begin();
-            CurrentNote = *it;
-            TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-            WatchdogFlag = true;
-            ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
-        }
-        else
-        {
-            WatchdogFlag = true;
-            TurnPreviousNoteOff(CurrentNote.NoteNumber + RootNoteNumber);
-            it++;
-            if (it == MelodyNotes.end())
+            if (PhraseSequencerStateMachine != pssmNote1)
             {
-                PhraseInProgress = false;
+                MsgToPhraseSequencer.Send(msgBeatReceived);
             }
             else
             {
-                CurrentNote = *it;
-                TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
-                ExecuteAfterTimeout(WatchdogStatic, Timeout * 1000.0, this);
+                // Never start the sequencer on an "upbeat" (releasing the pedal)
+                // That's most likely an "error" coming from a previous timed-out sequence.
+                // Disregard this event.
             }
         }
     }
 
-    #endif
     // Stop sequencer
     void Stop_PedalPressed(void)
     {
         // Stop sequence if any
-        PhraseInProgress = false;
+        ResetSequencer();
         AllSoundsOff();
     }
 };
@@ -4049,7 +4023,7 @@ void Partial_Off(int NoteNumber)
 
 
 TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}},
-Partial_On, Partial_Off, 72);
+Partial_On, Partial_Off, 72, false, 1);
 
 
 void Sequence_Start_PedalDown(void)
@@ -4361,11 +4335,11 @@ void Trumpet_Off(int NoteNumber)
 
 
 
-TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
 
-TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
 
-TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, 1.5);
+TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
 
 void Sequence_1_Start_PedalPressed(void)
 {
@@ -4459,8 +4433,11 @@ namespace I_Follow_Rivers
     //
     // Note there must be a note event on the first press and first release - in our case,
     // the first release is simple a note OFF (special value 999)
+    //
+    // Because some notes must be played between the beats, we need to call Sequence with
+    // InferTempo = true.
 
-    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, 1.5);
+    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, true, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4492,7 +4469,7 @@ namespace People_Help_The_People
     // 45 48 41
     void Bell_ON(int note)
     {
-        MIDI_A.SendNoteOnEvent(4, note, 127);
+        MIDI_A.SendNoteOnEvent(4, note, 80);
     }
 
     void Bell_OFF(int note)
@@ -4500,7 +4477,9 @@ namespace People_Help_The_People
         MIDI_A.SendNoteOnEvent(4, note, 0);
     }
 
-    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 0, 0);
+    // This is for the bells. Three sounds, A, C, F in sequence, can be played quite slowly hence timeout 3 seconds,
+    // must be played exactly in phase with footswitch, hence InferTempo = false
+    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 0, false, 3);
 
     void Init(void)
     {
@@ -4536,7 +4515,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 29;
+        CurrentNote = 41;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
@@ -4546,7 +4525,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 31;
+        CurrentNote = 43;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
@@ -4556,7 +4535,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 33;
+        CurrentNote = 45;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
