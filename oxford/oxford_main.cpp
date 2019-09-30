@@ -60,6 +60,7 @@
 #include <condition_variable>
 #include <chrono>
 #include <ctime>
+#include <atomic>
 
 static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 and up on XV5080
 
@@ -4469,7 +4470,7 @@ namespace People_Help_The_People
     // 45 48 41
     void Bell_ON(int note)
     {
-        MIDI_A.SendNoteOnEvent(4, note, 80);
+        MIDI_A.SendNoteOnEvent(4, note, 127);
     }
 
     void Bell_OFF(int note)
@@ -5104,6 +5105,22 @@ void MIDI_C_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBend
 }
 
 
+/**
+ * Focusing on a master keyboard: keep tabs on which notes are ON, and which are OFF.
+ * This is an array of 128 queues, one for each note.
+ * If the queue is empty, it means the corresponding note is OFF.
+ * If the queue has something in it, it means the note is ON.
+ * Most of the time, each queue will contain either one element, or nothing.
+ * But in some special cases, it is possible to turn the same note ON several times.
+ * That note must receive the "Note OFF" event as many times to turn it off.
+ * This is why one queue per note is required, as opposed to a mere boolean array.
+ */
+//std::array<std::queue<bool>, 128> KeyboardNotesState;
+
+/** This variable holds the number of notes currently in ON state, for the keyboard */
+std::atomic<int> KeyboardNotesON_Count(0);
+
+
 // This hook function is called whenever a Note ON event was received on
 // MIDI B IN.
 // ************************************************************
@@ -5172,8 +5189,73 @@ void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 
         #endif // MIDI_KEYBOARD_CONTROLS_ON_KEYS
 
+        // Keep tabs on how many notes are currently ON
+        // That will be used to switch ON or OFF the MIDI Receive of specific parts, which
+        // can be done only when all the notes are OFF (else, one part may receive more
+        // Note ON events than Note OFF, which leaves unterminated notes on that part - very bad)
+        KeyboardNotesON_Count ++;
+
         // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
         MIDI_A.SendNoteOnEvent(KbdMidiChannelTx, rxNote, rxVolume);
+    }
+}
+
+
+template<typename T>
+class ThreadSafeQueue
+{
+public:
+    void push( const T& value )
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queque.push(value);
+    }
+
+    void pop(void)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queque.pop();
+    }
+
+    bool empty(void)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_queque.empty();
+    }
+
+    T front(void)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_queque.front();
+    }
+
+
+private:
+    std::queue<T> m_queque;
+    mutable std::mutex m_mutex;
+};
+
+
+// Queue of Performance Parts that should be muted.
+ThreadSafeQueue<int> TPerformancePartToBeMuted;
+
+
+void AdjustPerformancePartVolume_Mute()
+{
+   // Check whether all notes are OFF now
+    if (KeyboardNotesON_Count == 0)
+    {
+        while (!TPerformancePartToBeMuted.empty())
+        {
+            XV5080.TemporaryPerformance.PerformancePart[TPerformancePartToBeMuted.front()].ReceiveSwitch.Set(0);
+            TPerformancePartToBeMuted.pop();
+        }
+    }
+    else
+    {
+        // There are still notes "ON" on the keyboard (be it one note or a chord). Don't turn off a Part
+        // while notes are being played - that would result in dangling notes (unterminated notes that 
+        // sound forever)
     }
 }
 
@@ -5186,8 +5268,30 @@ void MIDI_B_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 r
     KbdMidiChannelTx = MIDI_CHANNEL_MASTER_KBD_XV5080;
 
     MIDI_A.SendNoteOffEvent(KbdMidiChannelTx, rxNote, rxVolume);
+    KeyboardNotesON_Count --;
+    if (KeyboardNotesON_Count < 0)
+    {
+        wprintw(win_debug_messages.GetRef(), "/!\\ Negative count of KBD notes ON\n");
+        KeyboardNotesON_Count = 0;
+    }
+    AdjustPerformancePartVolume_Mute();
 }
 
+
+void AdjustPerformancePartVolume(int VolumeValue, int PartIndex)
+{
+    // Volume for first part assigned to master keyboard
+    if (VolumeValue < 5)
+    {
+        TPerformancePartToBeMuted.push(PartIndex);
+        AdjustPerformancePartVolume_Mute();
+    }
+    else
+    {
+        XV5080.TemporaryPerformance.PerformancePart[VolumeValue].ReceiveSwitch.Set(1);
+    }
+    XV5080.TemporaryPerformance.PerformancePart[VolumeValue].PartLevel.Set(VolumeValue);
+}
 
 
 // This hook function is called whenever the master keyboard sends a Controller Change event
@@ -5201,7 +5305,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
         switch (rxControllerNumber)
         {
         case 73:
-            // Volume for first patch assigned to master keyboard
+            // Volume for first part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].ReceiveSwitch.Set(0);
@@ -5214,7 +5318,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 75:
-            // Volume for second patch assigned to master keyboard
+            // Volume for second part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+1].ReceiveSwitch.Set(0);
@@ -5227,7 +5331,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 79:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+2].ReceiveSwitch.Set(0);
@@ -5241,7 +5345,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 72:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+3].ReceiveSwitch.Set(0);
@@ -5255,7 +5359,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 80:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+4].ReceiveSwitch.Set(0);
@@ -5269,7 +5373,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 81:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+5].ReceiveSwitch.Set(0);
@@ -5283,7 +5387,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 82:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+6].ReceiveSwitch.Set(0);
@@ -5297,7 +5401,7 @@ void MIDI_B_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxController
             break;
 
         case 83:
-            // Volume for third patch assigned to master keyboard
+            // Volume for third part assigned to master keyboard
             if (rxControllerValue < 5)
             {
                 XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX+7].ReceiveSwitch.Set(0);
