@@ -947,6 +947,8 @@ TContext cIsThisLove;
 TContext cPeople;
 TContext cTakeOnMe;
 TContext cMorrissonJig;
+TContext cDjadja;
+TContext cCaCestVraimentToi;
 
 /**
  * This function is needed to sort lists of elements.
@@ -5795,6 +5797,12 @@ void InitializePlaylist(void)
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
     cMorrissonJig.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, MorrissonJig::BagpipeVelocity, "Bagpipe Level"));
 
+    cDjadja.Author = "Aya Nakamura";
+    cDjadja.SongName = "Djadja";
+
+    cCaCestVraimentToi.Author = "Telephone";
+    cCaCestVraimentToi.SongName = "Ca c'est vraiment toi";
+    
 
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
@@ -5880,6 +5888,8 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cIsThisLove);
     PlaylistData.push_back(&cMorrissonJig);
 
+    PlaylistData.push_back(&cDjadja);
+    PlaylistData.push_back(&cCaCestVraimentToi);
 
 
     // Set the current active context here.
