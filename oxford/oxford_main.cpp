@@ -3645,10 +3645,19 @@ on the next call to Start_PedalPressed (and not Start_PedalPressed, just in case
 
 It is the user's responsibility to call Init() after main() is running, to spawn the threads required by
 this object.
+
+AutoOff is a duration, in milliseconds, after which TSequence turns off the last note if it was played on
+an upswing of the pedal (finishing the last note of the sequence on a RELEASED position). If AutoOff is 0,
+then a pair number of notes N must be completed with N pedal motions (Press, Release) PLUS one additional
+Press/Release to turn off the last note. If AutoOff is non-zero, a pair number of notes finishes on the
+pedal upswing (release), and the Note OFF event will be sent automatically NoteOff milliseconds after the
+last pedal release motion.
 */
 class TSequence
 {
 private:
+    int AutoOff;
+    enum TPedalPosition {ppUnknown, ppReleased, ppPressed} PedalPosition = ppUnknown;
     struct timeval tv1, tv2;
     pthread_t thread;
     long int BeatTime_ms = 0;
@@ -3868,9 +3877,40 @@ private:
                     MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
                     break;
                 }
+
                 // else
+                // Get note
                 CurrentNote = *it;
+                // Play it
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+
+                // One hit prior to (std::prev) MelodyNotes.end() actually points to the last
+                // valid entry in the melody, that is the last note.
+                if ( (it == std::prev(MelodyNotes.end()))  && (PedalPosition == ppReleased) )
+                {
+                    // This is a special case:
+                    // The last note of the sequence was called (Note ON), but the pedal is now RELEASED
+                    // So in theory, we should wait until the the pedal is PRESSED to stop that note
+                    // (Note OFF).
+                    // That's okay for synths, strings, pads, etc.
+                    // However, if we're playing percussive notes, it feels more logical to play that last
+                    // note and end it there as well, to avoid a last "pressed/release" action, that
+                    // would not even participate to playing notes (just participate to STOPPING) a note
+                    // for an instrument that in any case does not last long.
+                    //
+                    // So inspect the value AutoOff - if set to non-zero value, turn ON that last note
+                    // (code just above), and automatically turn it off AutoOff milliseconds later.
+                    if(AutoOff)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(AutoOff));
+                        TurnPreviousNoteOff();
+                        // End of the sequence right there
+                        PhraseSequencerStateMachine = pssmNote1;
+                        BeatTimeStateMachine = btsmCancel; // prepare message to thread
+                        MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
+                        break;
+                    }
+                }
 
                 if (InferTempo)
                 {
@@ -3930,11 +3970,20 @@ public:
               void (*pFuncNoteOff_param)(int NoteNumber),
               int RootNoteNumber_param, bool InferTempo_param, float Timeout_param)
     {
+        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param,RootNoteNumber_param, InferTempo_param, 0);
+    }
+
+    TSequence(std::list<TNote> MelodyNotes_param,
+              void (*pFuncNoteOn_param)(int NoteNumber),
+              void (*pFuncNoteOff_param)(int NoteNumber),
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, float AutoOff_param)
+    {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
         pFuncNoteOff = pFuncNoteOff_param;
         RootNoteNumber = RootNoteNumber_param;
         Timeout = Timeout_param;
+        AutoOff = AutoOff_param;
         if (Timeout == 0)
         {
             // Timeout should not be zero
@@ -3961,6 +4010,8 @@ public:
 
     void Start_PedalPressed(void)
     {
+        // Now the pedal is PRESSED
+        PedalPosition = ppPressed;
         if (InferTempo)
         {
             // Pedal controls the beat time
@@ -3976,6 +4027,8 @@ public:
 
     void Start_PedalReleased(void)
     {
+        // Now the pedal is RELEASED
+        PedalPosition = ppReleased;
         if (InferTempo)
         {
             MsgToBeatTime.Send(msgPedalReleased);
@@ -4465,6 +4518,76 @@ namespace I_Follow_Rivers
 
     }
 }
+
+
+namespace Djadja
+{
+    void Marimba_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+    }
+
+    void Marimba_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+
+    // Djadja - Marimba jingle
+    //
+    // Two melodies playing at the same time (left hand / right hand)
+    // except last notes which is a chord of 3 notes
+    // => we'll use 3 concurrent sequences, playing at once
+    //
+    // The rhythm is quite complicated and syncopated, so we won't encode the
+    // rhythm, but let the user press/release the pedal in rhythm.
+    // We won't use the note length interpolation feature of TSequence (InferTempo)
+    //
+    // #1: La3  La3  Fa3  Sib3      Sol3  Sol3  Sib3  Do4 (left hand)
+    // #2: Re5       Sol4           Sib4              Do5 (right hand)
+    // #3:                                            Mi5 (needed only for the last note)
+    //
+    // Same, with MIDI note numbers instead
+    // #1: 57 57 53 58      55 55 58 60
+    // #2: 74 -  -  67      70 -  -  72
+    // #3: -  -  -  -       -  -  -  76
+    //
+    //
+    // Because some notes must be played between the beats, we need to call Sequence with
+    // InferTempo = true.
+    TSequence Sequence_1({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
+    TSequence Sequence_2({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
+    TSequence Sequence_3({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
+
+    void Sequence_1_Start_PedalPressed(void)
+    {
+        Sequence_1.Start_PedalPressed();
+        Sequence_2.Start_PedalPressed();
+        Sequence_3.Start_PedalPressed();
+    }
+
+    void Sequence_1_Start_PedalReleased(void)
+    {
+        Sequence_1.Start_PedalReleased();
+        Sequence_2.Start_PedalReleased();
+        Sequence_3.Start_PedalReleased();
+    }
+
+    void Init(void)
+    {
+        Sequence_1.Init();
+        Sequence_2.Init();
+        Sequence_3.Init();
+
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 106); // Dyno Toms
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+
+        // Ani's piano is a piano with a bit of reverb
+        XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
+    }
+}
+
 
 
 namespace People_Help_The_People
@@ -5799,6 +5922,9 @@ void InitializePlaylist(void)
 
     cDjadja.Author = "Aya Nakamura";
     cDjadja.SongName = "Djadja";
+    cDjadja.SetInitFunc(Djadja::Init);
+    cDjadja.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Djadja::Sequence_1_Start_PedalPressed, Djadja::Sequence_1_Start_PedalReleased, "Marimba seq."));
+    
 
     cCaCestVraimentToi.Author = "Telephone";
     cCaCestVraimentToi.SongName = "Ca c'est vraiment toi";
