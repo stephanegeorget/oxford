@@ -3970,7 +3970,7 @@ public:
               void (*pFuncNoteOff_param)(int NoteNumber),
               int RootNoteNumber_param, bool InferTempo_param, float Timeout_param)
     {
-        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param,RootNoteNumber_param, InferTempo_param, 0);
+        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param,RootNoteNumber_param, InferTempo_param, Timeout_param, 0);
     }
 
     TSequence(std::list<TNote> MelodyNotes_param,
@@ -5924,7 +5924,7 @@ void InitializePlaylist(void)
     cDjadja.SongName = "Djadja";
     cDjadja.SetInitFunc(Djadja::Init);
     cDjadja.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Djadja::Sequence_1_Start_PedalPressed, Djadja::Sequence_1_Start_PedalReleased, "Marimba seq."));
-    
+
 
     cCaCestVraimentToi.Author = "Telephone";
     cCaCestVraimentToi.SongName = "Ca c'est vraiment toi";
