@@ -469,6 +469,12 @@ namespace People_Help_The_People
     void BellPedalReleased(void);
 }
 
+namespace Djadja
+{
+    void Sequence_1_Start_PedalPressed(void);
+    void Sequence_1_Start_PedalReleased(void);
+}
+
 
 namespace ElevenRack
 {
@@ -3287,14 +3293,18 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-    People_Help_The_People::BellPedalPressed();
+//    People_Help_The_People::BellPedalPressed();
+    Djadja::Sequence_1_Start_PedalPressed();
+
 }
 
 void Z_r(void * pVoid)
 {
     //Kungs_This_Girl::Sequence_1_Start_PedalReleased();
     //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
-    People_Help_The_People::BellPedalReleased();
+//    People_Help_The_People::BellPedalReleased();
+    Djadja::Sequence_1_Start_PedalReleased();
+
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -3650,7 +3660,7 @@ AutoOff is a duration, in milliseconds, after which TSequence turns off the last
 an upswing of the pedal (finishing the last note of the sequence on a RELEASED position). If AutoOff is 0,
 then a pair number of notes N must be completed with N pedal motions (Press, Release) PLUS one additional
 Press/Release to turn off the last note. If AutoOff is non-zero, a pair number of notes finishes on the
-pedal upswing (release), and the Note OFF event will be sent automatically NoteOff milliseconds after the
+pedal upswing (release), and the Note OFF event will be sent automatically AutoOff milliseconds after the
 last pedal release motion.
 */
 class TSequence
@@ -3832,6 +3842,8 @@ private:
             switch(PhraseSequencerStateMachine)
             {
             case pssmNote1:
+                wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
+
                 if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
                 {
                     // Reset state machine
@@ -3843,7 +3855,7 @@ private:
                 TimeStart = std::chrono::system_clock::now();
                 it = MelodyNotes.begin();
                 CurrentNote = *it;
-                wprintw(win_debug_messages.GetRef(), "START\n");
+                wprintw(win_debug_messages.GetRef(), "TSequence: START\n");
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
                 PhraseSequencerStateMachine = pssmNote2;
                 break;
@@ -3886,7 +3898,7 @@ private:
 
                 // One hit prior to (std::prev) MelodyNotes.end() actually points to the last
                 // valid entry in the melody, that is the last note.
-                if ( (it == std::prev(MelodyNotes.end()))  && (PedalPosition == ppReleased) )
+                if ( (it == std::prev(MelodyNotes.end()))  &&  (PedalPosition == ppReleased) )
                 {
                     // This is a special case:
                     // The last note of the sequence was called (Note ON), but the pedal is now RELEASED
@@ -3976,7 +3988,7 @@ public:
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, float AutoOff_param)
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
@@ -4381,7 +4393,7 @@ namespace Kungs_This_Girl
 {
 void Trumpet_On(int NoteNumber)
 {
-    MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+    MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
 }
 
 void Trumpet_Off(int NoteNumber)
@@ -4393,9 +4405,9 @@ void Trumpet_Off(int NoteNumber)
 
 TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
 
-TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
+TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5, 250);
 
-TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
+TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5, 250);
 
 void Sequence_1_Start_PedalPressed(void)
 {
@@ -4524,7 +4536,7 @@ namespace Djadja
 {
     void Marimba_ON(int NoteNumber)
     {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
     }
 
     void Marimba_OFF(int NoteNumber)
@@ -4542,6 +4554,9 @@ namespace Djadja
     // The rhythm is quite complicated and syncopated, so we won't encode the
     // rhythm, but let the user press/release the pedal in rhythm.
     // We won't use the note length interpolation feature of TSequence (InferTempo)
+    // However, since there is an even number of pedal actions to complete the sequence,
+    // the last parameter is non-zero and set at 100ms, the duration of the last note. Which
+    // matters little, since it's a percussive sound.
     //
     // #1: La3  La3  Fa3  Sib3      Sol3  Sol3  Sib3  Do4 (left hand)
     // #2: Re5       Sol4           Sib4              Do5 (right hand)
@@ -4553,11 +4568,9 @@ namespace Djadja
     // #3: -  -  -  -       -  -  -  76
     //
     //
-    // Because some notes must be played between the beats, we need to call Sequence with
-    // InferTempo = true.
-    TSequence Sequence_1({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
-    TSequence Sequence_2({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
-    TSequence Sequence_3({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 0.5);
+    TSequence Sequence_1({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
+    TSequence Sequence_2({{57,  1}, {999, 1}, {999, 1}, {67,  1}, {70,  1}, {999, 1}, {999, 1}, {72,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
+    TSequence Sequence_3({{999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {76,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4579,7 +4592,7 @@ namespace Djadja
         Sequence_2.Init();
         Sequence_3.Init();
 
-        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 106); // Dyno Toms
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 94); // PR-A Bass Marimba
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
 
