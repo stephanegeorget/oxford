@@ -3293,8 +3293,8 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-//    People_Help_The_People::BellPedalPressed();
-    Djadja::Sequence_1_Start_PedalPressed();
+    People_Help_The_People::BellPedalPressed();
+ //   Djadja::Sequence_1_Start_PedalPressed();
 
 }
 
@@ -3302,8 +3302,8 @@ void Z_r(void * pVoid)
 {
     //Kungs_This_Girl::Sequence_1_Start_PedalReleased();
     //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
-//    People_Help_The_People::BellPedalReleased();
-    Djadja::Sequence_1_Start_PedalReleased();
+    People_Help_The_People::BellPedalReleased();
+//    Djadja::Sequence_1_Start_PedalReleased();
 
 }
 
@@ -3980,15 +3980,7 @@ public:
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param)
-    {
-        TSequence(MelodyNotes_param, pFuncNoteOn_param, pFuncNoteOff_param,RootNoteNumber_param, InferTempo_param, Timeout_param, 0);
-    }
-
-    TSequence(std::list<TNote> MelodyNotes_param,
-              void (*pFuncNoteOn_param)(int NoteNumber),
-              void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param)
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
