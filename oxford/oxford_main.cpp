@@ -2897,6 +2897,92 @@ public:
                 }
             } ReverbOutputAssign{OffsetAddress};
         } PatchCommonReverb{OffsetAddress};
+
+        class TPatchTone : TParameterSection
+        {
+            public:
+            TPatchTone(int val) : TParameterSection(val + 0x0000) {};
+            class TToneLevel : TParameter
+            {
+                public:
+                TToneLevel(int val) : TParameter(val + 0x0000, 0, 127, "0aaa aaaa") {};
+                /** Value between 0 and 127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ToneLevel{OffsetAddress};
+
+            class TToneCoarseTune : TParameter
+            {
+                public:
+                TToneCoarseTune(int val) : TParameter(val + 0x0001, 16, 112, "0aaa aaaa") {};
+                /** Value between -48 and +48 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 64));
+                }
+            } ToneCoarseTune{OffsetAddress};
+
+            class TToneFineTune : TParameter
+            {
+                public:
+                TToneFineTune(int val) : TParameter(val + 0x0002, 14, 115, "0aaa aaaa") {};
+                /** Value between -50 and +50 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 64));
+                }
+            } ToneFineTune{OffsetAddress};
+
+            class TTonePan : TParameter
+            {
+                public:
+                TTonePan(int val) : TParameter(val + 0x0004, 0, 127, "0aaa aaaa") {};
+                /** Value between -64 (Full Left) and +63 (Full Right) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 64));
+                }
+            } TonePan{OffsetAddress};
+
+            class TTonePanKeyfollow : TParameter
+            {
+                public:
+                TTonePanKeyfollow(int val) : TParameter(val + 0x0005, 54, 74, "000a aaaa") {};
+                /** Value between -100 and +100, by increments of 10 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes((Value_param / 10) + 64 ));
+                }
+            } TonePanKeyfollow{OffsetAddress};
+
+            class TToneRandomPanDepth : TParameter
+            {
+                public:
+                TToneRandomPanDepth(int val) : TParameter(val + 0x0006, 0, 63, "00aa aaaa") {};
+                /** Value between 0 and 63 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ToneRandomPanDepth{OffsetAddress};
+
+            class TToneAlternatePanDepth : TParameter
+            {
+                public:
+                TToneAlternatePanDepth(int val) : TParameter(val + 0x0007, 1, 127, "0aaa aaaa") {};
+                /** Value between -63 and +63 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } ToneAlternatePanDepth{OffsetAddress};
+        };
+        std::array<TPatchTone, 4> PatchTone = { OffsetAddress + 0x002000, 
+                                                OffsetAddress + 0x002200,
+                                                OffsetAddress + 0x002400,
+                                                OffsetAddress + 0x002600};
     };
 
     class TRhythm : TParameterSection
@@ -4600,7 +4686,7 @@ namespace People_Help_The_People
     // 45 48 41
     void Bell_ON(int note)
     {
-        MIDI_A.SendNoteOnEvent(4, note, 127);
+        MIDI_A.SendNoteOnEvent(4, note, 100);
     }
 
     void Bell_OFF(int note)
@@ -4608,9 +4694,9 @@ namespace People_Help_The_People
         MIDI_A.SendNoteOnEvent(4, note, 0);
     }
 
-    // This is for the bells. Three sounds, A, C, F in sequence, can be played quite slowly hence timeout 3 seconds,
+    // This is for the bells. Three sounds, A, C, F in sequence, can be played quite slowly hence timeout 3.5 seconds,
     // must be played exactly in phase with footswitch, hence InferTempo = false
-    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 0, false, 3);
+    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 12, false, 3.5);
 
     void Init(void)
     {
@@ -4634,6 +4720,20 @@ namespace People_Help_The_People
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+        //XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+        // This bell is nice, but it has a randomized panoramic effect that does not work
+        // for us at all, since we're often in Mono, taking one single output (left or right)
+        // This means the overall volume, in our mix, is randomly too low.
+        // Change the pan radomization parameter for that patch
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        
 
         Sequence_1.Init();
     }
@@ -4646,7 +4746,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 41;
+        CurrentNote = 53;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
@@ -4656,7 +4756,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 43;
+        CurrentNote = 55;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
@@ -4666,7 +4766,7 @@ namespace People_Help_The_People
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
         }
-        CurrentNote = 45;
+        CurrentNote = 57;
         MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
     }
 
