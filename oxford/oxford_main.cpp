@@ -1705,6 +1705,66 @@ public:
             System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
             break;
 
+        case PerformanceGroup::PR_A:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(64);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::PR_B:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(65);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_A:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(32);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_B:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(33);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_C:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(34);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_D:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(35);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_E:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(36);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_F:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(37);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_G:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(38);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
+        case PerformanceGroup::CD_H:
+            System.SystemCommon.PerformanceBankSelectMSB.Set(85);
+            System.SystemCommon.PerformanceBankSelectLSB.Set(39);
+            System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
+            break;
+
         default:
 
             break;
@@ -4867,6 +4927,91 @@ namespace MorrissonJig
     }
 }
 
+namespace Human
+{
+    void Init(void)
+    {
+        // On Part #1 (numbered 0 below), put some lavish strings
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_E, 74); // Strings 4 Film
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(-1);
+
+        // Ooooh's on part 2, midi channel 1 too
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_E, 67); // Sacred Tree
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].PartOctaveShift.Set(1); // Shift voices 1 octave higher than Deep Strings       
+    }
+
+    int CurrentNote = 0;
+
+    void Strings_D(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 50;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_E(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 52;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_B(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 47;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_Asharp(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 58;
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+    }
+
+    void Strings_OFF(void)
+    {
+        if (CurrentNote != 0)
+        {
+            MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+        }
+        CurrentNote = 0;        
+    }
+
+    void Strings_Volume(int Value)
+    {
+        MIDI_A.SendControlChange(1, 0x07, Value);
+        if (Value < 16)
+        {
+            Strings_OFF();
+        }
+    }
+
+    void BreakingGlass(void)
+    {
+        // To do
+    }
+}
+
 
 extern "C" void showlist(void);
 extern "C" int main_TODO(int argc, char const **argv, int Tempo);
@@ -5949,6 +6094,12 @@ void InitializePlaylist(void)
 
     cHuman.Author = "Rag'n'Bone Man";
     cHuman.SongName = "Human (I'm only)";
+    cHuman.SetInitFunc(Human::Init);
+    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Human::Strings_D, NULL, "Strings D"));
+    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Human::Strings_B, NULL, "Strings B"));
+    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Human::Strings_Asharp, NULL, "Strings A#"));
+    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Human::Strings_OFF, NULL, "Strings Off"));
+    cHuman.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, Human::Strings_Volume, "Strings Vol"));
 
 
     cNewYorkAvecToi.Author = "Telephone";
@@ -6395,7 +6546,7 @@ void threadMetronome (void)
  */
 void ResetXV5080Performance(void)
 {
-    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::USER, TInt_1_128(1));
+    XV5080.PerformanceSelect(TXV5080::PerformanceGroup::PR_A, TInt_1_128(1));
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
     XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
