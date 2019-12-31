@@ -4324,6 +4324,28 @@ namespace BrunoMars
 {
 namespace LockedOutOfHeaven
 {
+    void FunctionNoteOn(int note)
+    {
+        // Oxford samples 'drum kit' on channel 16
+        MIDI_A.SendNoteOnEvent(16, note, 100);
+    }
+
+    void FunctionNoteOff(int note)
+    {
+        // Oxford samples 'drum kit' on channel 16
+        MIDI_A.SendNoteOnEvent(16, note, 0);
+    }
+
+    // Normally notes 27 (yeah) and 28 (hooh)
+    TSequence Sequence({{27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {28, 1}}, FunctionNoteOn, FunctionNoteOff, 0, false, 1, 0);
+//    TSequence Sequence({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 12, false, 3.5);
+
+    void Init(void)
+    {
+        Sequence.Init();
+
+    }
+/*
 void Yeah(void)
 {
 //    system("aplay ./wav/yeah_001.wav &");
@@ -4337,12 +4359,12 @@ void Hooh(void)
     PlayNote(16, 28, 500, 127);
 
 }
+*/
 
 void Siren(void)
 {
 //    system("aplay ./wav/alarm_001.wav &");
     PlayNote(16, 22, 2000, 127);
-
 }
 
 void Cuica(void)
@@ -4939,7 +4961,7 @@ namespace Human
         XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(-1);
 
         // Ooooh's on part 2, midi channel 1 too
-        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_E, 67); // Sacred Tree
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_E, 60); // Brite Vox 2
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(1);
@@ -5008,7 +5030,9 @@ namespace Human
 
     void BreakingGlass(void)
     {
-        // To do
+        // Breaking glass is normally on the Oxford samples 'drum kit' A#1, which is midi note 32
+        // The Oxford samples 'drum kit' is normally @ Midi Address 16
+        PlayNote(16, 32, 2000, 127);
     }
 }
 
@@ -5232,6 +5256,7 @@ namespace AllumerLeFeu
         XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_E, 35); // Rocker Organ
     }
 }
+
 
 namespace ElevenRack
 {
@@ -5976,8 +6001,10 @@ void InitializePlaylist(void)
     cLockedOutOfHeaven.Author = "Bruno Mars";
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
     cLockedOutOfHeaven.BaseTempo = 140;
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, BrunoMars::LockedOutOfHeaven::Yeah, "Yeah x8 + Hooh"));
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
+    cLockedOutOfHeaven.SetInitFunc(BrunoMars::LockedOutOfHeaven::Init);
+//    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, BrunoMars::LockedOutOfHeaven::Yeah, "Yeah x8 + Hooh"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, []{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalPressed();}, []{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalReleased();}, "Yeah/hooh"));
+//    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
     cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
     cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
 
@@ -6099,6 +6126,8 @@ void InitializePlaylist(void)
     cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Human::Strings_B, NULL, "Strings B"));
     cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Human::Strings_Asharp, NULL, "Strings A#"));
     cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Human::Strings_OFF, NULL, "Strings Off"));
+    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Human::BreakingGlass, NULL, "Breaking Glass"));
+
     cHuman.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, Human::Strings_Volume, "Strings Vol"));
 
 
