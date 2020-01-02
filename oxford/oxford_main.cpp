@@ -4338,7 +4338,6 @@ namespace LockedOutOfHeaven
 
     // Normally notes 27 (yeah) and 28 (hooh)
     TSequence Sequence({{27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {28, 1}}, FunctionNoteOn, FunctionNoteOff, 0, false, 1, 0);
-//    TSequence Sequence({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 12, false, 3.5);
 
     void Init(void)
     {
@@ -4563,7 +4562,7 @@ void Trumpet_Off(int NoteNumber)
 
 
 
-TSequence Sequence_1({{0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5);
+TSequence Sequence_1({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1},  {999, 2}, {0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}, {999, 1}}, Trumpet_On, Trumpet_Off, 63, true, 1.5);
 
 TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5, 250);
 
@@ -4615,7 +4614,7 @@ void Init(void)
     // Force XV5080 to performance mode
     XV5080.System.SystemCommon.SoundMode.Perform();
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
-    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_B, 126); // 2 Trumpets
+    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 2); // Tp&Sax Sect
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
 
     // Set up keyboard for Ani:
@@ -4755,6 +4754,9 @@ namespace Djadja
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 94); // PR-A Bass Marimba
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(0);
+        // All notes (see above) are actually one octave too high. Get the Marimba Part down by one octave
+        XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(-1);
 
         // Ani's piano is a piano with a bit of reverb
         XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
@@ -4768,12 +4770,17 @@ namespace People_Help_The_People
     // 45 48 41
     void Bell_ON(int note)
     {
-        MIDI_A.SendNoteOnEvent(4, note, 100);
+        // Do octave dyads rather than single notes
+        MIDI_A.SendNoteOnEvent(4, note, 90);
+        MIDI_A.SendNoteOnEvent(4, note -12, 100); // One octave lower
+        
     }
 
     void Bell_OFF(int note)
     {
+        // Turn off notes previously turned on
         MIDI_A.SendNoteOnEvent(4, note, 0);
+        MIDI_A.SendNoteOnEvent(4, note -12, 0);
     }
 
     // This is for the bells. Three sounds, A, C, F in sequence, can be played quite slowly hence timeout 3.5 seconds,
@@ -4827,9 +4834,11 @@ namespace People_Help_The_People
         if (CurrentNote != 0)
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+            MIDI_A.SendNoteOffEvent(1, CurrentNote -12, 0);
         }
         CurrentNote = 53;
-        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 80);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote -12, 100);
     }
 
     void Strings_G(void)
@@ -4837,9 +4846,11 @@ namespace People_Help_The_People
         if (CurrentNote != 0)
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+            MIDI_A.SendNoteOffEvent(1, CurrentNote -12, 0);
         }
         CurrentNote = 55;
-        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 80);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote -12, 100);
     }
 
     void Strings_A(void)
@@ -4847,9 +4858,11 @@ namespace People_Help_The_People
         if (CurrentNote != 0)
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+            MIDI_A.SendNoteOffEvent(1, CurrentNote -12, 0);
         }
         CurrentNote = 57;
-        MIDI_A.SendNoteOnEvent(1, CurrentNote, 100);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote, 80);
+        MIDI_A.SendNoteOnEvent(1, CurrentNote -12, 100);
     }
 
     void Strings_OFF(void)
@@ -4857,6 +4870,7 @@ namespace People_Help_The_People
         if (CurrentNote != 0)
         {
             MIDI_A.SendNoteOffEvent(1, CurrentNote, 0);
+            MIDI_A.SendNoteOffEvent(1, CurrentNote -12, 0);
         }
         Sequence_1.Stop_PedalPressed();
         CurrentNote = 0;        
@@ -6647,8 +6661,8 @@ int main(int argc, char** argv)
     if (can_change_color() == TRUE)
     {
         start_color();
-        init_color(COLOR_BLACK, 400, 200, 0);
-        init_color(COLOR_WHITE, 1000, 700, 400);
+        init_color(COLOR_BLACK, 0, 0, 200);
+        init_color(COLOR_WHITE, 1000, 1000, 0);
     }
     else
     {
