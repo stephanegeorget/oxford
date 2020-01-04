@@ -3807,10 +3807,22 @@ an upswing of the pedal (finishing the last note of the sequence on a RELEASED p
 then a pair number of notes N must be completed with N pedal motions (Press, Release) PLUS one additional
 Press/Release to turn off the last note. If AutoOff is non-zero, a pair number of notes finishes on the
 pedal upswing (release), and the Note OFF event will be sent automatically AutoOff milliseconds after the
-last pedal release motion.
+last pedal release motion. AutoOff makes sense only when InferTempo_param is set to false.
+
+BeatTime is the beat time duration (in seconds) that should be used to play the sequence.
+- Set InferTempo=false and BeatTime to a non-zero value to enforce the tempo from BeatTime, and trigger
+the sequence from the first Pedal Down event at said tempo.
+- Set InferTempo=true and BeatTime to 0 so infer the tempo from the first upswing/downswing of the pedal.
+- Set InferTempo=false and BeatTime to 0 to play incrementally each sequence note upon each pedal action
+(downswing or upswing)
+
+
 */
 class TSequence
 {
+public:
+    enum TInferTempo {itNone, itDownswingOnly, itDownswingAndUpswing};
+
 private:
     int AutoOff;
     enum TPedalPosition {ppUnknown, ppReleased, ppPressed} PedalPosition = ppUnknown;
@@ -3824,7 +3836,7 @@ private:
     void (*pFuncNoteOff)(int NoteNumber) = NULL;
     int RootNoteNumber = 60;
     float Timeout = 1;
-    bool InferTempo = false;
+    TInferTempo InferTempo = itDownswingAndUpswing;
     bool WatchdogFlag = false;
     std::queue<int> QueueNotesOn; // keep track of which notes have been turned ON - so as to not forget to turn them OFF later
     typedef enum {btsmWaitStartingPulse, btsmWaitSecondPulse, btsmWaitNextPulse, btsmCancel} TBeatTimeStateMachine;
@@ -3901,7 +3913,7 @@ private:
                 break;
 
             case btsmWaitSecondPulse:
-                if (MsgToBeatTime.Wait(msgPedalReleased, Timeout * 1000.0) == -1)
+                if (MsgToBeatTime.Wait_OR(msgPedalPressed, msgPedalReleased, Timeout * 1000) == -1)
                 {
                     // timeout
                     BeatTimeStateMachine = btsmWaitStartingPulse;
@@ -4070,7 +4082,7 @@ private:
                     }
                 }
 
-                if (InferTempo)
+                if (InferTempo != itNone)
                 {
                     // Fully recompute time to wait, from the beginning of the sequence.
                     // This is to accommodate any change in tempo
@@ -4126,7 +4138,7 @@ public:
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0)
+              int RootNoteNumber_param, TInferTempo InferTempo_param, float Timeout_param, int AutoOff_param = 0)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
@@ -4162,7 +4174,7 @@ public:
     {
         // Now the pedal is PRESSED
         PedalPosition = ppPressed;
-        if (InferTempo)
+        if (InferTempo == itDownswingAndUpswing || InferTempo == itDownswingOnly)
         {
             // Pedal controls the beat time
             MsgToBeatTime.Send(msgPedalPressed);
@@ -4179,7 +4191,7 @@ public:
     {
         // Now the pedal is RELEASED
         PedalPosition = ppReleased;
-        if (InferTempo)
+        if (InferTempo == itDownswingAndUpswing)
         {
             MsgToBeatTime.Send(msgPedalReleased);
         }
@@ -4228,8 +4240,7 @@ void Partial_Off(int NoteNumber)
 }
 
 
-TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}},
-Partial_On, Partial_Off, 72, false, 1);
+TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Partial_On, Partial_Off, 72, TSequence::itNone, 1);
 
 
 void Sequence_Start_PedalDown(void)
@@ -4337,7 +4348,7 @@ namespace LockedOutOfHeaven
     }
 
     // Normally notes 27 (yeah) and 28 (hooh)
-    TSequence Sequence({{27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {28, 1}}, FunctionNoteOn, FunctionNoteOff, 0, false, 1, 0);
+    TSequence Sequence({{27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {27, 1}, {27, 1}, {27, 1}, {999, 1}, {27, 1}, {999, 1}, {28, 1}}, FunctionNoteOn, FunctionNoteOff, 0, TSequence::itNone, 1, 0);
 
     void Init(void)
     {
@@ -4562,11 +4573,11 @@ void Trumpet_Off(int NoteNumber)
 
 
 
-TSequence Sequence_1({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1},  {999, 2}, {0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}, {999, 1}}, Trumpet_On, Trumpet_Off, 63, true, 1.5);
+TSequence Sequence_1({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1},  {999, 2}, {0, 1}, {0, 1}, {4, 1}, {0, 1}, {2, 1}, {999, 1}}, Trumpet_On, Trumpet_Off, 63, TSequence::itDownswingAndUpswing, 1.5);
 
-TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5, 250);
+TSequence Sequence_2({{2, 1}, {99, 1}, {2, 1}, {99, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, TSequence::itNone, 1.5, 250);
 
-TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, false, 1.5, 250);
+TSequence Sequence_3({{2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {0, 1}}, Trumpet_On, Trumpet_Off, 63, TSequence::itNone, 1.5, 250);
 
 void Sequence_1_Start_PedalPressed(void)
 {
@@ -4662,9 +4673,9 @@ namespace I_Follow_Rivers
     // the first release is simple a note OFF (special value 999)
     //
     // Because some notes must be played between the beats, we need to call Sequence with
-    // InferTempo = true.
+    // InferTempo = itDownswingAndUpswing (other than itNone)
 
-    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, true, 1.5);
+    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, TSequence::itDownswingAndUpswing, 1.5);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4727,9 +4738,9 @@ namespace Djadja
     // #3: -  -  -  -       -  -  -  76
     //
     //
-    TSequence Sequence_1({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
-    TSequence Sequence_2({{57,  1}, {999, 1}, {999, 1}, {67,  1}, {70,  1}, {999, 1}, {999, 1}, {72,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
-    TSequence Sequence_3({{999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {76,  1}}, Marimba_ON, Marimba_OFF, 0, false, 3, 100);
+    TSequence Sequence_1({{57,  1}, {57,  1}, {53,  1}, {58,  1}, {55,  1}, {55,  1}, {58,  1}, {60,  1}}, Marimba_ON, Marimba_OFF, 0, TSequence::itNone, 3, 100);
+    TSequence Sequence_2({{57,  1}, {999, 1}, {999, 1}, {67,  1}, {70,  1}, {999, 1}, {999, 1}, {72,  1}}, Marimba_ON, Marimba_OFF, 0, TSequence::itNone, 3, 100);
+    TSequence Sequence_3({{999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {999, 1}, {76,  1}}, Marimba_ON, Marimba_OFF, 0, TSequence::itNone, 3, 100);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -4784,8 +4795,8 @@ namespace People_Help_The_People
     }
 
     // This is for the bells. Three sounds, A, C, F in sequence, can be played quite slowly hence timeout 3.5 seconds,
-    // must be played exactly in phase with footswitch, hence InferTempo = false
-    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 12, false, 3.5);
+    // must be played exactly in phase with footswitch, hence InferTempo = TSequence::itNone
+    TSequence Sequence_1({{45, 1}, {999, 1}, {48, 1}, {999, 1}, {41, 1}}, Bell_ON, Bell_OFF, 12, TSequence::itNone, 3.5);
 
     void Init(void)
     {
