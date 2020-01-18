@@ -469,6 +469,13 @@ namespace People_Help_The_People
     void BellPedalReleased(void);
 }
 
+namespace Kungs_This_Girl
+{
+    void Sequence_1_Start_PedalPressed();
+    void Sequence_1_Start_PedalReleased();
+    void TapTempo();
+}
+
 namespace Djadja
 {
     void Sequence_1_Start_PedalPressed(void);
@@ -2163,7 +2170,28 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } ReverbOutputAssign_{OffsetAddress};
+
+            class TReverbParameter_ : TParameter
+            {
+                public:
+                TReverbParameter_(int val) : TParameter(val, 12768, 52768, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
+                /** Value between -20000 and +20000 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param + 32768));
+                }
+            };
+
+
+            std::array<TReverbParameter_, 20> ReverbParameter_ = {OffsetAddress + 0x0003, OffsetAddress + 0x0007, OffsetAddress + 0x000B, OffsetAddress + 0x000F, OffsetAddress + 0x0013, OffsetAddress + 0x0017, OffsetAddress + 0x001B, OffsetAddress + 0x001F,
+                                                                OffsetAddress + 0x0023, OffsetAddress + 0x0027, OffsetAddress + 0x002B, OffsetAddress + 0x002F, OffsetAddress + 0x0033, OffsetAddress + 0x0037, OffsetAddress + 0x003B, OffsetAddress + 0x003F,
+                                                                OffsetAddress + 0x0043, OffsetAddress + 0x0047, OffsetAddress + 0x004B, OffsetAddress + 0x004F};
+
+
+
         } PerformanceCommonReverb_{OffsetAddress};
+
+
 
         class TPerformanceMIDI : TParameterSection
         {
@@ -3437,20 +3465,25 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
-    //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
+    Kungs_This_Girl::Sequence_1_Start_PedalPressed();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-    People_Help_The_People::BellPedalPressed();
+    //People_Help_The_People::BellPedalPressed();
  //   Djadja::Sequence_1_Start_PedalPressed();
 
 }
 
 void Z_r(void * pVoid)
 {
-    //Kungs_This_Girl::Sequence_1_Start_PedalReleased();
+    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
     //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
-    People_Help_The_People::BellPedalReleased();
+    //People_Help_The_People::BellPedalReleased();
 //    Djadja::Sequence_1_Start_PedalReleased();
 
+}
+
+void X_p(void * pVoid)
+{
+    Kungs_This_Girl::TapTempo();
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -3514,6 +3547,7 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_N, N, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_Z, Z_p, 0);
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_Z, Z_r, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_X, X_p, 0);
 
 //    kbd_callbacks[KEY_A] =
 
@@ -4716,6 +4750,16 @@ void Init(void)
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
     XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 2); // Tp&Sax Sect
     XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+//    XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommonReverb.ReverbLevel.Set(127);
+//    XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommonReverb.
+  //  XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbParameter_[0].Set(111);
+    XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbParameter_[1].Set(111);
+    //XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbParameter_[2].Set(111);
+    //Time 1
+    // feedback 3
+    XV5080.System.SystemCommon.ReverbSwitch.Set(1);
+    
+    XV5080.TemporaryPerformance.PerformanceCommonReverb_.ReverbLevel_.Set(111);
 
     // Set up keyboard for Ani:
     // First Part is a piano, second part is a pad, third part is the trumpet
