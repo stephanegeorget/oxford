@@ -482,11 +482,6 @@ namespace Djadja
     void Sequence_1_Start_PedalReleased(void);
 }
 
-namespace Metronome
-{
-    void FlashToggle(void);
-}
-
 
 namespace ElevenRack
 {
@@ -3384,6 +3379,133 @@ void SelectContextInPlaylist(std::list<TContext*> &ContextList, bool);
 void SelectContextInPlaylist(std::list<TContext*> &ContextList);
 void SelectContextInPlaylist(std::list<TContext*> &ContextList);
 
+
+
+
+
+
+namespace Metronome
+{
+    void IncreaseCurrentTempo(void * foo)
+    {
+        (*PlaylistPosition)->BaseTempo++;
+    }
+
+    void DecreaseCurrentTempo(void * foo)
+    {
+        (*PlaylistPosition)->BaseTempo--;
+    }
+
+    bool FlashFlag = false; 
+
+    void FlashToggle(void)
+    {
+        if (FlashFlag == false)
+        {
+            FlashFlag = true;
+        }
+        else
+        {
+            FlashFlag = false;
+        }        
+    }
+
+    bool ClickFlag = false;
+    void ClickToggle(void)
+    {
+        if (ClickFlag == false)
+        {
+            ClickFlag = true;
+        }
+        else
+        {
+            ClickFlag = false;
+        }
+    }
+
+    TInt_0_127 ClickNoteNumber = TInt_0_127(76);
+    void ClickNoteNumberIncrease(void * pVoid)
+    {
+        ClickNoteNumber++;
+    }
+
+    void ClickNoteNumberDecrease(void * pVoid)
+    {
+        ClickNoteNumber--;
+    }
+
+    // Display a metronome on the User Specific window.
+    void threadMetronome (void)
+    {
+        const int PulseDuration = 100;
+        TContext Context;
+        init_pair(1, COLOR_WHITE, COLOR_BLACK);
+        init_pair(2, COLOR_RED, COLOR_BLACK);
+        init_pair(3, COLOR_GREEN, COLOR_BLACK);
+        init_pair(4, COLOR_RED, COLOR_WHITE);
+        init_pair(5, COLOR_BLUE, COLOR_WHITE);
+        init_pair(6, COLOR_BLACK, COLOR_GREEN);
+
+        TBoxedWindow FlashWindow;
+        FlashWindow.Init("", LINES, COLS, 0, 0);
+        FlashWindow.Erase();
+        char * pFlashWindowContents = (char *) malloc(LINES * COLS +10);
+        // Create a C string that contains enough spaces to fill a screen
+        unsigned int i = 0;
+        for (i = LINES * COLS; i--;)
+        {
+            *((pFlashWindowContents) +i) = ' ';
+        }
+        *((pFlashWindowContents) +LINES * COLS) = 0;
+        wattron(FlashWindow.GetRef(), A_BOLD | A_REVERSE);
+        mvwprintw(FlashWindow.GetRef(), 0, 0, pFlashWindowContents);
+        FlashWindow.Refresh();
+        FlashWindow.Hide();
+
+        while (1)
+        {
+            // Get current Base Tempo of the song
+            Context = **PlaylistPosition;
+            float Tempo = Context.BaseTempo;
+            if (Tempo < 30) Tempo = 30;
+            if (Tempo > 200) Tempo = 200;
+            // Compute wait time from the tempo
+            unsigned long int delay_ms = 60000.0 / Tempo - PulseDuration;
+            // Play metronome
+            if (ClickFlag)
+            {
+                PlayNote(14, ClickNoteNumber, 20,100);
+            }
+            // Display metronome
+            if (FlashFlag)
+            {
+                FlashWindow.Show();
+                waitMilliseconds(PulseDuration);
+                FlashWindow.Hide();
+                waitMilliseconds(delay_ms);
+            }
+            else
+            {
+                wattron(win_context_user_specific.GetRef(), COLOR_PAIR(1));
+                wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
+                mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
+                win_context_user_specific.Refresh();
+                waitMilliseconds(PulseDuration);
+                wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
+                mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
+                win_context_user_specific.Refresh();
+                waitMilliseconds(delay_ms);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
 namespace MiniSynth
 {
 char noteInScale;
@@ -3496,6 +3618,11 @@ void V_p(void * pVoid)
     Metronome::FlashToggle();
 }
 
+void C_p(void * pVoid)
+{
+    Metronome::ClickToggle();
+}
+
 // Scan keyboard for events, and process keypresses accordingly.
 void threadKeyboard(void)
 {
@@ -3520,7 +3647,11 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)17);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)19);
-
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, Metronome::IncreaseCurrentTempo, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, Metronome::DecreaseCurrentTempo, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, Metronome::ClickNoteNumberDecrease, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, Metronome::ClickNoteNumberIncrease, 0);
+    
 
 
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_Q, StopNote, 0);
@@ -3559,6 +3690,7 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_Z, Z_r, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_X, X_p, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_V, V_p, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_C, C_p, 0);
 
 //    kbd_callbacks[KEY_A] =
 
@@ -6665,83 +6797,6 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
 }
 
 
-namespace Metronome
-{
-    bool FlashFlag = false; 
-
-    void FlashToggle(void)
-    {
-        if (FlashFlag == false)
-        {
-            FlashFlag = true;
-        }
-        else
-        {
-            FlashFlag = false;
-        }        
-    }
-
-    // Display a metronome on the User Specific window.
-    void threadMetronome (void)
-    {
-        const int PulseDuration = 100;
-        TContext Context;
-        init_pair(1, COLOR_WHITE, COLOR_BLACK);
-        init_pair(2, COLOR_RED, COLOR_BLACK);
-        init_pair(3, COLOR_GREEN, COLOR_BLACK);
-        init_pair(4, COLOR_RED, COLOR_WHITE);
-        init_pair(5, COLOR_BLUE, COLOR_WHITE);
-        init_pair(6, COLOR_BLACK, COLOR_GREEN);
-
-        TBoxedWindow FlashWindow;
-        FlashWindow.Init("", LINES, COLS, 0, 0);
-        FlashWindow.Erase();
-        char * pFlashWindowContents = (char *) malloc(LINES * COLS +10);
-        // Create a C string that contains enough spaces to fill a screen
-        unsigned int i = 0;
-        for (i = LINES * COLS; i--;)
-        {
-            *((pFlashWindowContents) +i) = ' ';
-        }
-        *((pFlashWindowContents) +LINES * COLS) = 0;
-        wattron(FlashWindow.GetRef(), A_BOLD | A_REVERSE);
-        mvwprintw(FlashWindow.GetRef(), 0, 0, pFlashWindowContents);
-        FlashWindow.Refresh();
-        FlashWindow.Hide();
-
-        while (1)
-        {
-            // Get current Base Tempo of the song
-            Context = **PlaylistPosition;
-            float Tempo = Context.BaseTempo;
-            if (Tempo < 30) Tempo = 30;
-            if (Tempo > 200) Tempo = 200;
-            // Compute wait time from the tempo
-            unsigned long int delay_ms = 60000.0 / Tempo - PulseDuration;
-            // Display metronome
-            if (FlashFlag)
-            {
-                FlashWindow.Show();
-                waitMilliseconds(PulseDuration);
-                FlashWindow.Hide();
-                waitMilliseconds(delay_ms);
-            }
-            else
-            {
-                wattron(win_context_user_specific.GetRef(), COLOR_PAIR(1));
-                wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
-                mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
-                win_context_user_specific.Refresh();
-                waitMilliseconds(PulseDuration);
-                wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
-                mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
-                win_context_user_specific.Refresh();
-                waitMilliseconds(delay_ms);
-            }
-        }
-    }
-}
-
 
 /**
  * On the XV5080, reset the Parts of the Performance tied to the
@@ -6803,6 +6858,16 @@ void ResetXV5080Performance(void)
     XV5080.TemporaryPerformance.PerformancePart[14].ReceiveMIDI1.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[14].ReceiveSwitch.Set(1);
     XV5080.TemporaryPerformance.PerformancePart[14].ReceiveChannel.Set_1_16(MIDI_CHANNEL_BASS_SYNTH);
+
+    // Part #14 (identified as 13 below) is the Drum part - including the metronome click
+    // That part must be played MONO through output 8 (this goes to our drummer's ears only)
+    // It is *also* configured to play on MIDI channel 14.
+    XV5080.TemporaryPerformance.PerformancePart[13].SelectRhythmSet(TXV5080::RhythmSetGroup::PR_A, TInt_1_128(1));
+    XV5080.TemporaryPerformance.PerformancePart[13].ReceiveMIDI1.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[13].ReceiveSwitch.Set(1);
+    XV5080.TemporaryPerformance.PerformancePart[13].ReceiveChannel.Set_1_16(14);
+    XV5080.TemporaryPerformance.PerformancePart[13].PartOutputAssign.ToOutput8();
+
 
 }
 
