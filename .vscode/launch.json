@@ -23,6 +23,28 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
+
+        {
+            // for Linux
+            "name": "(gdb) Launch cunit",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/stephanegeorget/dev/oxford/oxford/bin/Debug/oxford",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "/home/stephanegeorget/dev/oxford/oxford/bin/Debug/",
+            "environment": [],
+            "externalConsole":false,
+            "MIMode": "gdb",
+            "setupCommands": [
+              {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": false
+              }
+            ]
+          }
+
     ]
 }

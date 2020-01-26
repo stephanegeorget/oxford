@@ -33,11 +33,6 @@
 
 // arecord -D hw:0 -f cd -V=mono > testfile
 
-// These two global variables are shared with oxford_main.cpp
-// to communicate information about tempo.
-float PCMInputTempoValue;
-float PCMInputTempoConfidence;
-
 #include <sys/asoundlib.h>
 const char *snd_strerror( int errnum );
 const char * errorchar;
