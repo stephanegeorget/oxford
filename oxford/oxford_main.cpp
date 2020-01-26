@@ -3437,7 +3437,7 @@ namespace Metronome
     // Display a metronome on the User Specific window.
     void threadMetronome (void)
     {
-        const int PulseDuration = 100;
+        const int PulseDuration = 20;
         TContext Context;
         init_pair(1, COLOR_WHITE, COLOR_BLACK);
         init_pair(2, COLOR_RED, COLOR_BLACK);
