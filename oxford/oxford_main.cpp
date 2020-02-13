@@ -3437,7 +3437,7 @@ namespace Metronome
     // Display a metronome on the User Specific window.
     void threadMetronome (void)
     {
-        const int PulseDuration = 20;
+        const int PulseDuration = 100;
         TContext Context;
         init_pair(1, COLOR_WHITE, COLOR_BLACK);
         init_pair(2, COLOR_RED, COLOR_BLACK);
@@ -3461,16 +3461,36 @@ namespace Metronome
         mvwprintw(FlashWindow.GetRef(), 0, 0, pFlashWindowContents);
         FlashWindow.Refresh();
         FlashWindow.Hide();
-
+        std::chrono::system_clock::time_point TimeStart; 
+        float Tempo = 30;
+        float previous_Tempo = -1;
+        long int beat_number = 0;
+        unsigned long int delay_ms = 100;
         while (1)
         {
             // Get current Base Tempo of the song
             Context = **PlaylistPosition;
-            float Tempo = Context.BaseTempo;
-            if (Tempo < 30) Tempo = 30;
-            if (Tempo > 200) Tempo = 200;
-            // Compute wait time from the tempo
-            unsigned long int delay_ms = 60000.0 / Tempo - PulseDuration;
+            if (Context.BaseTempo < 30) Context.BaseTempo = 30;
+            if (Context.BaseTempo > 200) Context.BaseTempo = 200;
+
+            Tempo = Context.BaseTempo;
+
+            if (Tempo != previous_Tempo)
+            {
+                 // Change in tempo detected
+                previous_Tempo = Tempo;
+                TimeStart = std::chrono::system_clock::now();
+                beat_number = 0;
+                // Compute wait time from the tempo
+                delay_ms = 60000.0 / Tempo;
+            }
+
+            beat_number ++;
+            
+            // Compute time at which next beat must happen
+            std::chrono::system_clock::time_point TimeNext = TimeStart + beat_number * std::chrono::milliseconds((long int)delay_ms);
+            std::this_thread::sleep_until(TimeNext);
+
             // Play metronome
             if (ClickFlag)
             {
@@ -3482,7 +3502,6 @@ namespace Metronome
                 FlashWindow.Show();
                 waitMilliseconds(PulseDuration);
                 FlashWindow.Hide();
-                waitMilliseconds(delay_ms);
             }
             else
             {
@@ -3494,7 +3513,6 @@ namespace Metronome
                 wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
                 mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
                 win_context_user_specific.Refresh();
-                waitMilliseconds(delay_ms);
             }
         }
     }
