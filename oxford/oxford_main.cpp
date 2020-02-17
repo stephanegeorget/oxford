@@ -31,6 +31,10 @@
 // 2/ /lib/ld-linux.so.2 --library-path PATH EXECUTABLE
 // 3/ export LD_LIBRARY_PATH=/usr/local/lib
 
+// Mosquitto
+// If running with Mosquitto features, build against mosquitto library -lmosquitto
+// apt-get install mosquitto libmosquitto-dev mqtt-tools
+
 
 
 #include <stdio.h>
@@ -61,6 +65,13 @@
 #include <chrono>
 #include <ctime>
 #include <atomic>
+#include "mosquitto.h"
+
+#define mqtt_host "localhost"
+#define mqtt_port 1883
+
+struct mosquitto *mosq = NULL;
+
 
 static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 and up on XV5080
 
@@ -849,6 +860,9 @@ public:
             // Then call the user-defined initialization function
             InitFunc();
         }
+
+        // Tell the world which song we're playing now.
+        mosquitto_publish(mosq, NULL, "song/name", SongName.size(), SongName.c_str(), 0, false);
         Banner.SetMessage(SongName);
     }
     void SetInitFunc( void (*InitFunc_param)(void))
@@ -3384,16 +3398,19 @@ void SelectContextInPlaylist(std::list<TContext*> &ContextList);
 
 
 
-namespace Metronome
+namespace MetronomeMaster
 {
     void IncreaseCurrentTempo(void * foo)
     {
         (*PlaylistPosition)->BaseTempo++;
+        if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
+        if ((*PlaylistPosition)->BaseTempo > 200) (*PlaylistPosition)->BaseTempo = 200;
     }
 
     void DecreaseCurrentTempo(void * foo)
     {
         (*PlaylistPosition)->BaseTempo--;
+        if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
     }
 
     bool FlashFlag = false; 
@@ -3470,11 +3487,7 @@ namespace Metronome
         {
             // Get current Base Tempo of the song
             Context = **PlaylistPosition;
-            if (Context.BaseTempo < 30) Context.BaseTempo = 30;
-            if (Context.BaseTempo > 200) Context.BaseTempo = 200;
-
             Tempo = Context.BaseTempo;
-
             if (Tempo != previous_Tempo)
             {
                  // Change in tempo detected
@@ -3482,7 +3495,18 @@ namespace Metronome
                 TimeStart = std::chrono::system_clock::now();
                 beat_number = 0;
                 // Compute wait time from the tempo
-                delay_ms = 60000.0 / Tempo;
+                if (Tempo != 0)
+                {
+                    delay_ms = 60000.0 / Tempo;
+                }
+                else
+                {
+                    delay_ms = 1000;
+                }
+                {
+                    mosquitto_publish(mosq, NULL, "song/tempo/value", sizeof(Tempo), (void *) &Tempo, 0, false);
+                    mosquitto_publish(mosq, NULL, "song/tempo/timestart", sizeof(TimeStart), (void *) &TimeStart, 0, false);
+                }
             }
 
             beat_number ++;
@@ -3497,6 +3521,11 @@ namespace Metronome
                 PlayNote(14, ClickNoteNumber, 20,100);
             }
             // Display metronome
+      
+            wattron(win_context_user_specific.GetRef(), COLOR_PAIR(1));
+            wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
+            mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
+            win_context_user_specific.Refresh();
             if (FlashFlag)
             {
                 FlashWindow.Show();
@@ -3505,10 +3534,7 @@ namespace Metronome
             }
             else
             {
-                wattron(win_context_user_specific.GetRef(), COLOR_PAIR(1));
-                wattron(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
-                mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
-                win_context_user_specific.Refresh();
+
                 waitMilliseconds(PulseDuration);
                 wattroff(win_context_user_specific.GetRef(), A_BOLD | A_REVERSE);
                 mvwprintw(win_context_user_specific.GetRef(), 0, 0, "BASE TEMPO:%03d",(int)Tempo);
@@ -3633,12 +3659,12 @@ void X_p(void * pVoid)
 
 void V_p(void * pVoid)
 {
-    Metronome::FlashToggle();
+    MetronomeMaster::FlashToggle();
 }
 
 void C_p(void * pVoid)
 {
-    Metronome::ClickToggle();
+    MetronomeMaster::ClickToggle();
 }
 
 // Scan keyboard for events, and process keypresses accordingly.
@@ -3665,10 +3691,10 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)17);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)19);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, Metronome::IncreaseCurrentTempo, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, Metronome::DecreaseCurrentTempo, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, Metronome::ClickNoteNumberDecrease, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, Metronome::ClickNoteNumberIncrease, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/increase", 2, "x", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 2, "x", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 2, "1", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 2, "1", 0, false);}, 0);
     
 
 
@@ -6964,7 +6990,7 @@ int main(int argc, char** argv)
     std::thread thread2(threadRedraw);
 
     // Create the thread that refreshes the metronome
-    std::thread thread3(Metronome::threadMetronome);
+    std::thread thread3(MetronomeMaster::threadMetronome);
 
     ComputerKeyboard::Initialize();
 
@@ -6976,7 +7002,9 @@ int main(int argc, char** argv)
 
     ResetXV5080Performance();
 
-
+    // Test mosquitto
+    extern void TestMosquitto(void);
+    TestMosquitto();
 
 #ifdef TEST_XV5080
     test_XV5080();
@@ -6993,4 +7021,88 @@ int main(int argc, char** argv)
         sleep(1);
 
     }
+}
+
+
+void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result)
+{
+	wprintw(win_debug_messages.GetRef(), "connect callback, rc=%d\n", result);
+}
+
+
+
+void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
+{
+	bool match = 0;
+	wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
+
+	mosquitto_topic_matches_sub("metronome/tempo/increase", message->topic, &match);
+	if (match)
+    {
+		MetronomeMaster::IncreaseCurrentTempo(0);
+        return;
+	}
+
+    mosquitto_topic_matches_sub("metronome/tempo/decrease", message->topic, &match);
+    if (match)
+    {
+		MetronomeMaster::DecreaseCurrentTempo(0);
+        return;
+	}
+
+    mosquitto_topic_matches_sub("metronome/beat_sound/increase", message->topic, &match);
+    if (match)
+    {
+		MetronomeMaster::ClickNoteNumberIncrease(0);
+        return;
+	}
+
+    mosquitto_topic_matches_sub("metronome/beat_sound/decrease", message->topic, &match);
+    if (match)
+    {
+		MetronomeMaster::ClickNoteNumberDecrease(0);
+        return;
+	}
+}
+
+void TestMosquitto(void)
+{
+	char clientid[24];
+	int rc = 0;
+    mosquitto_lib_init();
+
+	memset(clientid, 0, 24);
+	snprintf(clientid, 23, "oxford_client_%d", getpid());
+	mosq = mosquitto_new(clientid, true, 0);
+
+	if(mosq){
+		mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
+		mosquitto_message_callback_set(mosq, mqtt_message_callback);
+
+	    rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+
+		mosquitto_subscribe(mosq, NULL, "metronome/tempo/increase", 0);
+        mosquitto_subscribe(mosq, NULL, "metronome/tempo/decrease", 0);
+        mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/increase", 0);
+        mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/decrease", 0);
+        
+        
+        
+
+		while(1)
+        {
+		    rc = mosquitto_loop(mosq, -1, 1);
+			if(rc)
+            {
+				wprintw(win_debug_messages.GetRef(), "mosquitto connection error %i\n", rc);
+				sleep(1000);
+				mosquitto_reconnect(mosq);
+			}
+		}
+		mosquitto_destroy(mosq);
+	}
+
+	mosquitto_lib_cleanup();
+
+	wprintw(win_debug_messages.GetRef(), "mosquitto_loop returned %i", rc);
 }
