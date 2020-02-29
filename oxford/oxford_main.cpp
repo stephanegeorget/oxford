@@ -3504,7 +3504,9 @@ namespace MetronomeMaster
                     delay_ms = 1000;
                 }
                 {
-                    mosquitto_publish(mosq, NULL, "song/tempo/value", sizeof(Tempo), (void *) &Tempo, 0, false);
+                    std::string Tempo_str;
+                    Tempo_str = std::to_string( static_cast<int>(Tempo));
+                    mosquitto_publish(mosq, NULL, "song/tempo/value", Tempo_str.length(), Tempo_str.c_str(), 0, false);
                     mosquitto_publish(mosq, NULL, "song/tempo/timestart", sizeof(TimeStart), (void *) &TimeStart, 0, false);
                 }
             }
@@ -3691,10 +3693,10 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)17);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)19);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/increase", 2, "x", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 2, "x", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 2, "1", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 2, "1", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/increase", 1, "x", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 1, "x", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 1, "1", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 1, "1", 0, false);}, 0);
     
 
 

@@ -1,0 +1,325 @@
+[
+    {
+        "id": "1bffddfa.f2b1b2",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "7f0d72e0.8a3acc",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "a2515aaf.8196c8",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Metronome",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "e75d18b7.66a8e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "a2515aaf.8196c8",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "937cd258.ec06f",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "190f3d46.d55533",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6871af6b.a1b6",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "afad16e3.f7dd18",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b88a434e.a482d",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "bd0f2ef7.725828",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "a93cb701.28f1a8",
+        "type": "ui_button",
+        "z": "1bffddfa.f2b1b2",
+        "name": "",
+        "group": "e75d18b7.66a8e8",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "label": "+",
+        "tooltip": "Increase tempo",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "x",
+        "payloadType": "str",
+        "topic": "tempo_increase",
+        "x": 310,
+        "y": 260,
+        "wires": [
+            [
+                "32178c2e.dfbf1c"
+            ]
+        ]
+    },
+    {
+        "id": "32178c2e.dfbf1c",
+        "type": "ui_template",
+        "z": "1bffddfa.f2b1b2",
+        "group": "e75d18b7.66a8e8",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<html>\n<head>\n\t<title>Metronome</title>\n\t<link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"metronome.ico\"/>\n\t<script\n\t\tsrc=\"https://code.jquery.com/jquery-3.2.1.min.js\"\n\t\tintegrity=\"sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=\"\n\t\tcrossorigin=\"anonymous\">\n\t</script>\n\t<script>\n\n\n(function(scope) {\n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        if (msg.topic === \"tempo_increase\" && msg.payload === \"x\")\n        {\n            //alert('tempo UP');\n            tempo_up();\n            //msg.payload = \"\";\n        }\n        if (msg.topic === \"tempo_decrease\" && msg.payload === \"x\")\n        {\n            tempo_down();\n            //msg.payload = \"\";\n        }\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar $tempo\nvar tempo\n\n       function tempo_up()\n        {\n            tempo = parseInt($tempo.text());\n            if (Number.isNaN(tempo))\n            {\n                alert(\"NaN\");\n            }\n        if (tempo < 240) {\n\t\t\t\t\t$tempo.text(parseInt($tempo.text()) + 1);\n\t\t\t\t}\n        }\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n\t\t\t\tif (tempo > 40) {\n\t\t\t\t\t$tempo.text(parseInt($tempo.text()) - 1);\n\t\t\t\t}\n}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        tempo = 130;\n        \n \nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar interval = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tsnd.play();\n\t\t\tsetTimeout(step, interval);\n\t\t\tfunction step() {\n\t\t\t\tif (play) {\n\t\t\t\t\tsnd.play();\n\t\t\t\t\tvar now = Date.now();\n\t\t\t\t\tvar diff = now - started - interval;\n\t\t\t\t\tinterval = getInterval();\n\t\t\t\t\tstarted = now;\n\t\t\t\t\tsetTimeout(step, interval - diff);\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\n        \n\t\tvar snd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tvar play = false;\n\t\t$('#playing').hide();\n\n\t\t$(document).on('keydown', function(e) {\n\t\t\tswitch (e.which) {\n\t\t\tcase 38: // up\n\t\t\t\ttempo_up();\n\t\t\t\tbreak;\n\t\t\tcase 40: // down\n                tempo_down();\n\t\t\t\tbreak;\n\t\t\tcase 32: // space\n\t\t\t\tplay = !play;\n\t\t\t\t$('#playing').toggle(play);\n\t\t\t\t$('#stopped').toggle(!play);\n\t\t\t\tif (play) startMetronome();\n\t\t\t}\n\t\t});\n\t});\n\t\n\t\n\t\n\t\n\t</script>\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:160px; margin-bottom:50px; }\n\t\t#tempo { font-size:72pt; }\n\t\t#playing, #stopped { font-size:30px; text-align:center; }\n\t\t#playing { color:#0b0; }\n\t\t#stopped { color:red; }\n\t\t#keys { font-size:11pt; line-height:15pt; text-align:center; margin-top:20px; }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<div id=\"playing\">PLAYING</div>\n\t<div id=\"stopped\">STOPPED</div>\n\t<div id=\"keys\">space: start/stop<br/>\n\t\tup/down: tempo</div>\n</body>\n</html>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 460,
+        "y": 260,
+        "wires": [
+            [
+                "97e01439.3f1658"
+            ]
+        ]
+    },
+    {
+        "id": "97e01439.3f1658",
+        "type": "debug",
+        "z": "1bffddfa.f2b1b2",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 630,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "77ed5c1b.6b292c",
+        "type": "inject",
+        "z": "1bffddfa.f2b1b2",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 160,
+        "y": 260,
+        "wires": [
+            [
+                "a93cb701.28f1a8"
+            ]
+        ]
+    },
+    {
+        "id": "c3dcd52.0f60828",
+        "type": "ui_button",
+        "z": "1bffddfa.f2b1b2",
+        "name": "",
+        "group": "e75d18b7.66a8e8",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "label": "-",
+        "tooltip": "Increase tempo",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "x",
+        "payloadType": "str",
+        "topic": "tempo_decrease",
+        "x": 310,
+        "y": 320,
+        "wires": [
+            [
+                "32178c2e.dfbf1c"
+            ]
+        ]
+    },
+    {
+        "id": "a6af91d9.cf14a",
+        "type": "inject",
+        "z": "1bffddfa.f2b1b2",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "c3dcd52.0f60828"
+            ]
+        ]
+    }
+]

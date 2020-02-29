@@ -15,7 +15,7 @@ INC = -Icdk-5.0-20171209/include
 CFLAGS = -Wall -fexceptions
 RESINC = 
 LIBDIR = -Lcdk-5.0-20171209
-LIB = -lpthread -lasound -lncurses -lcdk -lpanel
+LIB = -lpthread -lasound -lncurses -lcdk -lpanel -lmosquitto
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
