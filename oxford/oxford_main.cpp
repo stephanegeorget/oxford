@@ -977,7 +977,7 @@ TContext cMorrissonJig;
 TContext cDjadja;
 TContext cCaCestVraimentToi;
 TContext cMixPolice;
-
+TContext cHotStuff;
 
 /**
  * This function is needed to sort lists of elements.
@@ -5690,7 +5690,6 @@ namespace MixPolice
     {
         Chord_Logic(ccpC);
     }
-
 }
 
 
@@ -6354,7 +6353,7 @@ void InitializePlaylist(void)
 
     cGetBack.Author = "Beatles";
     cGetBack.SongName = "Get back";
-    cGetBack.BaseTempo = 115;
+    cGetBack.BaseTempo = 117;
 
 
     cAllShookUp.Author = "Elvis Presley";
@@ -6365,7 +6364,7 @@ void InitializePlaylist(void)
 
     cBackToBlack.Author = "Amy Winehouse";
     cBackToBlack.SongName = "Back to black";
-    cBackToBlack.BaseTempo = 122;
+    cBackToBlack.BaseTempo = 125;
 
 
     cUnchainMyHeart.Author = "Joe Cooker";
@@ -6469,6 +6468,7 @@ void InitializePlaylist(void)
 
     cUptownFunk.Author = "Bruno Mars";
     cUptownFunk.SongName = "Uptown Funk";
+    cUptownFunk.BaseTempo = 117;
 
     cLeFreak.Author = "Chic";
     cLeFreak.SongName = "Le freak";
@@ -6573,6 +6573,7 @@ void InitializePlaylist(void)
 
     cBillieJean.Author = "Mickael Jackson";
     cBillieJean.SongName = "Billie Jean";
+    cBillieJean.BaseTempo = 120;
 
     cILoveRockNRoll.Author = "Unknown";
     cILoveRockNRoll.SongName = "I Love Rock'n'Roll";
@@ -6586,6 +6587,7 @@ void InitializePlaylist(void)
 
     cAllumerLeFeu.Author = "Johnny Halliday";
     cAllumerLeFeu.SongName = "Allumer Le Feu";
+    cAllumerLeFeu.BaseTempo = 135;
     cAllumerLeFeu.SetInitFunc(AllumerLeFeu::Init);
 
     cAllInYou.Author = "Synapson";
@@ -6596,7 +6598,7 @@ void InitializePlaylist(void)
 
     cThisGirl.Author = "Kung";
     cThisGirl.SongName = "This Girl";
-    cThisGirl.BaseTempo = 120;
+    cThisGirl.BaseTempo = 122;
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Kungs_This_Girl::TapTempo, NULL,"Tap tempo - 1 bar"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2"));
@@ -6607,12 +6609,15 @@ void InitializePlaylist(void)
 
     cEncoreUnMatin.Author = "Jean-Jacques Goldman";
     cEncoreUnMatin.SongName = "Encore Un Matin";
+    cEncoreUnMatin.BaseTempo = 130;
 
     cQuandLaMusiqueEstBonne.Author = "Jean-Jacques Goldman";
     cQuandLaMusiqueEstBonne.SongName = "Quand La Musique Est Bonne";
+    cQuandLaMusiqueEstBonne.BaseTempo = 130;
 
     cDumbo.Author = "Viannay";
     cDumbo.SongName = "Dumbo";
+    cDumbo.BaseTempo = 148;
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
@@ -6621,6 +6626,7 @@ void InitializePlaylist(void)
 
     cIsThisLove.Author = "Bob Marley";
     cIsThisLove.SongName = "Is This Love";
+    cIsThisLove.BaseTempo = 126;
 
     cPeople.Author = "Birdie";
     cPeople.SongName = "People Help The People";
@@ -6636,9 +6642,11 @@ void InitializePlaylist(void)
 
     cTakeOnMe.Author = "A-ha";
     cTakeOnMe.SongName = "Take On Me";
+    cTakeOnMe.BaseTempo = 150;
 
     cMorrissonJig.Author = "Rose Carbone";
     cMorrissonJig.SongName = "Morisson Jig";
+    cMorrissonJig.BaseTempo = 135;
     cMorrissonJig.SetInitFunc(MorrissonJig::Init);
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
     cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
@@ -6653,7 +6661,8 @@ void InitializePlaylist(void)
 
     cCaCestVraimentToi.Author = "Telephone";
     cCaCestVraimentToi.SongName = "Ca c'est vraiment toi";
-    
+    cCaCestVraimentToi.BaseTempo = 143;
+
     cMixPolice.Author = "Police";
     cMixPolice.SongName = "I can't stand../Message../Roxanne";
     cMixPolice.SetInitFunc(MixPolice::Init);
@@ -6662,6 +6671,10 @@ void InitializePlaylist(void)
     cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MixPolice::Chord_Bb, NULL, "Chord Bb"));
     cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MixPolice::Chord_C, NULL, "Chord C"));
     
+    cHotStuff.Author = "Donna Summer";
+    cHotStuff.SongName = "Hot stuff";
+    cHotStuff.BaseTempo = 122;
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -6749,6 +6762,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cCaCestVraimentToi);
 
     PlaylistData.push_back(&cMixPolice);
+    PlaylistData.push_back(&cHotStuff);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
