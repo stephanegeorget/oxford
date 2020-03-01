@@ -862,7 +862,7 @@ public:
         }
 
         // Tell the world which song we're playing now.
-        mosquitto_publish(mosq, NULL, "song/name", SongName.size(), SongName.c_str(), 0, false);
+        mosquitto_publish(mosq, NULL, "song/name", SongName.size(), SongName.c_str(), 2, false);
         Banner.SetMessage(SongName);
     }
     void SetInitFunc( void (*InitFunc_param)(void))
@@ -976,6 +976,8 @@ TContext cTakeOnMe;
 TContext cMorrissonJig;
 TContext cDjadja;
 TContext cCaCestVraimentToi;
+TContext cMixPolice;
+
 
 /**
  * This function is needed to sort lists of elements.
@@ -3478,11 +3480,11 @@ namespace MetronomeMaster
         mvwprintw(FlashWindow.GetRef(), 0, 0, pFlashWindowContents);
         FlashWindow.Refresh();
         FlashWindow.Hide();
-        std::chrono::system_clock::time_point TimeStart; 
+        std::chrono::system_clock::time_point TimeStart;
         float Tempo = 30;
         float previous_Tempo = -1;
-        long int beat_number = 0;
-        unsigned long int delay_ms = 100;
+        float beat_number = 0;
+        float delay_ms = 100;
         while (1)
         {
             // Get current Base Tempo of the song
@@ -3506,15 +3508,17 @@ namespace MetronomeMaster
                 {
                     std::string Tempo_str;
                     Tempo_str = std::to_string( static_cast<int>(Tempo));
-                    mosquitto_publish(mosq, NULL, "song/tempo/value", Tempo_str.length(), Tempo_str.c_str(), 0, false);
-                    mosquitto_publish(mosq, NULL, "song/tempo/timestart", sizeof(TimeStart), (void *) &TimeStart, 0, false);
+                    mosquitto_publish(mosq, NULL, "song/tempo/value", Tempo_str.length(), Tempo_str.c_str(), 2, false);
+                    unsigned long int TimeSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeStart.time_since_epoch()).count();
+                    std::string TimeSinceEpoch_ms_str = std::to_string(TimeSinceEpoch_ms);
+                    mosquitto_publish(mosq, NULL, "song/tempo/timestart", TimeSinceEpoch_ms_str.length(), TimeSinceEpoch_ms_str.c_str(), 2, false);
                 }
             }
 
             beat_number ++;
             
             // Compute time at which next beat must happen
-            std::chrono::system_clock::time_point TimeNext = TimeStart + beat_number * std::chrono::milliseconds((long int)delay_ms);
+            std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int) (beat_number * delay_ms));
             std::this_thread::sleep_until(TimeNext);
 
             // Play metronome
@@ -3693,10 +3697,10 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTBRACE, StartNote, (void *)17);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_EQUAL, StartNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHTBRACE, StartNote, (void *)19);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/increase", 1, "x", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 1, "x", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 1, "1", 0, false);}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 1, "1", 0, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_UP, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/increase", 1, "x", 2, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 1, "x", 2, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 1, "1", 2, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 1, "1", 2, false);}, 0);
     
 
 
@@ -5604,6 +5608,92 @@ namespace AllumerLeFeu
     }
 }
 
+namespace MixPolice
+{
+
+    typedef enum
+    {
+        ccpG,
+        ccpA,
+        ccpBb,
+        ccpC,
+        ccpSilent
+    } TChordCurrentlyPlaying;
+
+    TChordCurrentlyPlaying ChordCurrentlyPlaying = ccpSilent;
+
+    void Init(void)
+    {
+        // On Part #1 (numbered 0 below), put an organ
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_E, 30); // Organ named "fullness"
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(0);
+        ChordCurrentlyPlaying = ccpSilent;
+    }
+
+
+
+    std::array<std::array<int, 4>, 4> Chords = {{{55, 58, 62, 67}, {57, 60, 64, 69}, {58, 62, 65, 70}, {60, 64, 67, 72}}};
+
+    void Chord_On(int index)
+    {
+        for (const auto& s:Chords[index])
+            MIDI_A.SendNoteOnEvent(1, s, 127);
+    }
+
+    void Chord_Off(int index)
+    {
+        for (const auto& s:Chords[index])
+            MIDI_A.SendNoteOnEvent(1, s, 0);
+    }
+
+
+    void Chord_Logic(TChordCurrentlyPlaying ChordToPlay)
+    {
+        if (ChordCurrentlyPlaying == ChordToPlay)
+        {
+            // turn off
+            Chord_Off(ChordToPlay);
+            ChordCurrentlyPlaying = ccpSilent;
+        }
+        else if (ChordCurrentlyPlaying == ccpSilent)
+        {
+            Chord_On(ChordToPlay);
+            ChordCurrentlyPlaying = ChordToPlay;
+        }
+        else
+        {
+            Chord_Off(ChordCurrentlyPlaying);
+            Chord_On(ChordToPlay);
+            ChordCurrentlyPlaying = ChordToPlay;
+        }
+    }
+
+    void Chord_G(void)
+    {
+        Chord_Logic(ccpG);
+    }
+
+    void Chord_A(void)
+    {
+        Chord_Logic(ccpA);
+    }
+
+    void Chord_Bb(void)
+    {
+        Chord_Logic(ccpBb);
+    }
+
+    void Chord_C(void)
+    {
+        Chord_Logic(ccpC);
+    }
+
+}
+
+
 
 namespace ElevenRack
 {
@@ -6564,8 +6654,14 @@ void InitializePlaylist(void)
     cCaCestVraimentToi.Author = "Telephone";
     cCaCestVraimentToi.SongName = "Ca c'est vraiment toi";
     
-
-
+    cMixPolice.Author = "Police";
+    cMixPolice.SongName = "I can't stand../Message../Roxanne";
+    cMixPolice.SetInitFunc(MixPolice::Init);
+    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MixPolice::Chord_G, NULL, "Chord G"));
+    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MixPolice::Chord_A, NULL, "Chord A"));
+    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MixPolice::Chord_Bb, NULL, "Chord Bb"));
+    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MixPolice::Chord_C, NULL, "Chord C"));
+    
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -6652,6 +6748,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cDjadja);
     PlaylistData.push_back(&cCaCestVraimentToi);
 
+    PlaylistData.push_back(&cMixPolice);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
