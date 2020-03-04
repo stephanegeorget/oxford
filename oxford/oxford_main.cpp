@@ -978,6 +978,7 @@ TContext cDjadja;
 TContext cCaCestVraimentToi;
 TContext cMixPolice;
 TContext cHotStuff;
+TContext cAmericanIdiot;
 
 /**
  * This function is needed to sort lists of elements.
@@ -6675,6 +6676,10 @@ void InitializePlaylist(void)
     cHotStuff.SongName = "Hot stuff";
     cHotStuff.BaseTempo = 122;
 
+    cAmericanIdiot.Author = "Green Day";
+    cAmericanIdiot.SongName = "American Idiot";
+    cAmericanIdiot.BaseTempo = 94;
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -6763,6 +6768,7 @@ void InitializePlaylist(void)
 
     PlaylistData.push_back(&cMixPolice);
     PlaylistData.push_back(&cHotStuff);
+    PlaylistData.push_back(&cAmericanIdiot);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
