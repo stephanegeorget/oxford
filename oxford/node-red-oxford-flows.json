@@ -1,13 +1,13 @@
 [
     {
-        "id": "c30f1eee.1bc268",
+        "id": "c4ff7bd0.40f6a8",
         "type": "tab",
         "label": "Flow 1",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "8e153e4f.d84768",
+        "id": "fa2246d8.80cf9",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -17,7 +17,7 @@
         "collapse": false
     },
     {
-        "id": "993fbda4.6ac788",
+        "id": "a6d1130e.114ad8",
         "type": "ui_base",
         "theme": {
             "name": "theme-light",
@@ -113,7 +113,7 @@
         }
     },
     {
-        "id": "685e5551.5e864c",
+        "id": "11769350.17a9f5",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -135,7 +135,7 @@
         "willPayload": ""
     },
     {
-        "id": "2f2878fb.ca5748",
+        "id": "e1a2bf6b.1750a8",
         "type": "ui_tab",
         "z": "",
         "name": "Oxford",
@@ -144,17 +144,17 @@
         "hidden": false
     },
     {
-        "id": "7e18c0e0.ad758",
+        "id": "6ad97ff8.656468",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "2f2878fb.ca5748",
+        "tab": "e1a2bf6b.1750a8",
         "disp": true,
         "width": "5",
         "collapse": false
     },
     {
-        "id": "de0d1676.ace5b8",
+        "id": "196501c.082357e",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -163,7 +163,7 @@
         "height": 1
     },
     {
-        "id": "95408e24.bc36f",
+        "id": "9d76c6a4.751228",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -174,7 +174,7 @@
         "collapse": false
     },
     {
-        "id": "d1519ab9.eb6018",
+        "id": "67f0d3e2.28e814",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -185,7 +185,7 @@
         "collapse": false
     },
     {
-        "id": "4e526ee1.d56d18",
+        "id": "c736aad0.3a0f1",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -196,7 +196,7 @@
         "collapse": false
     },
     {
-        "id": "96a0af65.33c1f",
+        "id": "7e4b596c.e084c",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -206,7 +206,7 @@
         "collapse": false
     },
     {
-        "id": "b9259891.f61e38",
+        "id": "1e9bde90.de3e79",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -228,11 +228,232 @@
         "willPayload": ""
     },
     {
-        "id": "f8ada3c8.88cf2",
+        "id": "4650f444.594c2c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ea39edae.cf0a7",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "82fabc46.8ccf5",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "ae4dca61.245ae8",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Oxford",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "463a7da8.13b3f4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "ae4dca61.245ae8",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "856ee7a9.db6be",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "58e5e9bc.bf89b8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "285a1827.8dad1",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "6ffdc214.37d7cc",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "130a5d45.4dc3bb",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "b0fd40a8.7e2d",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "571e99c0.dcef2",
         "type": "ui_button",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
-        "group": "7e18c0e0.ad758",
+        "group": "463a7da8.13b3f4",
         "order": 3,
         "width": "1",
         "height": "1",
@@ -249,14 +470,14 @@
         "y": 280,
         "wires": [
             [
-                "d4304be2.8809c"
+                "f39cf8de.8c956"
             ]
         ]
     },
     {
-        "id": "27cb77e5.c98328",
+        "id": "48626ef.daf389",
         "type": "debug",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -268,9 +489,9 @@
         "wires": []
     },
     {
-        "id": "5864a6e4.7511c8",
+        "id": "cdfeff35.f06358",
         "type": "inject",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "",
         "payload": "",
@@ -283,16 +504,16 @@
         "y": 280,
         "wires": [
             [
-                "f8ada3c8.88cf2"
+                "571e99c0.dcef2"
             ]
         ]
     },
     {
-        "id": "235ece49.f9e1c2",
+        "id": "404715cd.31d364",
         "type": "ui_button",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
-        "group": "7e18c0e0.ad758",
+        "group": "463a7da8.13b3f4",
         "order": 4,
         "width": "1",
         "height": "1",
@@ -309,14 +530,14 @@
         "y": 340,
         "wires": [
             [
-                "d4304be2.8809c"
+                "f39cf8de.8c956"
             ]
         ]
     },
     {
-        "id": "5d57ff64.5cece8",
+        "id": "d90c8992.bfcdf",
         "type": "inject",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "",
         "payload": "",
@@ -329,51 +550,51 @@
         "y": 340,
         "wires": [
             [
-                "235ece49.f9e1c2"
+                "404715cd.31d364"
             ]
         ]
     },
     {
-        "id": "dd35c4cb.f30b18",
+        "id": "28c974c.356e08c",
         "type": "mqtt in",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "#",
         "qos": "2",
         "datatype": "auto",
-        "broker": "b9259891.f61e38",
+        "broker": "b0fd40a8.7e2d",
         "x": 210,
         "y": 140,
         "wires": [
             [
-                "5f69da8.8e27724",
-                "eb4a0531.7d4248",
-                "a9b71e4c.66551"
+                "c998ba24.6c7ec",
+                "7df0ef6d.ab49e8",
+                "2680eb2e.22e524"
             ]
         ]
     },
     {
-        "id": "8eddee97.e776b8",
+        "id": "62cfd532.29211c",
         "type": "mqtt in",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "song/name",
         "qos": "2",
         "datatype": "auto",
-        "broker": "b9259891.f61e38",
+        "broker": "b0fd40a8.7e2d",
         "x": 210,
         "y": 420,
         "wires": [
             [
-                "f1030c1.a4f3a7"
+                "fe3ca1b7.6aa74"
             ]
         ]
     },
     {
-        "id": "f1030c1.a4f3a7",
+        "id": "fe3ca1b7.6aa74",
         "type": "ui_text",
-        "z": "c30f1eee.1bc268",
-        "group": "7e18c0e0.ad758",
+        "z": "c4ff7bd0.40f6a8",
+        "group": "463a7da8.13b3f4",
         "order": 1,
         "width": 0,
         "height": 0,
@@ -386,24 +607,25 @@
         "wires": []
     },
     {
-        "id": "d4304be2.8809c",
+        "id": "f39cf8de.8c956",
         "type": "mqtt out",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "",
-        "qos": "",
-        "retain": "",
-        "broker": "b9259891.f61e38",
+        "qos": "2",
+        "retain": "true",
+        "broker": "b0fd40a8.7e2d",
         "x": 630,
         "y": 300,
         "wires": []
     },
     {
-        "id": "b8fe1a84.ee1ed8",
+        "id": "212aef22.fd5058",
         "type": "ui_button",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
+        "d": true,
         "name": "",
-        "group": "7e18c0e0.ad758",
+        "group": "463a7da8.13b3f4",
         "order": 2,
         "width": "2",
         "height": "1",
@@ -420,16 +642,16 @@
         "y": 220,
         "wires": [
             [
-                "d4304be2.8809c"
+                "f39cf8de.8c956"
             ]
         ]
     },
     {
-        "id": "eb4a0531.7d4248",
+        "id": "7df0ef6d.ab49e8",
         "type": "ui_template",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "d": true,
-        "group": "7e18c0e0.ad758",
+        "group": "463a7da8.13b3f4",
         "name": "",
         "order": 5,
         "width": 0,
@@ -442,14 +664,14 @@
         "y": 140,
         "wires": [
             [
-                "27cb77e5.c98328"
+                "48626ef.daf389"
             ]
         ]
     },
     {
-        "id": "5f69da8.8e27724",
+        "id": "c998ba24.6c7ec",
         "type": "debug",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -461,9 +683,9 @@
         "wires": []
     },
     {
-        "id": "49a00d05.eec4bc",
+        "id": "ff4dfdf2.cbe0c",
         "type": "switch",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "property": "payload",
         "propertyType": "msg",
@@ -484,15 +706,15 @@
         ]
     },
     {
-        "id": "a9b71e4c.66551",
+        "id": "2680eb2e.22e524",
         "type": "ui_template",
-        "z": "c30f1eee.1bc268",
-        "group": "7e18c0e0.ad758",
+        "z": "c4ff7bd0.40f6a8",
+        "group": "463a7da8.13b3f4",
         "name": "",
         "order": 5,
         "width": 0,
         "height": 0,
-        "format": "<html>\n<head>\n\t<script>\n\n\n(function(scope) {\n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            //alert('tempo UP');\n            tempo_up();\n            //msg.payload = \"\";\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            tempo_down();\n            //msg.payload = \"\";\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            time_offset = parseInt(msg.payload);\n        }\n\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar tempo;\nvar play;\nvar snd;\nvar timestart = Date.now();\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\n\nfunction toggle_play()\n{\n\tplay = !play;\n\t//if (play) startMetronome();\n}\n\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    beat_number = (Date.now() - timestart)/delay_ms;\n                    beat_number = Math.floor(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + beat_number * delay_ms + time_offset;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t\tsnd.play();\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n\t});\n\t\n\t\n\t\n\t\n\t</script>\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n</body>\n</html>",
+        "format": "<html>\n<head>\n\t<script>\n\n\n(function(scope) {\n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            //alert('tempo UP');\n            tempo_up();\n            //msg.payload = \"\";\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            tempo_down();\n            //msg.payload = \"\";\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            //toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            date_timestart_received = Date.now();\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            time_offset = parseInt(msg.payload);\n        }\n\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar tempo;\nvar play;\nvar snd;\nvar timestart = Date.now();\nvar phase = 0;\nvar date_timestart_received = Date.now();\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\nfunction phase_delay_increment()\n{\n    phase = phase +10;\n}\n\nfunction phase_delay_decrement()\n{\n    phase = phase -10;\n}\n\nfunction toggle_play()\n{\n\tplay = !play;\n\t//if (play) startMetronome();\n}\n\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    beat_number = (date_timestart_received - timestart)/delay_ms;\n                    beat_number = Math.floor(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + beat_number * delay_ms + time_offset + phase;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t\tsnd.play();\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgYtAgAyN+QWaAAihwMWm4G8QQRDiMcCBcH3Cc+CDv/7xA4Tvh9Rz/y8QADBwMWgQAZG/ILNAARQ4GLTcDeIIIhxGOBAuD7hOfBB3/94gcJ3w+o5/5eIAIAAAVwWgQAVQ2ORaIQwEMAJiDg95G4nQL7mQVWI6GwRcfsZAcsKkJvxgxEjzFUgfHoSQ9Qq7KNwqHwuB13MA4a1q/DmBrHgPcmjiGoh//EwC5nGPEmS4RcfkVKOhJf+WOgoxJclFz3kgn//dBA+ya1GhurNn8zb//9NNutNuhz31f////9vt///z+IdAEAAAK4LQIAKobHItEIYCGAExBwe8jcToF9zIKrEdDYIuP2MgOWFSE34wYiR5iqQPj0JIeoVdlG4VD4XA67mAcNa1fhzA1jwHuTRxDUQ//iYBczjHiTJcIuPyKlHQkv/LHQUYkuSi57yQT//uggfZNajQ3Vmz+Zt//+mm3Wm3Q576v////+32///5/EOgAAADVghQAAAAA//uQZAUAB1WI0PZugAAAAAoQwAAAEk3nRd2qAAAAACiDgAAAAAAABCqEEQRLCgwpBGMlJkIz8jKhGvj4k6jzRnqasNKIeoh5gI7BJaC1A1AoNBjJgbyApVS4IDlZgDU5WUAxEKDNmmALHzZp0Fkz1FMTmGFl1FMEyodIavcCAUHDWrKAIA4aa2oCgILEBupZgHvAhEBcZ6joQBxS76AgccrFlczBvKLC0QI2cBoCFvfTDAo7eoOQInqDPBtvrDEZBNYN5xwNwxQRfw8ZQ5wQVLvO8OYU+mHvFLlDh05Mdg7BT6YrRPpCBznMB2r//xKJjyyOh+cImr2/4doscwD6neZjuZR4AgAABYAAAABy1xcdQtxYBYYZdifkUDgzzXaXn98Z0oi9ILU5mBjFANmRwlVJ3/6jYDAmxaiDG3/6xjQQCCKkRb/6kg/wW+kSJ5//rLobkLSiKmqP/0ikJuDaSaSf/6JiLYLEYnW/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAAAAAE0VZQKw9ISAAACgAAAAAVQIygIElVrFkBS+Jhi+EAuu+lKAkYUEIsmEAEoMeDmCETMvfSHTGkF5RWH7kz/ESHWPAq/kcCRhqBtMdokPdM7vil7RG98A2sc7zO6ZvTdM7pmOUAZTnJW+NXxqmd41dqJ6mLTXxrPpnV8avaIf5SvL7pndPvPpndJR9Kuu8fePvuiuhorgWjp7Mf/PRjxcFCPDkW31srioCExivv9lcwKEaHsf/7ow2Fl1T/9RkXgEhYElAoCLFtMArxwivDJJ+bR1HTKJdlEoTELCIqgEwVGSQ+hIm0NbK8WXcTEI0UPoa2NbG4y2K00JEWbZavJXkYaqo9CRHS55FcZTjKEk3NKoCYUnSQ0rWxrZbFKbKIhOKPZe1cJKzZSaQrIyULHDZmV5K4xySsDRKWOruanGtjLJXFEmwaIbDLX0hIPBUQPVFVkQkDoUNfSoDgQGKPekoxeGzA4DUvnn4bxzcZrtJyipKfPNy5w+9lnXwgqsiyHNeSVpemw4bWb9psYeq//uQZBoABQt4yMVxYAIAAAkQoAAAHvYpL5m6AAgAACXDAAAAD59jblTirQe9upFsmZbpMudy7Lz1X1DYsxOOSWpfPqNX2WqktK0DMvuGwlbNj44TleLPQ+Gsfb+GOWOKJoIrWb3cIMeeON6lz2umTqMXV8Mj30yWPpjoSa9ujK8SyeJP5y5mOW1D6hvLepeveEAEDo0mgCRClOEgANv3B9a6fikgUSu/DmAMATrGx7nng5p5iimPNZsfQLYB2sDLIkzRKZOHGAaUyDcpFBSLG9MCQALgAIgQs2YunOszLSAyQYPVC2YdGGeHD2dTdJk1pAHGAWDjnkcLKFymS3RQZTInzySoBwMG0QueC3gMsCEYxUqlrcxK6k1LQQcsmyYeQPdC2YfuGPASCBkcVMQQqpVJshui1tkXQJQV0OXGAZMXSOEEBRirXbVRQW7ugq7IM7rPWSZyDlM3IuNEkxzCOJ0ny2ThNkyRai1b6ev//3dzNGzNb//4uAvHT5sURcZCFcuKLhOFs8mLAAEAt4UWAAIABAAAAAB4qbHo0tIjVkUU//uQZAwABfSFz3ZqQAAAAAngwAAAE1HjMp2qAAAAACZDgAAAD5UkTE1UgZEUExqYynN1qZvqIOREEFmBcJQkwdxiFtw0qEOkGYfRDifBui9MQg4QAHAqWtAWHoCxu1Yf4VfWLPIM2mHDFsbQEVGwyqQoQcwnfHeIkNt9YnkiaS1oizycqJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n\t});\n\t\n\t\n\t\n\t\n\t</script>\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<button onclick=phase_delay_increment()>Phase +</button>\n\t<button onclick=phase_delay_decrement()>Phase -</button>\n\t<button onclick=toggle_play()>ON/OFF</button>\n</body>\n</html>",
         "storeOutMessages": true,
         "fwdInMessages": true,
         "templateScope": "local",
@@ -503,26 +725,26 @@
         ]
     },
     {
-        "id": "cd7ec1f3.3d3de",
+        "id": "2ef3d3cc.3bbf34",
         "type": "mqtt in",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "song/tempo/timestart",
         "qos": "2",
         "datatype": "utf8",
-        "broker": "b9259891.f61e38",
+        "broker": "b0fd40a8.7e2d",
         "x": 250,
         "y": 500,
         "wires": [
             [
-                "360cf199.d58fee"
+                "becdb04f.6b36d8"
             ]
         ]
     },
     {
-        "id": "360cf199.d58fee",
+        "id": "becdb04f.6b36d8",
         "type": "debug",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -534,9 +756,9 @@
         "wires": []
     },
     {
-        "id": "9ea8d9a5.40fae8",
+        "id": "f5281f3e.8df548",
         "type": "function",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "func": "var date = Date.now();\nmsg.payload = date;\nreturn msg;",
         "outputs": 1,
@@ -545,14 +767,14 @@
         "y": 600,
         "wires": [
             [
-                "2108f45b.714aac"
+                "712fd89d.0adbd8"
             ]
         ]
     },
     {
-        "id": "2108f45b.714aac",
+        "id": "712fd89d.0adbd8",
         "type": "debug",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -564,9 +786,9 @@
         "wires": []
     },
     {
-        "id": "ca05aa3f.9b5d28",
+        "id": "1c4d0c75.fe9574",
         "type": "inject",
-        "z": "c30f1eee.1bc268",
+        "z": "c4ff7bd0.40f6a8",
         "name": "",
         "topic": "",
         "payload": "",
@@ -579,7 +801,7 @@
         "y": 600,
         "wires": [
             [
-                "9ea8d9a5.40fae8"
+                "f5281f3e.8df548"
             ]
         ]
     }
