@@ -526,6 +526,18 @@ void WahSetValue(int);
 namespace ComputerKeyboard
 {
 
+bool DoPerformCallbacks = true;
+
+void DisableCallbacks(void)
+{
+    DoPerformCallbacks = false;
+}
+
+void EnableCallbacks(void)
+{
+    DoPerformCallbacks = true;
+}
+
 static const char *const evval[3] =
 {
     "RELEASED",
@@ -574,6 +586,13 @@ void KeyboardThread(void)
     while (1)
     {
         n = read(fd, &ev, sizeof ev);
+
+        if (DoPerformCallbacks == false)
+        {
+            continue;
+            // Do not execute the code below.
+        }
+
         if (n == (ssize_t)-1)
         {
             if (errno == EINTR)
@@ -3622,17 +3641,25 @@ void ChannelMore(void * pVoid)
 
 void Space(void * pVoid)
 {
+    ComputerKeyboard::DisableCallbacks();
+    // The function below handles computer keyboard by itself, through ncurses lib
     SelectContextInPlaylist(PlaylistData, false);
+    // Done getting keyboard information from ncurses - back to the raw keyboard routine
+    ComputerKeyboard::EnableCallbacks();
 }
 
 void B(void * pVoid)
 {
+    ComputerKeyboard::DisableCallbacks();
     SelectContextInPlaylist(PlaylistData_BySongName, false);
+    ComputerKeyboard::EnableCallbacks();
 }
 
 void N(void * pVoid)
 {
+    ComputerKeyboard::DisableCallbacks();
     SelectContextInPlaylist(PlaylistData_ByAuthor, true);
+    ComputerKeyboard::EnableCallbacks();
 }
 
 
@@ -3750,7 +3777,7 @@ void threadKeyboard(void)
         int ch = -1;
         if (ch == -1)
         {
-            waitMilliseconds(100);
+            waitMilliseconds(1000);
             continue;
         }
     }
@@ -7155,6 +7182,26 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
 	bool match = 0;
 	wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
 
+    mosquitto_topic_matches_sub("clock-synchro/ping", message->topic, &match);
+    if (match)
+    {
+        // We've received a "ping" message used to synchronize clocks. Reply with
+        // current time (in ms from epoch).
+        // The message itself is an identifier PingID that uniquely identifies the system where message originates from
+        // Craft a new message with the local Epoch time (form this program and computer)
+        // Send back message on topic "clock-synchro/pong/PingID"
+        std::string PingID( (char *) message->payload);
+
+        std::chrono::system_clock::time_point TimeNow;
+        TimeNow = std::chrono::system_clock::now();
+        unsigned long int TimeNowSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow.time_since_epoch()).count();
+        std::string TimeNowSinceEpoch_ms_str = std::to_string(TimeNowSinceEpoch_ms);
+
+        std::string PongTopicName;
+        PongTopicName = "clock-synchro/pong/" + PingID;
+        mosquitto_publish(mosq, NULL, PongTopicName.c_str(), TimeNowSinceEpoch_ms_str.length(), TimeNowSinceEpoch_ms_str.c_str(), 2, false);
+    }
+
 	mosquitto_topic_matches_sub("metronome/tempo/increase", message->topic, &match);
 	if (match)
     {
@@ -7204,6 +7251,7 @@ void TestMosquitto(void)
         mosquitto_subscribe(mosq, NULL, "metronome/tempo/decrease", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/increase", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/decrease", 0);
+        mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
         
         
         
