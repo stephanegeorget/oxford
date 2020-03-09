@@ -135,20 +135,11 @@
         "willPayload": ""
     },
     {
-        "id": "e1a2bf6b.1750a8",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Oxford",
-        "icon": "",
-        "disabled": false,
-        "hidden": false
-    },
-    {
         "id": "6ad97ff8.656468",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "e1a2bf6b.1750a8",
+        "tab": "",
         "disp": true,
         "width": "5",
         "collapse": false
@@ -260,20 +251,11 @@
         "willPayload": ""
     },
     {
-        "id": "ae4dca61.245ae8",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Oxford",
-        "icon": "",
-        "disabled": false,
-        "hidden": false
-    },
-    {
         "id": "463a7da8.13b3f4",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "ae4dca61.245ae8",
+        "tab": "",
         "disp": true,
         "width": "5",
         "collapse": false
@@ -353,234 +335,24 @@
         "willPayload": ""
     },
     {
-        "id": "aaff5138.32ae5",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Home",
-        "icon": "dashboard",
-        "disabled": false,
-        "hidden": false
-    },
-    {
         "id": "fc38f3a5.05f978",
         "type": "ui_group",
         "z": "",
         "name": "Default",
-        "tab": "aaff5138.32ae5",
+        "tab": "",
         "disp": true,
         "width": "6",
         "collapse": false
-    },
-    {
-        "id": "ed4c8874.3a5d18",
-        "type": "ui_base",
-        "theme": {
-            "name": "theme-light",
-            "lightTheme": {
-                "default": "#0094CE",
-                "baseColor": "#0094CE",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": true,
-                "reset": false
-            },
-            "darkTheme": {
-                "default": "#097479",
-                "baseColor": "#097479",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
-            },
-            "customTheme": {
-                "name": "Untitled Theme 1",
-                "default": "#4B7930",
-                "baseColor": "#4B7930",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-            },
-            "themeState": {
-                "base-color": {
-                    "default": "#0094CE",
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-titlebar-backgroundColor": {
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-backgroundColor": {
-                    "value": "#fafafa",
-                    "edited": false
-                },
-                "page-sidebar-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-textColor": {
-                    "value": "#1bbfff",
-                    "edited": false
-                },
-                "group-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "widget-textColor": {
-                    "value": "#111111",
-                    "edited": false
-                },
-                "widget-backgroundColor": {
-                    "value": "#0094ce",
-                    "edited": false
-                },
-                "widget-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "base-font": {
-                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-                }
-            },
-            "angularTheme": {
-                "primary": "indigo",
-                "accents": "blue",
-                "warn": "red",
-                "background": "grey"
-            }
-        },
-        "site": {
-            "name": "Node-RED Dashboard",
-            "hideToolbar": "false",
-            "allowSwipe": "false",
-            "lockMenu": "false",
-            "allowTempTheme": "true",
-            "dateFormat": "DD/MM/YYYY",
-            "sizes": {
-                "sx": 48,
-                "sy": 48,
-                "gx": 6,
-                "gy": 6,
-                "cx": 6,
-                "cy": 6,
-                "px": 0,
-                "py": 0
-            }
-        }
-    },
-    {
-        "id": "8c7573d5.e905d",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Home",
-        "icon": "dashboard",
-        "disabled": false,
-        "hidden": false
     },
     {
         "id": "55147c2d.91f98c",
         "type": "ui_group",
         "z": "",
         "name": "Default",
-        "tab": "8c7573d5.e905d",
+        "tab": "",
         "disp": true,
         "width": "6",
         "collapse": false
-    },
-    {
-        "id": "a2aed15c.6913f8",
-        "type": "ui_base",
-        "theme": {
-            "name": "theme-light",
-            "lightTheme": {
-                "default": "#0094CE",
-                "baseColor": "#0094CE",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": true,
-                "reset": false
-            },
-            "darkTheme": {
-                "default": "#097479",
-                "baseColor": "#097479",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
-            },
-            "customTheme": {
-                "name": "Untitled Theme 1",
-                "default": "#4B7930",
-                "baseColor": "#4B7930",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-            },
-            "themeState": {
-                "base-color": {
-                    "default": "#0094CE",
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-titlebar-backgroundColor": {
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-backgroundColor": {
-                    "value": "#fafafa",
-                    "edited": false
-                },
-                "page-sidebar-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-textColor": {
-                    "value": "#1bbfff",
-                    "edited": false
-                },
-                "group-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "widget-textColor": {
-                    "value": "#111111",
-                    "edited": false
-                },
-                "widget-backgroundColor": {
-                    "value": "#0094ce",
-                    "edited": false
-                },
-                "widget-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "base-font": {
-                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-                }
-            },
-            "angularTheme": {
-                "primary": "indigo",
-                "accents": "blue",
-                "warn": "red",
-                "background": "grey"
-            }
-        },
-        "site": {
-            "name": "Node-RED Dashboard",
-            "hideToolbar": "false",
-            "allowSwipe": "false",
-            "lockMenu": "false",
-            "allowTempTheme": "true",
-            "dateFormat": "DD/MM/YYYY",
-            "sizes": {
-                "sx": 48,
-                "sy": 48,
-                "gx": 6,
-                "gy": 6,
-                "cx": 6,
-                "cy": 6,
-                "px": 0,
-                "py": 0
-            }
-        }
     },
     {
         "id": "2024b5d8.3b3af2",
@@ -605,119 +377,14 @@
         "willPayload": ""
     },
     {
-        "id": "b03c590d.22d35",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Metronome",
-        "icon": "",
-        "disabled": false,
-        "hidden": false
-    },
-    {
         "id": "e3df2f3c.b74c28",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "b03c590d.22d35",
+        "tab": "",
         "disp": true,
         "width": "6",
         "collapse": false
-    },
-    {
-        "id": "bc7bc95d.7932f",
-        "type": "ui_base",
-        "theme": {
-            "name": "theme-light",
-            "lightTheme": {
-                "default": "#0094CE",
-                "baseColor": "#0094CE",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": true,
-                "reset": false
-            },
-            "darkTheme": {
-                "default": "#097479",
-                "baseColor": "#097479",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
-            },
-            "customTheme": {
-                "name": "Untitled Theme 1",
-                "default": "#4B7930",
-                "baseColor": "#4B7930",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-            },
-            "themeState": {
-                "base-color": {
-                    "default": "#0094CE",
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-titlebar-backgroundColor": {
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-backgroundColor": {
-                    "value": "#fafafa",
-                    "edited": false
-                },
-                "page-sidebar-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-textColor": {
-                    "value": "#1bbfff",
-                    "edited": false
-                },
-                "group-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "widget-textColor": {
-                    "value": "#111111",
-                    "edited": false
-                },
-                "widget-backgroundColor": {
-                    "value": "#0094ce",
-                    "edited": false
-                },
-                "widget-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "base-font": {
-                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-                }
-            },
-            "angularTheme": {
-                "primary": "indigo",
-                "accents": "blue",
-                "warn": "red",
-                "background": "grey"
-            }
-        },
-        "site": {
-            "name": "Node-RED Dashboard",
-            "hideToolbar": "false",
-            "allowSwipe": "false",
-            "lockMenu": "false",
-            "allowTempTheme": "true",
-            "dateFormat": "DD/MM/YYYY",
-            "sizes": {
-                "sx": 48,
-                "sy": 48,
-                "gx": 6,
-                "gy": 6,
-                "cx": 6,
-                "cy": 6,
-                "px": 0,
-                "py": 0
-            }
-        }
     },
     {
         "id": "b8bc900d.14d038",
@@ -804,102 +471,6 @@
         "collapse": false
     },
     {
-        "id": "303e1524.85ba92",
-        "type": "ui_base",
-        "theme": {
-            "name": "theme-light",
-            "lightTheme": {
-                "default": "#0094CE",
-                "baseColor": "#0094CE",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": true,
-                "reset": false
-            },
-            "darkTheme": {
-                "default": "#097479",
-                "baseColor": "#097479",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
-            },
-            "customTheme": {
-                "name": "Untitled Theme 1",
-                "default": "#4B7930",
-                "baseColor": "#4B7930",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-            },
-            "themeState": {
-                "base-color": {
-                    "default": "#0094CE",
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-titlebar-backgroundColor": {
-                    "value": "#0094CE",
-                    "edited": false
-                },
-                "page-backgroundColor": {
-                    "value": "#fafafa",
-                    "edited": false
-                },
-                "page-sidebar-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-textColor": {
-                    "value": "#1bbfff",
-                    "edited": false
-                },
-                "group-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "widget-textColor": {
-                    "value": "#111111",
-                    "edited": false
-                },
-                "widget-backgroundColor": {
-                    "value": "#0094ce",
-                    "edited": false
-                },
-                "widget-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "base-font": {
-                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-                }
-            },
-            "angularTheme": {
-                "primary": "indigo",
-                "accents": "blue",
-                "warn": "red",
-                "background": "grey"
-            }
-        },
-        "site": {
-            "name": "Node-RED Dashboard",
-            "hideToolbar": "false",
-            "allowSwipe": "false",
-            "lockMenu": "false",
-            "allowTempTheme": "true",
-            "dateFormat": "DD/MM/YYYY",
-            "sizes": {
-                "sx": 48,
-                "sy": 48,
-                "gx": 6,
-                "gy": 6,
-                "cx": 6,
-                "cy": 6,
-                "px": 0,
-                "py": 0
-            }
-        }
-    },
-    {
         "id": "b2e20e24.2fc718",
         "type": "mqtt-broker",
         "z": "",
@@ -922,20 +493,11 @@
         "willPayload": ""
     },
     {
-        "id": "11e8d07f.c70818",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Oxford",
-        "icon": "",
-        "disabled": false,
-        "hidden": false
-    },
-    {
         "id": "728360b0.bc0058",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "11e8d07f.c70818",
+        "tab": "",
         "disp": true,
         "width": "5",
         "collapse": false
@@ -1144,16 +706,71 @@
         "type": "ui_group",
         "z": "3f479660.ab3d2a",
         "name": "Default",
-        "tab": "8a166884.b8c6a8",
+        "tab": "",
         "disp": true,
         "width": "6"
     },
     {
-        "id": "8a166884.b8c6a8",
+        "id": "2e9e2c0.769f754",
         "type": "ui_tab",
-        "z": "3f479660.ab3d2a",
-        "name": "tab2",
-        "icon": "dashboard"
+        "z": "",
+        "name": "Tab 2",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ff9f8f19.11384",
+        "type": "ui_tab",
+        "name": "Tab 3",
+        "icon": "dashboard",
+        "order": 3
+    },
+    {
+        "id": "55d117f2.9aa048",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "45cbe320.09afdc",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 9,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "880d9153.e4172",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 11,
+        "width": 5,
+        "height": 1
+    },
+    {
+        "id": "b0e7e9f7.b30eb8",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 12,
+        "width": 5,
+        "height": 1
+    },
+    {
+        "id": "1f584bdb.cbff2c",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 13,
+        "width": 5,
+        "height": 1
     },
     {
         "id": "19d05047.b5593",
@@ -1161,9 +778,9 @@
         "z": "3f479660.ab3d2a",
         "name": "",
         "group": "11dc7889.ce5f3f",
-        "order": 3,
-        "width": "1",
-        "height": "1",
+        "order": 7,
+        "width": 1,
+        "height": 1,
         "passthru": true,
         "label": "+",
         "tooltip": "Increase tempo",
@@ -1222,9 +839,9 @@
         "z": "3f479660.ab3d2a",
         "name": "",
         "group": "11dc7889.ce5f3f",
-        "order": 4,
-        "width": "1",
-        "height": "1",
+        "order": 8,
+        "width": 1,
+        "height": 1,
         "passthru": true,
         "label": "-",
         "tooltip": "Decrease tempo",
@@ -1281,39 +898,6 @@
         ]
     },
     {
-        "id": "591a167.7fd08e8",
-        "type": "mqtt in",
-        "z": "3f479660.ab3d2a",
-        "name": "",
-        "topic": "song/name",
-        "qos": "2",
-        "datatype": "auto",
-        "broker": "297d18c4.a28298",
-        "x": 210,
-        "y": 420,
-        "wires": [
-            [
-                "abe1c8bf.b41b5"
-            ]
-        ]
-    },
-    {
-        "id": "abe1c8bf.b41b5",
-        "type": "ui_text",
-        "z": "3f479660.ab3d2a",
-        "group": "11dc7889.ce5f3f",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Song name:",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "x": 510,
-        "y": 420,
-        "wires": []
-    },
-    {
         "id": "555507ae.d6b3a8",
         "type": "mqtt out",
         "z": "3f479660.ab3d2a",
@@ -1322,36 +906,9 @@
         "qos": "2",
         "retain": "true",
         "broker": "297d18c4.a28298",
-        "x": 630,
+        "x": 1010,
         "y": 300,
         "wires": []
-    },
-    {
-        "id": "cafdecb3.2a723",
-        "type": "ui_button",
-        "z": "3f479660.ab3d2a",
-        "d": true,
-        "name": "",
-        "group": "11dc7889.ce5f3f",
-        "order": 2,
-        "width": "2",
-        "height": "1",
-        "passthru": false,
-        "label": "ON/OFF",
-        "tooltip": "",
-        "color": "",
-        "bgcolor": "",
-        "icon": "",
-        "payload": "",
-        "payloadType": "str",
-        "topic": "metronome/activate",
-        "x": 390,
-        "y": 220,
-        "wires": [
-            [
-                "555507ae.d6b3a8"
-            ]
-        ]
     },
     {
         "id": "2d39b95f.9402be",
@@ -1368,38 +925,15 @@
         "wires": []
     },
     {
-        "id": "db41b361.8dd7d8",
-        "type": "switch",
-        "z": "3f479660.ab3d2a",
-        "name": "",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 1,
-        "x": 150,
-        "y": 60,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "5f92790e.2b4d4",
         "type": "ui_template",
         "z": "3f479660.ab3d2a",
         "group": "11dc7889.ce5f3f",
         "name": "",
-        "order": 5,
+        "order": 10,
         "width": 0,
         "height": 0,
-        "format": "<html>\n<head>\n\t<script>\n\n// This is a \"main\" function which we use as a trick to get hold of the scope variable\n// The scope variable is important for us to access the send() member, which allows us to\n// send messages directly from the javascript within the Node-RED template-ui itself.\n(function(scope) {\n    // Sending and receiving messages can be done only within this function (ttat takes \"scope\" argument)\n    \n    // Periodically send a \"ping\" message to server. The message is a unique identifier for the web browser\n    // that runs this code. The unique PingID is actually just the epoch time at which code initially ran.\n    // Although the ID itself is a time, it's used for it's (most probably) uniqueness amongst all browsers\n    // that will run this code, and the fact that that number actually is a point in time is irrelevant here.\n    // We could have used a UUID as well.\n    // PingID stays the same during the whole browser session (until the page is refreshed for instance).\n    setInterval(function(){clock_A = Date.now(); scope.send({topic: \"clock-synchro/ping\", payload: PingID})}, 2000 );\n\n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        // We put here all the code that inspects incoming messages from certain topics.\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            // Increase tempo\n            tempo_up();\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            // Decrease tempo\n            tempo_down();\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            // Update the tempo value\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            //toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            // Update the tempo \"timestart\" variable.\n            // This is always sent alongside with song/tempo/value\n            // timestart is the absolute point in time (server time) all metronome ticks are counted\n            // from. Tick #0 happens at timestart, tick #1 happens a bit later, #2 at twice that interval\n            // from timestart, #3 at three times the interval, always counted from timestart as an absolute\n            // reference.\n            date_timestart_received = Date.now();\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            // Optional time offset - not used as of now.\n            time_offset = parseInt(msg.payload);\n        }\n\n        if (msg.topic === \"clock-synchro/pong/\" + PingID.toString())\n        {\n            var clock_delta_dev;\n            // Compute the clock difference between the clock of this machine (web browser) and the\n            // clock of the server (running the main oxford program, Node-RED server, MQTT server, etc.)\n            clock_C = Date.now();\n            clock_B = parseInt(msg.payload);\n            clock_delta_raw = (clock_C + clock_A) /2 - clock_B;\n            // clock_delta_raw is the immediate calculation for the clock\n            // but that variable has jitter, and its jitter will directly impact the metronome jitter.\n            // Iron out the jitter by computing an average (smoothing function).\n            // Variable first_run allows us to do different things during the first cycles, to \"prime\"\n            // the algorithm with data close to its final value, rather than waiting over 10 or 20 seconds\n            // that clock_delta converges to its mean value.\n            // The smoothing average algorithm has weights set at 0.9 and 0.1 (90% old data, 10% new data)\n            // NOPE | The smoothing average algorithm is weighted, and the weight is a function of how many standard\n            // NOPE | deviation is the incoming data different from the mean. Think of it as an adaptive filter.\n            if (state_machine == 0)\n            {\n                state_machine = 1;\n                clock_delta_dev = 0;\n                clock_delta = clock_delta_raw;\n                clock_delta_mean = clock_delta;\n            }\n            else if (state_machine == 1)\n            {\n//                state_machine = 2;\n                // This is not a real \"mean\". It's a filter that converges towards the mean.\n                // Think of it of a \"mean which forgets earlier values over time\".\n                clock_delta_mean_prev = clock_delta_mean;\n                clock_delta_mean = clock_delta_mean * 0.9 + clock_delta_raw * 0.1;\n//                clock_delta_dev = clock_delta_dev * 0.9 + 0.1 * Math.sqrt( (clock_delta_raw - clock_delta_mean_prev) * (clock_delta_raw - clock_delta_mean));\n//                weight_factor = Math.absolute(clock_delta_raw - clock_delta_mean) / (clock_delta_dev);\n//                clock_delta = clock_delta * (1 - 0.1 * (clock_delta_raw - clock_delta_mean) / clock_delta_dev  *  + clock_delta_raw * 0.1;\n                clock_delta = clock_delta_mean;\n            }\n\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/clock_delta\", payload: clock_delta});\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/remote_clock_estimated\", payload: clock_C - clock_delta });\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/local_clock\", payload: clock_C });\n            $debug.text(clock_delta);\n        }\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar $debug;\nvar tempo;\nvar play;\nvar play_sound = 0;\nvar snd;\n\nvar timestart = Date.now();\nvar phase = 0;\nvar date_timestart_received = Date.now();\nvar PingID = Date.now();\nvar clock_A;\nvar clock_B;\nvar clock_C;\nvar clock_delta = 0;\nvar clock_delta_mean = 0;\nvar state_machine = 0;\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\nfunction phase_delay_increment()\n{\n    phase = phase +10;\n}\n\nfunction phase_delay_decrement()\n{\n    phase = phase -10;\n}\n\nfunction toggle_play()\n{\n\tplay = !play;\n}\n\nfunction toggle_sound()\n{\n    play_sound = !play_sound;\n    snd.play();\n}\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    //beat_number = (date_timestart_received - timestart)/delay_ms;\n                    beat_number = 0;\n                    //beat_number = Math.ceil(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + clock_delta + beat_number * delay_ms + time_offset + phase;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t    if(play_sound)\n\t\t\t\t    {\n\t\t\t\t\t    snd.play();\n\t\t\t\t    }\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        $debug = $('#debug');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n        // Try to guess server time\n        //setInterval(clockSynchPing, 1000);\n\n\t});\n\t\n\t\n\n\n\tfunction clockSynchPing()\n\t{\n\t    //alert(\"blah\");\n\t    //this.scope.send({payload:\"test\"});\n\t}\n\t\n\t</script>\n\t\n\t\n\t\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t\tbutton {\n      display: inline-block;\n    }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<div id=\"debug1\"><span id=\"debug\">yadda</span></div>\n\t<div><button onclick=phase_delay_increment()>Phase +</button>\n\t<button onclick=phase_delay_decrement()>Phase -</button></div>\n\t<div><button onclick=toggle_play()>Metr.</button>\n\t<button onclick=toggle_sound()>Sound</button></div>\n</body>\n</html>",
+        "format": "<html>\n<head>\n\t<script>\n\n// This is a \"main\" function which we use as a trick to get hold of the scope variable\n// The scope variable is important for us to access the send() member, which allows us to\n// send messages directly from the javascript within the Node-RED template-ui itself.\n(function(scope) {\n    // Sending and receiving messages can be done only within this function (ttat takes \"scope\" argument)\n    \n    // Periodically send a \"ping\" message to server. The message is a unique identifier for the web browser\n    // that runs this code. The unique PingID is actually just the epoch time at which code initially ran.\n    // Although the ID itself is a time, it's used for it's (most probably) uniqueness amongst all browsers\n    // that will run this code, and the fact that that number actually is a point in time is irrelevant here.\n    // We could have used a UUID as well.\n    // PingID stays the same during the whole browser session (until the page is refreshed for instance).\n    setInterval(function(){clock_A = Date.now(); scope.send({topic: \"clock-synchro/ping\", payload: PingID})}, 2000 );\n\n    // Once at start time (i.e. here and now), send a message to get_playlist. oxford.bin will reply with \n    // the playlist on topic song_list/sorted_by/playlist (for instance)\n    scope.send({topic: \"get-playlist\", payload: \"x\"});\n    \n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        // We put here all the code that inspects incoming messages from certain topics.\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            // Increase tempo\n            tempo_up();\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            // Decrease tempo\n            tempo_down();\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            // Update the tempo value\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            //toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            // Update the tempo \"timestart\" variable.\n            // This is always sent alongside with song/tempo/value\n            // timestart is the absolute point in time (server time) all metronome ticks are counted\n            // from. Tick #0 happens at timestart, tick #1 happens a bit later, #2 at twice that interval\n            // from timestart, #3 at three times the interval, always counted from timestart as an absolute\n            // reference.\n            date_timestart_received = Date.now();\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            // Optional time offset - not used as of now.\n            time_offset = parseInt(msg.payload);\n        }\n\n        if (msg.topic === \"clock-synchro/pong/\" + PingID.toString())\n        {\n            var clock_delta_dev;\n            // Compute the clock difference between the clock of this machine (web browser) and the\n            // clock of the server (running the main oxford program, Node-RED server, MQTT server, etc.)\n            clock_C = Date.now();\n            clock_B = parseInt(msg.payload);\n            clock_delta_raw = (clock_C + clock_A) /2 - clock_B;\n            // clock_delta_raw is the immediate calculation for the clock\n            // but that variable has jitter, and its jitter will directly impact the metronome jitter.\n            // Iron out the jitter by computing an average (smoothing function).\n            // Variable first_run allows us to do different things during the first cycles, to \"prime\"\n            // the algorithm with data close to its final value, rather than waiting over 10 or 20 seconds\n            // that clock_delta converges to its mean value.\n            // The smoothing average algorithm has weights set at 0.9 and 0.1 (90% old data, 10% new data)\n            // NOPE | The smoothing average algorithm is weighted, and the weight is a function of how many standard\n            // NOPE | deviation is the incoming data different from the mean. Think of it as an adaptive filter.\n            if (state_machine == 0)\n            {\n                state_machine = 1;\n                clock_delta_dev = 0;\n                clock_delta = clock_delta_raw;\n                clock_delta_mean = clock_delta;\n            }\n            else if (state_machine == 1)\n            {\n//                state_machine = 2;\n                // This is not a real \"mean\". It's a filter that converges towards the mean.\n                // Think of it of a \"mean which forgets earlier values over time\".\n                clock_delta_mean_prev = clock_delta_mean;\n                clock_delta_mean = clock_delta_mean * 0.9 + clock_delta_raw * 0.1;\n//                clock_delta_dev = clock_delta_dev * 0.9 + 0.1 * Math.sqrt( (clock_delta_raw - clock_delta_mean_prev) * (clock_delta_raw - clock_delta_mean));\n//                weight_factor = Math.absolute(clock_delta_raw - clock_delta_mean) / (clock_delta_dev);\n//                clock_delta = clock_delta * (1 - 0.1 * (clock_delta_raw - clock_delta_mean) / clock_delta_dev  *  + clock_delta_raw * 0.1;\n                clock_delta = clock_delta_mean;\n            }\n\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/clock_delta\", payload: clock_delta});\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/remote_clock_estimated\", payload: clock_C - clock_delta });\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/local_clock\", payload: clock_C });\n            $debug.text(clock_delta);\n        }\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar $debug;\nvar tempo;\nvar play;\nvar play_sound = 0;\nvar snd;\n\nvar timestart = Date.now();\nvar phase = 0;\nvar date_timestart_received = Date.now();\nvar PingID = Date.now();\nvar clock_A;\nvar clock_B;\nvar clock_C;\nvar clock_delta = 0;\nvar clock_delta_mean = 0;\nvar state_machine = 0;\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\nfunction phase_delay_increment()\n{\n    phase = phase +10;\n}\n\nfunction phase_delay_decrement()\n{\n    phase = phase -10;\n}\n\nfunction toggle_play()\n{\n\tplay = !play;\n}\n\nfunction toggle_sound()\n{\n    play_sound = !play_sound;\n    snd.play();\n}\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    //beat_number = (date_timestart_received - timestart)/delay_ms;\n                    beat_number = 0;\n                    //beat_number = Math.ceil(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + clock_delta + beat_number * delay_ms + time_offset + phase;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t    if(play_sound)\n\t\t\t\t    {\n\t\t\t\t\t    snd.play();\n\t\t\t\t    }\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        $debug = $('#debug');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n        // Try to guess server time\n        //setInterval(clockSynchPing, 1000);\n\n\t});\n\t\n\t\n\n\n\tfunction clockSynchPing()\n\t{\n\t    //alert(\"blah\");\n\t    //this.scope.send({payload:\"test\"});\n\t}\n\t\n\t</script>\n\t\n\t\n\t\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t\tbutton {\n      display: inline-block;\n    }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<div id=\"debug1\"><span id=\"debug\">yadda</span></div>\n\t<div><button onclick=phase_delay_increment()>Phase +</button>\n\t<button onclick=phase_delay_decrement()>Phase -</button></div>\n\t<div><button onclick=toggle_play()>Metr.</button>\n\t<button onclick=toggle_sound()>Sound</button></div>\n</body>\n</html>",
         "storeOutMessages": true,
         "fwdInMessages": false,
         "templateScope": "local",
@@ -1422,7 +956,7 @@
         "datatype": "utf8",
         "broker": "297d18c4.a28298",
         "x": 250,
-        "y": 500,
+        "y": 565,
         "wires": [
             [
                 "7aadbac3.340e64"
@@ -1434,13 +968,13 @@
         "type": "debug",
         "z": "3f479660.ab3d2a",
         "name": "",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
         "complete": "false",
         "x": 540,
-        "y": 500,
+        "y": 565,
         "wires": []
     },
     {
@@ -1452,7 +986,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 240,
-        "y": 600,
+        "y": 665,
         "wires": [
             [
                 "dcb13620.af5258"
@@ -1464,13 +998,13 @@
         "type": "debug",
         "z": "3f479660.ab3d2a",
         "name": "",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
         "complete": "false",
         "x": 450,
-        "y": 600,
+        "y": 665,
         "wires": []
     },
     {
@@ -1486,7 +1020,7 @@
         "once": false,
         "onceDelay": 0.1,
         "x": 80,
-        "y": 600,
+        "y": 665,
         "wires": [
             [
                 "b29272fc.6fe938"
@@ -1501,9 +1035,277 @@
         "topic": "",
         "qos": "",
         "retain": "",
-        "broker": "b2e20e24.2fc718",
+        "broker": "1e9bde90.de3e79",
         "x": 720,
         "y": 200,
         "wires": []
+    },
+    {
+        "id": "55b8cb9.462bab4",
+        "type": "ui_button",
+        "z": "3f479660.ab3d2a",
+        "name": "Click sound +",
+        "group": "11dc7889.ce5f3f",
+        "order": 5,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "+",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "x",
+        "payloadType": "str",
+        "topic": "metronome/beat_sound/increase",
+        "x": 420,
+        "y": 400,
+        "wires": [
+            [
+                "555507ae.d6b3a8"
+            ]
+        ]
+    },
+    {
+        "id": "b166f82b.8ae478",
+        "type": "ui_button",
+        "z": "3f479660.ab3d2a",
+        "name": "Click sound -",
+        "group": "11dc7889.ce5f3f",
+        "order": 6,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "-",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "x",
+        "payloadType": "str",
+        "topic": "metronome/beat_sound/decrease",
+        "x": 430,
+        "y": 440,
+        "wires": [
+            [
+                "555507ae.d6b3a8"
+            ]
+        ]
+    },
+    {
+        "id": "3ba78d6.b4c7ef2",
+        "type": "ui_dropdown",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "11dc7889.ce5f3f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "options": [],
+        "payload": "",
+        "topic": "set-song",
+        "x": 780,
+        "y": 800,
+        "wires": [
+            [
+                "aff09799.7cd298"
+            ]
+        ]
+    },
+    {
+        "id": "658e24c2.fb6b54",
+        "type": "mqtt in",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "topic": "song-list/sorted-by/playlist",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "297d18c4.a28298",
+        "x": 130,
+        "y": 800,
+        "wires": [
+            [
+                "38bcb644.79acf2",
+                "1866d927.efc3a7"
+            ]
+        ]
+    },
+    {
+        "id": "38bcb644.79acf2",
+        "type": "change",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "options",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 400,
+        "y": 800,
+        "wires": [
+            [
+                "a0cea190.b8bed",
+                "527cb428.f1fa94"
+            ]
+        ]
+    },
+    {
+        "id": "a0cea190.b8bed",
+        "type": "debug",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "options",
+        "targetType": "msg",
+        "x": 610,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "1866d927.efc3a7",
+        "type": "debug",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 390,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "527cb428.f1fa94",
+        "type": "json",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "property": "options",
+        "action": "",
+        "pretty": false,
+        "x": 630,
+        "y": 800,
+        "wires": [
+            [
+                "3ba78d6.b4c7ef2"
+            ]
+        ]
+    },
+    {
+        "id": "2664cdf7.109f42",
+        "type": "ui_text",
+        "z": "3f479660.ab3d2a",
+        "group": "11dc7889.ce5f3f",
+        "order": 3,
+        "width": 2,
+        "height": 1,
+        "name": "",
+        "label": "Tempo",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 380,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "66dbfce.c432904",
+        "type": "ui_text",
+        "z": "3f479660.ab3d2a",
+        "group": "11dc7889.ce5f3f",
+        "order": 2,
+        "width": 2,
+        "height": 1,
+        "name": "",
+        "label": "Click sound",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 240,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "749f5a87.2bd154",
+        "type": "mqtt in",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "topic": "song/name",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "297d18c4.a28298",
+        "x": 630,
+        "y": 720,
+        "wires": [
+            [
+                "3ba78d6.b4c7ef2"
+            ]
+        ]
+    },
+    {
+        "id": "44d7e9af.b05a1",
+        "type": "ui_button",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "group": "11dc7889.ce5f3f",
+        "order": 13,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "button",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "set-song-value",
+        "payloadType": "flow",
+        "topic": "set-song",
+        "x": 900,
+        "y": 500,
+        "wires": [
+            [
+                "555507ae.d6b3a8"
+            ]
+        ]
+    },
+    {
+        "id": "aff09799.7cd298",
+        "type": "change",
+        "z": "3f479660.ab3d2a",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "set-song-value",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 960,
+        "y": 600,
+        "wires": [
+            []
+        ]
     }
 ]

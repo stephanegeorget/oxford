@@ -6856,9 +6856,22 @@ void threadRedraw(void)
 }
 
 
-void SelectContextByName(void)
+void SelectContextByName(std::string Name)
 {
+    std::list<TContext*>::iterator it;
+    std::list<TContext*> ContextList = PlaylistData;
 
+    for (it = ContextList.begin(); it != ContextList.end(); it++)
+    {
+        TContext Context = **it;
+        if (Context.SongName == Name)
+        {
+            // Initialize context for said song
+            PlaylistPosition = it;
+            TContext Context = **PlaylistPosition;
+            Context.Init();
+        }
+    }
 }
 
 void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor)
@@ -7200,6 +7213,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
         std::string PongTopicName;
         PongTopicName = "clock-synchro/pong/" + PingID;
         mosquitto_publish(mosq, NULL, PongTopicName.c_str(), TimeNowSinceEpoch_ms_str.length(), TimeNowSinceEpoch_ms_str.c_str(), 2, false);
+        return;
     }
 
 	mosquitto_topic_matches_sub("metronome/tempo/increase", message->topic, &match);
@@ -7229,6 +7243,43 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
 		MetronomeMaster::ClickNoteNumberDecrease(0);
         return;
 	}
+
+    mosquitto_topic_matches_sub("set-song", message->topic, &match);
+    if (match)
+    {
+        std::string SongName((const char * ) message->payload, message->payloadlen);
+//		SelectContextByName(SongName);
+        return;
+	}
+
+    mosquitto_topic_matches_sub("get-playlist", message->topic, &match);
+    if (match)
+    {
+        // return playlist data
+        std::string json_string;
+        json_string = "[";
+        std::list<TContext*>::iterator it;
+        std::list<TContext*> ContextList = PlaylistData;
+
+        for (it = ContextList.begin()++; it != ContextList.end(); it++)
+        {
+            TContext Context = **it;
+            json_string = json_string + '\"' + Context.SongName + '\"';
+            if (it != (--ContextList.end()))
+            {
+                json_string = json_string + ",";
+            }
+            else
+            {
+                // no comma for the last element in the list
+            }
+        }
+        json_string = json_string + "]";
+        mosquitto_publish(mosq, NULL, "song-list/sorted-by/playlist", json_string.length(), json_string.c_str(), 2, false);
+        return;
+    }
+
+
 }
 
 void TestMosquitto(void)
@@ -7252,6 +7303,8 @@ void TestMosquitto(void)
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/increase", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/decrease", 0);
         mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
+        mosquitto_subscribe(mosq, NULL, "get-playlist", 0);
+        mosquitto_subscribe(mosq, NULL, "set-song", 0);
         
         
         
