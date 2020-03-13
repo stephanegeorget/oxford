@@ -321,33 +321,23 @@ public:
         std::thread t(BannerThread, this);
         t.detach();
         pBoxedWindow->Hide();
+        initialized = true;
     };
 
     void SetMessage(std::string message_param)
     {
-        // Avoid concurrency issues
-        std::lock_guard<std::mutex> lock(m);
-        // Change whole string to UPPER characters
-        message = StringToUpper(message_param);
-        // Prepend and append spaces
-        message.insert(0, "   ");
-        message.insert(message.end(), 3, ' ');
-        message_size = message.size();
-        offset_max = (message_size - char_displayed_on_canvas) * char_width;
-        if (offset_max <= 0)
+        if (initialized == true)
         {
-            offset_max = 1;
+            // Avoid concurrency issues
+            std::lock_guard<std::mutex> lock(m);
+            // Change whole string to UPPER characters
+            msg_queue.push(StringToUpper(message_param));
+            //pBoxedWindow->Show();
         }
-        offset = 0;
-        pBoxedWindow->Show();
-        ExecuteAfterTimeout(PutBannerOnTop, 100, pBoxedWindow);
-        /*void * pVoid = pBoxedWindow;
-               TBoxedWindow * pBoxedWindow_local;
-        pBoxedWindow_local  = reinterpret_cast<TBoxedWindow*>(pVoid);
-        pBoxedWindow_local->PutOnTop();*/
     }
 
 private:
+    bool initialized = false;
     std::mutex m;
     TBoxedWindow * pBoxedWindow;
     static int const char_width = 6;
@@ -361,18 +351,10 @@ private:
     static int const raster_sizeof = raster_height * raster_width;
     int char_displayed_on_canvas;
     std::thread::id BannerThreadID;
-    std::string message;
-    int message_size;
-    int offset_max;
-    int display_time_ms;
-    int offset;
+    std::queue<std::string> msg_queue;
 
-    static void PutBannerOnTop(void* pVoid)
-    {
-        TBoxedWindow * pBoxedWindow_local;
-        pBoxedWindow_local  = reinterpret_cast<TBoxedWindow*>(pVoid);
-        pBoxedWindow_local->PutOnTop();
-    }
+    int display_time_ms;
+    bool shownow = false;
 
     std::string StringToUpper(std::string strToConvert)
     {
@@ -383,73 +365,86 @@ private:
 
     void BannerProcess(void)
     {
-        // Avoid concurrency issues
-        std::lock_guard<std::mutex> lock(m);
+        
+    
+        while (!msg_queue.empty())
+        {
+            print_big(msg_queue.front());
+            msg_queue.pop();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        if (offset <= offset_max)
-        {
-            print_big();
-            offset++;
-        }
-        else
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(display_time_ms));
-            pBoxedWindow->Hide();
-        }
     }
 
     static void BannerThread(TBanner * pBanner)
     {
         while(1)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(40));
             pBanner->BannerProcess();
         }
     }
 
-    void print_big(void)
+    void print_big(std::string message_param)
     {
-
-        init_pair(7, COLOR_WHITE, COLOR_BLUE);
-
-        wattron(pBoxedWindow->GetRef(), COLOR_PAIR(7));
-
-        mvwprintw(pBoxedWindow->GetRef(), 0, 0, "");
-        for (int lin = 0; lin < canvas_height; lin++)
+        std::string message = message_param;
+        // Prepend and append spaces
+        message.insert(0, "   ");
+        message.insert(message.end(), 3, ' ');
+        int message_size = message.size();
+        int offset_max = (message_size - char_displayed_on_canvas) * char_width;
+        if (offset_max <= 0)
         {
-            for (int col = 0+offset; col < canvas_width+offset; col++)
-            {
-                int teststring_index = col / char_width;
-                teststring_index %= message_size;
-                int character_to_print_ascii = message[teststring_index];
-                int character_to_print_rasterindex = character_to_print_ascii - 32;
-                character_to_print_rasterindex %= raster_chars;
-                int dot_to_print_index = character_to_print_rasterindex * char_width + col%char_width + lin * raster_width;
-                if (dot_to_print_index < 0) dot_to_print_index = 0;
-                if (dot_to_print_index >= raster_sizeof -1 ) dot_to_print_index = raster_sizeof -1;
-                int dot_to_print = raster[dot_to_print_index];
-
-                if (dot_to_print == ' ')
-                {
-                    wattroff(pBoxedWindow->GetRef(), A_REVERSE);
-                }
-                else
-                {
-                    wattron(pBoxedWindow->GetRef(), A_REVERSE);
-                }
-                // Do not put the last character in the bottom right corner, to prevent
-                // scrolling up and losing the first line.
-                if(col != canvas_width+offset-1 || lin != canvas_height-1)
-                {
-                    wprintw(pBoxedWindow->GetRef(), " ");
-                }
-            }
-            // In theory, a Carriage Return could be done here for each end of line, except the last line.
-            // But in our case, the usable window width is exactly matching the raster width.
-            // So going to the next line is done automatically as part of the "line is full => next character
-            // goes to next line" by ncurses.
+            offset_max = 1;
         }
-        pBoxedWindow->Refresh();
+        int offset = 0;
+        pBoxedWindow->PutOnTop();
+        while(offset <= offset_max)
+        {
+            init_pair(7, COLOR_WHITE, COLOR_BLUE);
+            wattron(pBoxedWindow->GetRef(), COLOR_PAIR(7));
+
+            mvwprintw(pBoxedWindow->GetRef(), 0, 0, "");
+            for (int lin = 0; lin < canvas_height; lin++)
+            {
+                for (int col = 0+offset; col < canvas_width+offset; col++)
+                {
+                    int teststring_index = col / char_width;
+                    teststring_index %= message_size;
+                    int character_to_print_ascii = message[teststring_index];
+                    int character_to_print_rasterindex = character_to_print_ascii - 32;
+                    character_to_print_rasterindex %= raster_chars;
+                    int dot_to_print_index = character_to_print_rasterindex * char_width + col%char_width + lin * raster_width;
+                    if (dot_to_print_index < 0) dot_to_print_index = 0;
+                    if (dot_to_print_index >= raster_sizeof -1 ) dot_to_print_index = raster_sizeof -1;
+                    int dot_to_print = raster[dot_to_print_index];
+
+                    if (dot_to_print == ' ')
+                    {
+                        wattroff(pBoxedWindow->GetRef(), A_REVERSE);
+                    }
+                    else
+                    {
+                        wattron(pBoxedWindow->GetRef(), A_REVERSE);
+                    }
+                    // Do not put the last character in the bottom right corner, to prevent
+                    // scrolling up and losing the first line.
+                    if(col != canvas_width+offset-1 || lin != canvas_height-1)
+                    {
+                        wprintw(pBoxedWindow->GetRef(), " ");
+                    }
+                }
+                // In theory, a Carriage Return could be done here for each end of line, except the last line.
+                // But in our case, the usable window width is exactly matching the raster width.
+                // So going to the next line is done automatically as part of the "line is full => next character
+                // goes to next line" by ncurses.
+            }
+            pBoxedWindow->Refresh();
+            std::this_thread::sleep_for(std::chrono::milliseconds(40));
+            offset++;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(display_time_ms));
+        pBoxedWindow->Hide();
+
     }
 };
 
@@ -496,23 +491,23 @@ namespace Djadja
 
 namespace ElevenRack
 {
-void FXLoopON(void);
-void FXLoopOFF(void);
+void FXLoopON(bool msg);
+void FXLoopOFF(bool msg);
 void FXLoopToggle(void);
-void FX1_ON(void);
-void FX1_OFF(void);
+void FX1_ON(bool msg);
+void FX1_OFF(bool msg);
 void FX1_Toggle(void);
-void DistON(void);
-void DistOFF(void);
+void DistON(bool msg);
+void DistOFF(bool msg);
 void DistToggle(void);
 void Init(void);
-void ModON(void);
-void ModOFF(void);
+void ModON(bool msg);
+void ModOFF(bool msg);
 void ModToggle(void);
-void WahON(void);
-void WahOFF(void);
+void WahON(bool msg);
+void WahOFF(bool msg);
 void WahToggle(void);
-void WahSetValue(int);
+void WahSetValue(int Val);
 }
 
 
@@ -866,6 +861,7 @@ public:
     std::string Comments; // used to display various info, cheat sheet, and so on.
     float BaseTempo; // base tempo of the song. The metronome always pulse at the tempo of the active context.
     TPedalboard Pedalboard;
+ 
     void Init(void)
     {
         // Upon a context change, always first re-initialize the Eleven Rack
@@ -918,6 +914,10 @@ std::list<TContext *> PlaylistData_BySongName;
  *      printf("%s", MyContext.SongName.c_str());
  */
 std::list<TContext *>::iterator PlaylistPosition;
+std::mutex PlaylistPosition_mtx;
+
+ 
+
 
 /**
  * Here, the actual TContext objects are instantiated. One for each context, which
@@ -1040,6 +1040,8 @@ bool CompareTContextBySongName(const TContext* first, const TContext* second)
  */
 void ContextPreviousPress(void)
 {
+    // Protect PlaylistPosition from concurrent access
+    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
     if (PlaylistPosition != PlaylistData.begin())
     {
         PlaylistPosition--;
@@ -1061,6 +1063,9 @@ void ContextPreviousRelease(void)
 /// Sames goes with Pedal 7, go to go the next context (you'll say the *next song*...).
 void ContextNextPress(void)
 {
+    // Protect PlaylistPosition from concurrent access
+    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+
     // Note that .end() returns an iterator that is already outside the bounds
     // of the container.
     std::list<TContext*>::iterator it;
@@ -3422,8 +3427,18 @@ void SelectContextInPlaylist(std::list<TContext*> &ContextList);
 
 namespace MetronomeMaster
 {
+    bool flag_broadcast_tempo = false;
+    void BroadcastTempo(void)
+    {
+        flag_broadcast_tempo = true;
+    }
+
+ 
     void IncreaseCurrentTempo(void * foo)
     {
+        // Protect PlaylistPosition from concurrent access
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+
         (*PlaylistPosition)->BaseTempo++;
         if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
         if ((*PlaylistPosition)->BaseTempo > 200) (*PlaylistPosition)->BaseTempo = 200;
@@ -3431,6 +3446,9 @@ namespace MetronomeMaster
 
     void DecreaseCurrentTempo(void * foo)
     {
+        // Protect PlaylistPosition from concurrent access
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+ 
         (*PlaylistPosition)->BaseTempo--;
         if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
     }
@@ -3508,8 +3526,13 @@ namespace MetronomeMaster
         while (1)
         {
             // Get current Base Tempo of the song
-            Context = **PlaylistPosition;
-            Tempo = Context.BaseTempo;
+            {
+                // Protect PlaylistPosition from concurrent access
+                std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+                Context = **PlaylistPosition;
+                Tempo = Context.BaseTempo;
+            }
+
             if (Tempo != previous_Tempo)
             {
                  // Change in tempo detected
@@ -3525,14 +3548,20 @@ namespace MetronomeMaster
                 {
                     delay_ms = 1000;
                 }
-                {
-                    std::string Tempo_str;
-                    Tempo_str = std::to_string( static_cast<int>(Tempo));
-                    mosquitto_publish(mosq, NULL, "song/tempo/value", Tempo_str.length(), Tempo_str.c_str(), 2, false);
-                    unsigned long int TimeSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeStart.time_since_epoch()).count();
-                    std::string TimeSinceEpoch_ms_str = std::to_string(TimeSinceEpoch_ms);
-                    mosquitto_publish(mosq, NULL, "song/tempo/timestart", TimeSinceEpoch_ms_str.length(), TimeSinceEpoch_ms_str.c_str(), 2, false);
-                }
+                flag_broadcast_tempo = true;
+            }
+
+
+            if (flag_broadcast_tempo)
+            {
+                // Broadcast tempo information to MQTT
+                flag_broadcast_tempo = false;
+                std::string Tempo_str;
+                Tempo_str = std::to_string( static_cast<int>(Tempo));
+                mosquitto_publish(mosq, NULL, "song/tempo/value", Tempo_str.length(), Tempo_str.c_str(), 2, false);
+                unsigned long int TimeSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeStart.time_since_epoch()).count();
+                std::string TimeSinceEpoch_ms_str = std::to_string(TimeSinceEpoch_ms);
+                mosquitto_publish(mosq, NULL, "song/tempo/timestart", TimeSinceEpoch_ms_str.length(), TimeSinceEpoch_ms_str.c_str(), 2, false);
             }
 
             beat_number ++;
@@ -5725,17 +5754,17 @@ namespace MixPolice
 namespace ElevenRack
 {
 
-void FXLoopOFF(void)
+void FXLoopOFF(bool msg = true)
 {
     // Midi channel 1, controller number 107, value 0, send to Midisport port B
     MIDI_B.SendControlChange(1, 107, 0);
-    Banner.SetMessage("FXLoop OFF");
+    if (msg) Banner.SetMessage("FXLoop OFF");
 }
 
-void FXLoopON(void)
+void FXLoopON(bool msg = true)
 {
     MIDI_B.SendControlChange(1, 107, 127);
-    Banner.SetMessage("FXLoop ON");
+    if (msg) Banner.SetMessage("FXLoop ON");
 }
 
 
@@ -5745,27 +5774,27 @@ void FXLoopToggle(void)
     if(flag == 0)
     {
         flag = 1;
-        FXLoopON();
+        FXLoopON(true);
     }
     else
     {
         flag = 0;
-        FXLoopOFF();
+        FXLoopOFF(true);
     }
 }
 
 
-void FX1_OFF(void)
+void FX1_OFF(bool msg = true)
 {
     // Midi channel 1, controller number 63, value 0, send to Midisport port B
     MIDI_B.SendControlChange(1, 63, 0);
-    Banner.SetMessage("FX1(COMP) OFF");
+    if (msg) Banner.SetMessage("FX1(COMP) OFF");
 }
 
-void FX1_ON(void)
+void FX1_ON(bool msg = true)
 {
     MIDI_B.SendControlChange(1, 63, 127);
-    Banner.SetMessage("FX1(COMP) ON");
+    if (msg) Banner.SetMessage("FX1(COMP) ON");
 }
 
 
@@ -5775,27 +5804,27 @@ void FX1_Toggle(void)
     if(flag == 0)
     {
         flag = 1;
-        FX1_ON();
+        FX1_ON(true);
     }
     else
     {
         flag = 0;
-        FX1_OFF();
+        FX1_OFF(true);
     }
 }
 
 
-void DistOFF(void)
+void DistOFF(bool msg = true)
 {
     // Midi channel 1, controller number 25, value 0, send to Midisport port B
     MIDI_B.SendControlChange(1, 25, 0);
-    Banner.SetMessage("Dist OFF");
+    if (msg) Banner.SetMessage("Dist OFF");
 }
 
-void DistON(void)
+void DistON(bool msg = true)
 {
     MIDI_B.SendControlChange(1, 25, 127);
-    Banner.SetMessage("Dist ON");
+    if (msg) Banner.SetMessage("Dist ON");
 }
 
 void DistToggle(void)
@@ -5804,27 +5833,27 @@ void DistToggle(void)
     if(flag == 0)
     {
         flag = 1;
-        DistON();
+        DistON(true);
     }
     else
     {
         flag = 0;
-        DistOFF();
+        DistOFF(true);
     }
 }
 
 
-void ModOFF(void)
+void ModOFF(bool msg = true)
 {
     // Midi channel 1, controller number 50, value 0, send to Midisport port B
     MIDI_B.SendControlChange(1, 50, 0);
-    Banner.SetMessage("Mod OFF");
+    if (msg) Banner.SetMessage("Mod OFF");
 }
 
-void ModON(void)
+void ModON(bool msg = true)
 {
     MIDI_B.SendControlChange(1, 50, 127);
-    Banner.SetMessage("Mod ON");
+    if (msg) Banner.SetMessage("Mod ON");
 }
 
 void ModToggle(void)
@@ -5833,29 +5862,29 @@ void ModToggle(void)
     if(flag == 0)
     {
         flag = 1;
-        ModON();
+        ModON(true);
     }
     else
     {
         flag = 0;
-        ModOFF();
+        ModOFF(true);
     }
 }
 
 
 
 
-void WahOFF(void)
+void WahOFF(bool msg = true)
 {
     // Midi channel 1, controller number 43, value 0, send to Midisport port B
     MIDI_B.SendControlChange(1, 43, 0);
-    Banner.SetMessage("WAH OFF");
+    if (msg) Banner.SetMessage("WAH OFF");
 }
 
-void WahON(void)
+void WahON(bool msg = true)
 {
     MIDI_B.SendControlChange(1, 43, 127);
-    Banner.SetMessage("WAH ON");
+    if (msg) Banner.SetMessage("WAH ON");
 }
 
 void WahToggle(void)
@@ -5864,12 +5893,12 @@ void WahToggle(void)
     if(flag == 0)
     {
         flag = 1;
-        WahON();
+        WahON(true);
     }
     else
     {
         flag = 0;
-        WahOFF();
+        WahOFF(true);
     }
 }
 
@@ -5888,11 +5917,11 @@ void Init(void)
     MIDI_B.SendControlChange(1, 32, 0);
     MIDI_B.SendProgramChange(1, 104);
 
-    DistOFF();
-    ModOFF();
-    WahOFF();
-    FX1_OFF();
-    FXLoopOFF();
+    DistOFF(false);
+    ModOFF(false);
+    WahOFF(false);
+    FX1_OFF(false);
+    FXLoopOFF(false);
 }
 
 }
@@ -5912,7 +5941,12 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     if (rxNote >= 1 && rxNote <= 10)
     {
         TContext context;
-        context = **PlaylistPosition;
+        {
+            // Protect PlaylistPosition from concurrent access
+            std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+            context = **PlaylistPosition;
+        }
+
         for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
                 it != context.Pedalboard.PedalsDigital.end(); \
                 it++)
@@ -6321,7 +6355,11 @@ void MIDI_B_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBend
 void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt_0_127 rxControllerValue)
 {
     TContext context;
-    context = **PlaylistPosition;
+    {
+        // Protect PlaylistPosition from concurrent access
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+        context = **PlaylistPosition;
+    }
     for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
             it != context.Pedalboard.PedalsAnalog.end(); \
             it++)
@@ -6800,8 +6838,14 @@ void InitializePlaylist(void)
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
     // Note that std::list cannot be accessed randomly.
-    PlaylistPosition = PlaylistData.begin();
+    {
+        // Protect PlaylistPosition from concurrent access
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+        PlaylistPosition = PlaylistData.begin();
+    }
+
     TContext Context = **PlaylistPosition;
+    
     // Context.Init(); // The .Init() function must be called manually. I tried to overload the assignment operator but did not find a good way to do it.
 
 
@@ -6820,7 +6864,12 @@ void threadRedraw(void)
     while(1)
     {
         waitMilliseconds(200);
-        Context = **PlaylistPosition;
+        {
+            // Protect PlaylistPosition from concurrent access
+            std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+            TContext tmpContext = **PlaylistPosition;
+            Context = tmpContext;
+        }
         win_context_current.Erase();
         mvwprintw(win_context_current.GetRef(), 0,0, Context.SongName.c_str());
 
@@ -6858,6 +6907,9 @@ void threadRedraw(void)
 
 void SelectContextByName(std::string Name)
 {
+    // Protect PlaylistPosition from concurrent access
+    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+ 
     std::list<TContext*>::iterator it;
     std::list<TContext*> ContextList = PlaylistData;
 
@@ -6876,6 +6928,9 @@ void SelectContextByName(std::string Name)
 
 void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor)
 {
+    // Protect PlaylistPosition from concurrent access
+    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+ 
     /* Declare variables. */
     CDKSCREEN *cdkscreen = 0;
     CDKSCROLL *scrollList = 0;
@@ -6889,7 +6944,7 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
     win_midi_out.Hide();
     win_context_prev.Hide();
     win_context_current.Hide();
-    win_context_next.Hide();
+    win_context_next.Hide(); 
     win_debug_messages.Hide();
     win_context_usage.Hide();
     win_context_user_specific.Hide();
@@ -7193,7 +7248,7 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result)
 void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
 {
 	bool match = 0;
-	wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
+	//wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
 
     mosquitto_topic_matches_sub("clock-synchro/ping", message->topic, &match);
     if (match)
@@ -7248,13 +7303,14 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
     if (match)
     {
         std::string SongName((const char * ) message->payload, message->payloadlen);
-//		SelectContextByName(SongName);
+		SelectContextByName(SongName);
         return;
 	}
 
     mosquitto_topic_matches_sub("get-playlist", message->topic, &match);
     if (match)
     {
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
         // return playlist data
         std::string json_string;
         json_string = "[";
@@ -7263,8 +7319,9 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
 
         for (it = ContextList.begin()++; it != ContextList.end(); it++)
         {
-            TContext Context = **it;
-            json_string = json_string + '\"' + Context.SongName + '\"';
+            TContext * pContext = *it;
+            std::string tmpstring = pContext->SongName;
+            json_string = json_string + '\"' + tmpstring + '\"';
             if (it != (--ContextList.end()))
             {
                 json_string = json_string + ",";
@@ -7276,6 +7333,8 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
         }
         json_string = json_string + "]";
         mosquitto_publish(mosq, NULL, "song-list/sorted-by/playlist", json_string.length(), json_string.c_str(), 2, false);
+        MetronomeMaster::BroadcastTempo();
+        
         return;
     }
 
@@ -7286,6 +7345,9 @@ void TestMosquitto(void)
 {
 	char clientid[24];
 	int rc = 0;
+    
+    // Give some time to 
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     mosquitto_lib_init();
 
 	memset(clientid, 0, 24);
@@ -7302,7 +7364,7 @@ void TestMosquitto(void)
         mosquitto_subscribe(mosq, NULL, "metronome/tempo/decrease", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/increase", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/decrease", 0);
-        mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
+        //mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
         mosquitto_subscribe(mosq, NULL, "get-playlist", 0);
         mosquitto_subscribe(mosq, NULL, "set-song", 0);
         

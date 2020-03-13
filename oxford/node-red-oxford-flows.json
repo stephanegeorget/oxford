@@ -1,23 +1,52 @@
 [
     {
-        "id": "3f479660.ab3d2a",
+        "id": "3ca8863c.e795e2",
         "type": "tab",
         "label": "Flow 1",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "fa2246d8.80cf9",
+        "id": "b69e069b.8e412",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "7f0d72e0.8a3acc",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "e75d18b7.66a8e8",
         "type": "ui_group",
         "z": "",
-        "name": "Default",
+        "name": "Metronome",
         "tab": "",
         "disp": true,
         "width": "6",
         "collapse": false
     },
     {
-        "id": "a6d1130e.114ad8",
+        "id": "937cd258.ec06f",
         "type": "ui_base",
         "theme": {
             "name": "theme-light",
@@ -113,7 +142,91 @@
         }
     },
     {
-        "id": "11769350.17a9f5",
+        "id": "190f3d46.d55533",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6871af6b.a1b6",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "afad16e3.f7dd18",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b88a434e.a482d",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "bd0f2ef7.725828",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "f78305ee.ab363",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "5fedea24.1618ac",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "efbbb5b1.3d6cf",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -135,7 +248,7 @@
         "willPayload": ""
     },
     {
-        "id": "6ad97ff8.656468",
+        "id": "94a5dbf7.81713",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -145,7 +258,7 @@
         "collapse": false
     },
     {
-        "id": "196501c.082357e",
+        "id": "83e1eaf4.99c0f8",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -154,7 +267,7 @@
         "height": 1
     },
     {
-        "id": "9d76c6a4.751228",
+        "id": "eccde35d.5f9068",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -165,7 +278,7 @@
         "collapse": false
     },
     {
-        "id": "67f0d3e2.28e814",
+        "id": "f1252994.6b5c48",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -176,7 +289,7 @@
         "collapse": false
     },
     {
-        "id": "c736aad0.3a0f1",
+        "id": "b951cf72.c64898",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -187,7 +300,7 @@
         "collapse": false
     },
     {
-        "id": "7e4b596c.e084c",
+        "id": "11301a3f.f0ee0e",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -197,7 +310,7 @@
         "collapse": false
     },
     {
-        "id": "1e9bde90.de3e79",
+        "id": "9f31cde4.f5694",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -219,7 +332,7 @@
         "willPayload": ""
     },
     {
-        "id": "4650f444.594c2c",
+        "id": "af6f9d4a.3a5d8",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -229,7 +342,7 @@
         "collapse": false
     },
     {
-        "id": "82fabc46.8ccf5",
+        "id": "bd67f6e5.af853",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -251,7 +364,7 @@
         "willPayload": ""
     },
     {
-        "id": "463a7da8.13b3f4",
+        "id": "223038ba.775598",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -261,7 +374,7 @@
         "collapse": false
     },
     {
-        "id": "856ee7a9.db6be",
+        "id": "5e2e81b0.d4f088",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -270,7 +383,7 @@
         "height": 1
     },
     {
-        "id": "58e5e9bc.bf89b8",
+        "id": "983311d4.52af6",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -281,7 +394,7 @@
         "collapse": false
     },
     {
-        "id": "285a1827.8dad1",
+        "id": "f0956aea.ba55e8",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -292,7 +405,7 @@
         "collapse": false
     },
     {
-        "id": "6ffdc214.37d7cc",
+        "id": "70281196.2c4a48",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -303,7 +416,7 @@
         "collapse": false
     },
     {
-        "id": "130a5d45.4dc3bb",
+        "id": "eb0bad5b.86bea",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -313,7 +426,7 @@
         "collapse": false
     },
     {
-        "id": "b0fd40a8.7e2d",
+        "id": "8d8e98cf.448f9",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -335,7 +448,7 @@
         "willPayload": ""
     },
     {
-        "id": "fc38f3a5.05f978",
+        "id": "97808a31.f4f2f8",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -345,17 +458,7 @@
         "collapse": false
     },
     {
-        "id": "55147c2d.91f98c",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "2024b5d8.3b3af2",
+        "id": "4134120c.61681c",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -377,123 +480,7 @@
         "willPayload": ""
     },
     {
-        "id": "e3df2f3c.b74c28",
-        "type": "ui_group",
-        "z": "",
-        "name": "Metronome",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "b8bc900d.14d038",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "287a20b8.f44ab",
-        "order": 1,
-        "width": 1,
-        "height": 1
-    },
-    {
-        "id": "ef4ea13c.814e28",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 1",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "3e5a4e95.9593e2",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 3",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "efdc1011.ba5168",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 2",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "6e4ac8f.b2fb338",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "2cb6cbe3.e1a5ec",
-        "type": "mqtt-broker",
-        "z": "",
-        "name": "mqtt localhost",
-        "broker": "localhost",
-        "port": "1883",
-        "clientid": "",
-        "usetls": false,
-        "compatmode": false,
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": ""
-    },
-    {
-        "id": "6cc56fe5.23356",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "b2e20e24.2fc718",
-        "type": "mqtt-broker",
-        "z": "",
-        "name": "mqtt broker 192.168.56.57",
-        "broker": "localhost",
-        "port": "1883",
-        "clientid": "",
-        "usetls": false,
-        "compatmode": false,
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": ""
-    },
-    {
-        "id": "728360b0.bc0058",
+        "id": "bf380aeb.821fa",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -503,7 +490,7 @@
         "collapse": false
     },
     {
-        "id": "9ce756fc.6ed4d8",
+        "id": "7709436d.83c5dc",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -512,7 +499,7 @@
         "height": 1
     },
     {
-        "id": "114501ad.1c44de",
+        "id": "507859e1.4a83d8",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -523,7 +510,7 @@
         "collapse": false
     },
     {
-        "id": "f332969b.7aea78",
+        "id": "804b2efa.30996",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -534,7 +521,7 @@
         "collapse": false
     },
     {
-        "id": "e68b42e4.4bda2",
+        "id": "3ee8edc3.a42baa",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -545,7 +532,7 @@
         "collapse": false
     },
     {
-        "id": "80daa3e8.17b5f",
+        "id": "43f8c590.e667bc",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -555,7 +542,7 @@
         "collapse": false
     },
     {
-        "id": "cdf8d98.715b628",
+        "id": "25404ad9.2982be",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -577,7 +564,7 @@
         "willPayload": ""
     },
     {
-        "id": "7608c8dc.a9be98",
+        "id": "2790154c.a7d212",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -587,7 +574,7 @@
         "collapse": false
     },
     {
-        "id": "6b0cffb0.2fe4b8",
+        "id": "e5dfdf01.fcb468",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -609,7 +596,365 @@
         "willPayload": ""
     },
     {
-        "id": "64c41ae2.ed0844",
+        "id": "59707e61.86bb18",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "f2fdd9f2.2e1a4",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6933d8ec.f239e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "6afb25fe.5f4894",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "7757f50a.8ed1c4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ff1c24a.5201f58",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "125e65e5.def04a",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d5e9dc81.7ff2f",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "d1991f72.f13ce8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "3a22f4a3.431524",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "2ece6743.1e30f",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "42497fcb.69d3e",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "719503e7.4f206c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "93f792b0.a6a2a",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "55b92746.397758",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "747bc0d.bde3b4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "1e921e4c.a5873a",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "10aff0d5.5fd76f",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "c5ea933.c0898f",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "743d1947.d6c048",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "bfb187ff.76a6b8",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "2577689f.6c0f6",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "66e5e320.7cb0c4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "8ffdfb0f.fa9d78",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b7a9bbc4.d6fcc8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "af1b3051.ec64",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d3a83a8d.eb003",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ce0c18a8.a2ad6",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "b1d5533f.ed15d8",
         "type": "ui_tab",
         "z": "",
         "name": "Oxford",
@@ -618,17 +963,17 @@
         "hidden": false
     },
     {
-        "id": "11dc7889.ce5f3f",
+        "id": "ecd977f8.aa0b2",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "64c41ae2.ed0844",
+        "tab": "b1d5533f.ed15d8",
         "disp": true,
         "width": "5",
         "collapse": false
     },
     {
-        "id": "1ad0428e.671945",
+        "id": "9d9ba7b4.811048",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -637,7 +982,7 @@
         "height": 1
     },
     {
-        "id": "4d846678.3a8ef",
+        "id": "ae96591c.bb2fe",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -648,7 +993,7 @@
         "collapse": false
     },
     {
-        "id": "89808c0a.35a6e",
+        "id": "ef783fb0.556a",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -659,7 +1004,7 @@
         "collapse": false
     },
     {
-        "id": "86b9cf73.52e2c",
+        "id": "d1024ce0.be0c3",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -670,7 +1015,7 @@
         "collapse": false
     },
     {
-        "id": "f86ec653.0b61",
+        "id": "ac97663a.35d81",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -680,7 +1025,7 @@
         "collapse": false
     },
     {
-        "id": "297d18c4.a28298",
+        "id": "4db28f59.d6fb5",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -702,83 +1047,41 @@
         "willPayload": ""
     },
     {
-        "id": "57d7aac5.15de2c",
+        "id": "fc132359.4a4c6",
         "type": "ui_group",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "Default",
         "tab": "",
         "disp": true,
         "width": "6"
     },
     {
-        "id": "2e9e2c0.769f754",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Tab 2",
-        "icon": "dashboard",
+        "id": "26d4a07.82d49e",
+        "type": "ui_group",
+        "name": "Group 2",
+        "tab": "",
         "order": 2,
-        "disabled": false,
-        "hidden": false
+        "disp": true,
+        "width": 6
     },
     {
-        "id": "ff9f8f19.11384",
-        "type": "ui_tab",
-        "name": "Tab 3",
-        "icon": "dashboard",
-        "order": 3
+        "id": "dc9e61bc.8f953",
+        "type": "ui_group",
+        "z": "",
+        "name": "Lyrics",
+        "tab": "b1d5533f.ed15d8",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": true
     },
     {
-        "id": "55d117f2.9aa048",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "11dc7889.ce5f3f",
-        "order": 4,
-        "width": 1,
-        "height": 1
-    },
-    {
-        "id": "45cbe320.09afdc",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "11dc7889.ce5f3f",
-        "order": 9,
-        "width": 1,
-        "height": 1
-    },
-    {
-        "id": "880d9153.e4172",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "11dc7889.ce5f3f",
-        "order": 11,
-        "width": 5,
-        "height": 1
-    },
-    {
-        "id": "b0e7e9f7.b30eb8",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "11dc7889.ce5f3f",
-        "order": 12,
-        "width": 5,
-        "height": 1
-    },
-    {
-        "id": "1f584bdb.cbff2c",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "11dc7889.ce5f3f",
-        "order": 13,
-        "width": 5,
-        "height": 1
-    },
-    {
-        "id": "19d05047.b5593",
+        "id": "f3e08467.0bb958",
         "type": "ui_button",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
-        "group": "11dc7889.ce5f3f",
-        "order": 7,
+        "group": "ecd977f8.aa0b2",
+        "order": 6,
         "width": 1,
         "height": 1,
         "passthru": true,
@@ -794,14 +1097,14 @@
         "y": 280,
         "wires": [
             [
-                "555507ae.d6b3a8"
+                "2613123.ac6c2ee"
             ]
         ]
     },
     {
-        "id": "4e142fde.2ac29",
+        "id": "8ff1289c.f9b28",
         "type": "debug",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -814,9 +1117,9 @@
         "wires": []
     },
     {
-        "id": "939aeda3.b359c8",
+        "id": "49e95ea8.74212",
         "type": "inject",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "",
         "payload": "",
@@ -829,17 +1132,17 @@
         "y": 280,
         "wires": [
             [
-                "19d05047.b5593"
+                "f3e08467.0bb958"
             ]
         ]
     },
     {
-        "id": "6275a49d.8303ec",
+        "id": "6f8df87.a612f08",
         "type": "ui_button",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
-        "group": "11dc7889.ce5f3f",
-        "order": 8,
+        "group": "ecd977f8.aa0b2",
+        "order": 7,
         "width": 1,
         "height": 1,
         "passthru": true,
@@ -855,14 +1158,14 @@
         "y": 340,
         "wires": [
             [
-                "555507ae.d6b3a8"
+                "2613123.ac6c2ee"
             ]
         ]
     },
     {
-        "id": "bea4d08e.f9c848",
+        "id": "9a3ed80d.8111a",
         "type": "inject",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "",
         "payload": "",
@@ -875,45 +1178,45 @@
         "y": 340,
         "wires": [
             [
-                "6275a49d.8303ec"
+                "6f8df87.a612f08"
             ]
         ]
     },
     {
-        "id": "b877aee.ed2a35",
+        "id": "b712b076.f5aeb8",
         "type": "mqtt in",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "#",
         "qos": "2",
         "datatype": "auto",
-        "broker": "297d18c4.a28298",
+        "broker": "4db28f59.d6fb5",
         "x": 210,
         "y": 140,
         "wires": [
             [
-                "2d39b95f.9402be",
-                "5f92790e.2b4d4"
+                "8709b524.e9ffd",
+                "eeffa24.0bb6ae"
             ]
         ]
     },
     {
-        "id": "555507ae.d6b3a8",
+        "id": "2613123.ac6c2ee",
         "type": "mqtt out",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "",
         "qos": "2",
         "retain": "true",
-        "broker": "297d18c4.a28298",
+        "broker": "4db28f59.d6fb5",
         "x": 1010,
         "y": 300,
         "wires": []
     },
     {
-        "id": "2d39b95f.9402be",
+        "id": "8709b524.e9ffd",
         "type": "debug",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -925,15 +1228,15 @@
         "wires": []
     },
     {
-        "id": "5f92790e.2b4d4",
+        "id": "eeffa24.0bb6ae",
         "type": "ui_template",
-        "z": "3f479660.ab3d2a",
-        "group": "11dc7889.ce5f3f",
+        "z": "3ca8863c.e795e2",
+        "group": "ecd977f8.aa0b2",
         "name": "",
-        "order": 10,
+        "order": 8,
         "width": 0,
         "height": 0,
-        "format": "<html>\n<head>\n\t<script>\n\n// This is a \"main\" function which we use as a trick to get hold of the scope variable\n// The scope variable is important for us to access the send() member, which allows us to\n// send messages directly from the javascript within the Node-RED template-ui itself.\n(function(scope) {\n    // Sending and receiving messages can be done only within this function (ttat takes \"scope\" argument)\n    \n    // Periodically send a \"ping\" message to server. The message is a unique identifier for the web browser\n    // that runs this code. The unique PingID is actually just the epoch time at which code initially ran.\n    // Although the ID itself is a time, it's used for it's (most probably) uniqueness amongst all browsers\n    // that will run this code, and the fact that that number actually is a point in time is irrelevant here.\n    // We could have used a UUID as well.\n    // PingID stays the same during the whole browser session (until the page is refreshed for instance).\n    setInterval(function(){clock_A = Date.now(); scope.send({topic: \"clock-synchro/ping\", payload: PingID})}, 2000 );\n\n    // Once at start time (i.e. here and now), send a message to get_playlist. oxford.bin will reply with \n    // the playlist on topic song_list/sorted_by/playlist (for instance)\n    scope.send({topic: \"get-playlist\", payload: \"x\"});\n    \n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        // We put here all the code that inspects incoming messages from certain topics.\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            // Increase tempo\n            tempo_up();\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            // Decrease tempo\n            tempo_down();\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            // Update the tempo value\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            //toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            // Update the tempo \"timestart\" variable.\n            // This is always sent alongside with song/tempo/value\n            // timestart is the absolute point in time (server time) all metronome ticks are counted\n            // from. Tick #0 happens at timestart, tick #1 happens a bit later, #2 at twice that interval\n            // from timestart, #3 at three times the interval, always counted from timestart as an absolute\n            // reference.\n            date_timestart_received = Date.now();\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            // Optional time offset - not used as of now.\n            time_offset = parseInt(msg.payload);\n        }\n\n        if (msg.topic === \"clock-synchro/pong/\" + PingID.toString())\n        {\n            var clock_delta_dev;\n            // Compute the clock difference between the clock of this machine (web browser) and the\n            // clock of the server (running the main oxford program, Node-RED server, MQTT server, etc.)\n            clock_C = Date.now();\n            clock_B = parseInt(msg.payload);\n            clock_delta_raw = (clock_C + clock_A) /2 - clock_B;\n            // clock_delta_raw is the immediate calculation for the clock\n            // but that variable has jitter, and its jitter will directly impact the metronome jitter.\n            // Iron out the jitter by computing an average (smoothing function).\n            // Variable first_run allows us to do different things during the first cycles, to \"prime\"\n            // the algorithm with data close to its final value, rather than waiting over 10 or 20 seconds\n            // that clock_delta converges to its mean value.\n            // The smoothing average algorithm has weights set at 0.9 and 0.1 (90% old data, 10% new data)\n            // NOPE | The smoothing average algorithm is weighted, and the weight is a function of how many standard\n            // NOPE | deviation is the incoming data different from the mean. Think of it as an adaptive filter.\n            if (state_machine == 0)\n            {\n                state_machine = 1;\n                clock_delta_dev = 0;\n                clock_delta = clock_delta_raw;\n                clock_delta_mean = clock_delta;\n            }\n            else if (state_machine == 1)\n            {\n//                state_machine = 2;\n                // This is not a real \"mean\". It's a filter that converges towards the mean.\n                // Think of it of a \"mean which forgets earlier values over time\".\n                clock_delta_mean_prev = clock_delta_mean;\n                clock_delta_mean = clock_delta_mean * 0.9 + clock_delta_raw * 0.1;\n//                clock_delta_dev = clock_delta_dev * 0.9 + 0.1 * Math.sqrt( (clock_delta_raw - clock_delta_mean_prev) * (clock_delta_raw - clock_delta_mean));\n//                weight_factor = Math.absolute(clock_delta_raw - clock_delta_mean) / (clock_delta_dev);\n//                clock_delta = clock_delta * (1 - 0.1 * (clock_delta_raw - clock_delta_mean) / clock_delta_dev  *  + clock_delta_raw * 0.1;\n                clock_delta = clock_delta_mean;\n            }\n\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/clock_delta\", payload: clock_delta});\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/remote_clock_estimated\", payload: clock_C - clock_delta });\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/local_clock\", payload: clock_C });\n            $debug.text(clock_delta);\n        }\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar $debug;\nvar tempo;\nvar play;\nvar play_sound = 0;\nvar snd;\n\nvar timestart = Date.now();\nvar phase = 0;\nvar date_timestart_received = Date.now();\nvar PingID = Date.now();\nvar clock_A;\nvar clock_B;\nvar clock_C;\nvar clock_delta = 0;\nvar clock_delta_mean = 0;\nvar state_machine = 0;\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\nfunction phase_delay_increment()\n{\n    phase = phase +10;\n}\n\nfunction phase_delay_decrement()\n{\n    phase = phase -10;\n}\n\nfunction toggle_play()\n{\n\tplay = !play;\n}\n\nfunction toggle_sound()\n{\n    play_sound = !play_sound;\n    snd.play();\n}\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    //beat_number = (date_timestart_received - timestart)/delay_ms;\n                    beat_number = 0;\n                    //beat_number = Math.ceil(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + clock_delta + beat_number * delay_ms + time_offset + phase;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t    if(play_sound)\n\t\t\t\t    {\n\t\t\t\t\t    snd.play();\n\t\t\t\t    }\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        $debug = $('#debug');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n        // Try to guess server time\n        //setInterval(clockSynchPing, 1000);\n\n\t});\n\t\n\t\n\n\n\tfunction clockSynchPing()\n\t{\n\t    //alert(\"blah\");\n\t    //this.scope.send({payload:\"test\"});\n\t}\n\t\n\t</script>\n\t\n\t\n\t\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t\tbutton {\n      display: inline-block;\n    }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<div id=\"debug1\"><span id=\"debug\">yadda</span></div>\n\t<div><button onclick=phase_delay_increment()>Phase +</button>\n\t<button onclick=phase_delay_decrement()>Phase -</button></div>\n\t<div><button onclick=toggle_play()>Metr.</button>\n\t<button onclick=toggle_sound()>Sound</button></div>\n</body>\n</html>",
+        "format": "<html>\n<head>\n\t<script>\n\n// This is a \"main\" function which we use as a trick to get hold of the scope variable\n// The scope variable is important for us to access the send() member, which allows us to\n// send messages directly from the javascript within the Node-RED template-ui itself.\n(function(scope) {\n    // Sending and receiving messages can be done only within this function (ttat takes \"scope\" argument)\n    \n    // Periodically send a \"ping\" message to server. The message is a unique identifier for the web browser\n    // that runs this code. The unique PingID is actually just the epoch time at which code initially ran.\n    // Although the ID itself is a time, it's used for it's (most probably) uniqueness amongst all browsers\n    // that will run this code, and the fact that that number actually is a point in time is irrelevant here.\n    // We could have used a UUID as well.\n    // PingID stays the same during the whole browser session (until the page is refreshed for instance).\n    setInterval(function(){clock_A = Date.now(); scope.send({topic: \"clock-synchro/ping\", payload: PingID})}, 2000 );\n\n    // Once at start time (i.e. here and now), send a message to get_playlist. oxford.bin will reply with \n    // the playlist on topic song_list/sorted_by/playlist (for instance)\n    scope.send({topic: \"get-playlist\", payload: \"x\"});\n    \n    // watch msg object from Node-RED\n    scope.$watch('msg', function(msg) {\n        // We put here all the code that inspects incoming messages from certain topics.\n        if (msg.topic === \"metronome/tempo/increase\" && msg.payload === \"x\")\n        {\n            // Increase tempo\n            // tempo_up(); // done by oxford\n        }\n        if (msg.topic === \"metronome/tempo/decrease\" && msg.payload === \"x\")\n        {\n            // Decrease tempo\n            // tempo_down(); // done by oxford\n        }\n        if (msg.topic === \"song/tempo/value\")\n        {\n            // Update the tempo value\n            $tempo.text(msg.payload);\n            tempo = parseInt($tempo.text());\n        }\n        if (msg.topic === \"metronome/activate\")\n        {\n            //toggle_play();\n        }\n        if (msg.topic === \"song/tempo/timestart\")\n        {\n            // Update the tempo \"timestart\" variable.\n            // This is always sent alongside with song/tempo/value\n            // timestart is the absolute point in time (server time) all metronome ticks are counted\n            // from. Tick #0 happens at timestart, tick #1 happens a bit later, #2 at twice that interval\n            // from timestart, #3 at three times the interval, always counted from timestart as an absolute\n            // reference.\n            date_timestart_received = Date.now();\n            timestart = parseInt(msg.payload);\n        }\n        if (msg.topic === \"metronome/time_offset\")\n        {\n            // Optional time offset - not used as of now.\n            time_offset = parseInt(msg.payload);\n        }\n\n        if (msg.topic === \"clock-synchro/pong/\" + PingID.toString())\n        {\n            var clock_delta_dev;\n            // Compute the clock difference between the clock of this machine (web browser) and the\n            // clock of the server (running the main oxford program, Node-RED server, MQTT server, etc.)\n            clock_C = Date.now();\n            clock_B = parseInt(msg.payload);\n            clock_delta_raw = (clock_C + clock_A) /2 - clock_B;\n            // clock_delta_raw is the immediate calculation for the clock\n            // but that variable has jitter, and its jitter will directly impact the metronome jitter.\n            // Iron out the jitter by computing an average (smoothing function).\n            // Variable first_run allows us to do different things during the first cycles, to \"prime\"\n            // the algorithm with data close to its final value, rather than waiting over 10 or 20 seconds\n            // that clock_delta converges to its mean value.\n            // The smoothing average algorithm has weights set at 0.9 and 0.1 (90% old data, 10% new data)\n            // NOPE | The smoothing average algorithm is weighted, and the weight is a function of how many standard\n            // NOPE | deviation is the incoming data different from the mean. Think of it as an adaptive filter.\n            if (state_machine == 0)\n            {\n                state_machine = 1;\n                clock_delta_dev = 0;\n                clock_delta = clock_delta_raw;\n                clock_delta_mean = clock_delta;\n            }\n            else if (state_machine == 1)\n            {\n//                state_machine = 2;\n                // This is not a real \"mean\". It's a filter that converges towards the mean.\n                // Think of it of a \"mean which forgets earlier values over time\".\n                clock_delta_mean_prev = clock_delta_mean;\n                clock_delta_mean = clock_delta_mean * 0.9 + clock_delta_raw * 0.1;\n//                clock_delta_dev = clock_delta_dev * 0.9 + 0.1 * Math.sqrt( (clock_delta_raw - clock_delta_mean_prev) * (clock_delta_raw - clock_delta_mean));\n//                weight_factor = Math.absolute(clock_delta_raw - clock_delta_mean) / (clock_delta_dev);\n//                clock_delta = clock_delta * (1 - 0.1 * (clock_delta_raw - clock_delta_mean) / clock_delta_dev  *  + clock_delta_raw * 0.1;\n                clock_delta = clock_delta_mean;\n            }\n\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/clock_delta\", payload: clock_delta});\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/remote_clock_estimated\", payload: clock_C - clock_delta });\n            scope.send({topic: \"clock-synchro/\"  + PingID.toString() + \"/local_clock\", payload: clock_C });\n            $debug.text(clock_delta);\n        }\n        //console.log('yadda');\n        // new message **msg** received\n        //alert(msg.topic); //tempo.String());\n    });\n})(scope);\n\nvar time_offset = 0;\nvar $tempo;\nvar $debug;\nvar tempo;\nvar play;\nvar play_sound = 0;\nvar snd;\n\nvar timestart = Date.now();\nvar phase = 0;\nvar date_timestart_received = Date.now();\nvar PingID = Date.now();\nvar clock_A;\nvar clock_B;\nvar clock_C;\nvar clock_delta = 0;\nvar clock_delta_mean = 0;\nvar state_machine = 0;\n\nfunction tempo_up()\n{\n    tempo = parseInt($tempo.text());\n  \t$tempo.text(parseInt($tempo.text()) + 1);\n}\n\nfunction tempo_down()\n{\n    tempo = parseInt($tempo.text());\n    $tempo.text(parseInt($tempo.text()) - 1);\n\n}\n\nfunction phase_delay_increment()\n{\n    phase = phase +10;\n}\n\nfunction phase_delay_decrement()\n{\n    phase = phase -10;\n}\n\nfunction toggle_play()\n{\n\tplay = !play;\n}\n\nfunction toggle_sound()\n{\n    play_sound = !play_sound;\n    snd.play();\n}\n\n\nfunction startMetronome() {\n\t\t\tfunction getInterval() {\n\t\t\t    tempo = parseInt($tempo.text());\n\t\t\t    if (tempo > 240)\n\t\t\t    {\n\t\t\t        tempo = 240;\n\t\t\t    }\n\t\t\t    if (tempo < 30)\n\t\t\t    {\n\t\t\t        tempo = 30;\n\t\t\t    }\n\t\t\t    $tempo.text(tempo);\n\t\t\t\treturn 1000 / (parseInt($tempo.text()) / 60);\n\t\t\t}\n\t\t\tvar delay_ms = getInterval();\n\t\t\tvar started = Date.now();\n\t\t\tvar bg_toggle_bool = 0;\n            var bpm_id = document.getElementById(\"bpm\");\n            var previous_timestart = 0;\n\t\t\tsnd.play();\n\t\t\tstep();\n\t\t\t\n\t\t\tfunction step() {\n\n\n                // Get current Base Tempo of the song\n                if (timestart != previous_timestart)\n                {\n                     // Change in tempo detected\n                    previous_timestart = timestart;\n                    //alert(timestart);\n                    // Compute wait time from the tempo\n                    delay_ms = getInterval();\n                    // Compute beat number\n                    //beat_number = (date_timestart_received - timestart)/delay_ms;\n                    beat_number = 0;\n                    //beat_number = Math.ceil(beat_number);\n                    //alert(beat_number);\n                }\n\n                beat_number ++;\n            \n                // Compute time at which next beat must happen\n                next_time = timestart + clock_delta + beat_number * delay_ms + time_offset + phase;\n                setTimeout(step, next_time - Date.now());\n\n\t\t\t\tif (play) {\n\t\t\t\t    if(play_sound)\n\t\t\t\t    {\n\t\t\t\t\t    snd.play();\n\t\t\t\t    }\n\t\t\t\t\tif (bg_toggle_bool === 1)\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 0;\n\t\t\t\t\t    document.body.style.background = \"red\";\n\t\t\t\t\t    bpm_id.style.background = \"red\";\n\t\t\t\t\t    \n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t    bg_toggle_bool = 1;\n\t\t\t\t\t    document.body.style.background = \"white\";\n\t\t\t\t\t    bpm_id.style.background = \"white\";\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t$(document).ready(function() {\n\n\n\n        $tempo = $('#tempo');\n        $debug = $('#debug');\n        tempo = 130;\n \n\t\tsnd = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');\n\t\tplay = false;\n\t\t$('#playing').hide();\n\n        startMetronome();\n\n        // Try to guess server time\n        //setInterval(clockSynchPing, 1000);\n\n\t});\n\t\n\t\n\n\n\tfunction clockSynchPing()\n\t{\n\t    //alert(\"blah\");\n\t    //this.scope.send({payload:\"test\"});\n\t}\n\t\n\t</script>\n\t\n\t\n\t\n\t<style>\n\t\tbody { font-family:Arial; color:#333; }\n\t\t#bpm { font-size:30pt; text-align:center; margin-top:10px; margin-bottom:10px; }\n\t\t#tempo { font-size:65pt; }\n\t\tbutton {\n      display: inline-block;\n    }\n\t</style>\n</head>\n<body>\n\t<div id=\"bpm\"><span id=\"tempo\">120</span> BPM</div>\n\t<div id=\"debug1\"><span id=\"debug\">yadda</span></div>\n\t<div><button onclick=phase_delay_increment()>Phase +</button>\n\t<button onclick=phase_delay_decrement()>Phase -</button></div>\n\t<div><button onclick=toggle_play()>Metr.</button>\n\t<button onclick=toggle_sound()>Sound</button></div>\n</body>\n</html>",
         "storeOutMessages": true,
         "fwdInMessages": false,
         "templateScope": "local",
@@ -941,46 +1244,15 @@
         "y": 140,
         "wires": [
             [
-                "4e142fde.2ac29",
-                "d9dd2c57.2bc6c8"
+                "8ff1289c.f9b28",
+                "47af4582.73ecd4"
             ]
         ]
     },
     {
-        "id": "54ab9ad6.8ba864",
-        "type": "mqtt in",
-        "z": "3f479660.ab3d2a",
-        "name": "",
-        "topic": "song/tempo/timestart",
-        "qos": "2",
-        "datatype": "utf8",
-        "broker": "297d18c4.a28298",
-        "x": 250,
-        "y": 565,
-        "wires": [
-            [
-                "7aadbac3.340e64"
-            ]
-        ]
-    },
-    {
-        "id": "7aadbac3.340e64",
-        "type": "debug",
-        "z": "3f479660.ab3d2a",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "x": 540,
-        "y": 565,
-        "wires": []
-    },
-    {
-        "id": "b29272fc.6fe938",
+        "id": "ec656e54.049ba",
         "type": "function",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "func": "var date = Date.now();\nmsg.payload = date;\nreturn msg;",
         "outputs": 1,
@@ -989,14 +1261,14 @@
         "y": 665,
         "wires": [
             [
-                "dcb13620.af5258"
+                "ed243b01.ed84b8"
             ]
         ]
     },
     {
-        "id": "dcb13620.af5258",
+        "id": "ed243b01.ed84b8",
         "type": "debug",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1008,9 +1280,9 @@
         "wires": []
     },
     {
-        "id": "a910503d.9c59a",
+        "id": "b62dad70.83ea78",
         "type": "inject",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "",
         "payload": "",
@@ -1023,30 +1295,30 @@
         "y": 665,
         "wires": [
             [
-                "b29272fc.6fe938"
+                "ec656e54.049ba"
             ]
         ]
     },
     {
-        "id": "d9dd2c57.2bc6c8",
+        "id": "47af4582.73ecd4",
         "type": "mqtt out",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "",
         "qos": "",
         "retain": "",
-        "broker": "1e9bde90.de3e79",
+        "broker": "25404ad9.2982be",
         "x": 720,
         "y": 200,
         "wires": []
     },
     {
-        "id": "55b8cb9.462bab4",
+        "id": "e717fe0f.1dbd38",
         "type": "ui_button",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "Click sound +",
-        "group": "11dc7889.ce5f3f",
-        "order": 5,
+        "group": "ecd977f8.aa0b2",
+        "order": 3,
         "width": 1,
         "height": 1,
         "passthru": false,
@@ -1062,17 +1334,17 @@
         "y": 400,
         "wires": [
             [
-                "555507ae.d6b3a8"
+                "2613123.ac6c2ee"
             ]
         ]
     },
     {
-        "id": "b166f82b.8ae478",
+        "id": "deffd7b4.6661e8",
         "type": "ui_button",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "Click sound -",
-        "group": "11dc7889.ce5f3f",
-        "order": 6,
+        "group": "ecd977f8.aa0b2",
+        "order": 4,
         "width": 1,
         "height": 1,
         "passthru": false,
@@ -1088,22 +1360,22 @@
         "y": 440,
         "wires": [
             [
-                "555507ae.d6b3a8"
+                "2613123.ac6c2ee"
             ]
         ]
     },
     {
-        "id": "3ba78d6.b4c7ef2",
+        "id": "b1953407.1a0ae",
         "type": "ui_dropdown",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "label": "",
         "tooltip": "",
         "place": "Select option",
-        "group": "11dc7889.ce5f3f",
-        "order": 1,
-        "width": 0,
-        "height": 0,
+        "group": "ecd977f8.aa0b2",
+        "order": 9,
+        "width": 4,
+        "height": 1,
         "passthru": false,
         "options": [],
         "payload": "",
@@ -1112,32 +1384,32 @@
         "y": 800,
         "wires": [
             [
-                "aff09799.7cd298"
+                "6510cb6a.35f6b4"
             ]
         ]
     },
     {
-        "id": "658e24c2.fb6b54",
+        "id": "b6a7fa3f.69ae9",
         "type": "mqtt in",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "song-list/sorted-by/playlist",
         "qos": "2",
         "datatype": "auto",
-        "broker": "297d18c4.a28298",
+        "broker": "4db28f59.d6fb5",
         "x": 130,
         "y": 800,
         "wires": [
             [
-                "38bcb644.79acf2",
-                "1866d927.efc3a7"
+                "f9276359.83451",
+                "9bc5a4f7.dd06f"
             ]
         ]
     },
     {
-        "id": "38bcb644.79acf2",
+        "id": "f9276359.83451",
         "type": "change",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "rules": [
             {
@@ -1157,15 +1429,15 @@
         "y": 800,
         "wires": [
             [
-                "a0cea190.b8bed",
-                "527cb428.f1fa94"
+                "24936061.57795",
+                "7b149ba5.ff4a9c"
             ]
         ]
     },
     {
-        "id": "a0cea190.b8bed",
+        "id": "24936061.57795",
         "type": "debug",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1178,9 +1450,9 @@
         "wires": []
     },
     {
-        "id": "1866d927.efc3a7",
+        "id": "9bc5a4f7.dd06f",
         "type": "debug",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1193,9 +1465,9 @@
         "wires": []
     },
     {
-        "id": "527cb428.f1fa94",
+        "id": "7b149ba5.ff4a9c",
         "type": "json",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "property": "options",
         "action": "",
@@ -1204,17 +1476,17 @@
         "y": 800,
         "wires": [
             [
-                "3ba78d6.b4c7ef2"
+                "b1953407.1a0ae"
             ]
         ]
     },
     {
-        "id": "2664cdf7.109f42",
+        "id": "5aadce81.435728",
         "type": "ui_text",
-        "z": "3f479660.ab3d2a",
-        "group": "11dc7889.ce5f3f",
-        "order": 3,
-        "width": 2,
+        "z": "3ca8863c.e795e2",
+        "group": "ecd977f8.aa0b2",
+        "order": 5,
+        "width": 3,
         "height": 1,
         "name": "",
         "label": "Tempo",
@@ -1225,12 +1497,12 @@
         "wires": []
     },
     {
-        "id": "66dbfce.c432904",
+        "id": "cf24a296.e637e",
         "type": "ui_text",
-        "z": "3f479660.ab3d2a",
-        "group": "11dc7889.ce5f3f",
+        "z": "3ca8863c.e795e2",
+        "group": "ecd977f8.aa0b2",
         "order": 2,
-        "width": 2,
+        "width": 3,
         "height": 1,
         "name": "",
         "label": "Click sound",
@@ -1241,33 +1513,34 @@
         "wires": []
     },
     {
-        "id": "749f5a87.2bd154",
+        "id": "b3f363f2.8c096",
         "type": "mqtt in",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "topic": "song/name",
         "qos": "2",
         "datatype": "auto",
-        "broker": "297d18c4.a28298",
+        "broker": "4db28f59.d6fb5",
         "x": 630,
         "y": 720,
         "wires": [
             [
-                "3ba78d6.b4c7ef2"
+                "b1953407.1a0ae",
+                "5f2668cc.491c9"
             ]
         ]
     },
     {
-        "id": "44d7e9af.b05a1",
+        "id": "2f51fc8c.333624",
         "type": "ui_button",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
-        "group": "11dc7889.ce5f3f",
-        "order": 13,
-        "width": 0,
-        "height": 0,
+        "group": "ecd977f8.aa0b2",
+        "order": 10,
+        "width": 1,
+        "height": 1,
         "passthru": false,
-        "label": "button",
+        "label": "🚀",
         "tooltip": "",
         "color": "",
         "bgcolor": "",
@@ -1279,14 +1552,14 @@
         "y": 500,
         "wires": [
             [
-                "555507ae.d6b3a8"
+                "449f1030.9df5a"
             ]
         ]
     },
     {
-        "id": "aff09799.7cd298",
+        "id": "6510cb6a.35f6b4",
         "type": "change",
-        "z": "3f479660.ab3d2a",
+        "z": "3ca8863c.e795e2",
         "name": "",
         "rules": [
             {
@@ -1304,6 +1577,94 @@
         "reg": false,
         "x": 960,
         "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "449f1030.9df5a",
+        "type": "mqtt out",
+        "z": "3ca8863c.e795e2",
+        "name": "MQTT QoS=0",
+        "topic": "",
+        "qos": "0",
+        "retain": "true",
+        "broker": "4db28f59.d6fb5",
+        "x": 1100,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "5f2668cc.491c9",
+        "type": "ui_text",
+        "z": "3ca8863c.e795e2",
+        "group": "ecd977f8.aa0b2",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Current song:",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "x": 770,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "39b6f90.e190f88",
+        "type": "ui_button",
+        "z": "b69e069b.8e412",
+        "name": "",
+        "group": "dc9e61bc.8f953",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "button",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 180,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "98a6cc62.69cf",
+        "type": "ui_text",
+        "z": "b69e069b.8e412",
+        "group": "dc9e61bc.8f953",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "text",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 160,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "11a972b5.83fbfd",
+        "type": "ui_template",
+        "z": "b69e069b.8e412",
+        "group": "dc9e61bc.8f953",
+        "name": "",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "format": "<iframe src=\"pdffile.pdf\"></iframe>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 140,
+        "y": 200,
         "wires": [
             []
         ]
