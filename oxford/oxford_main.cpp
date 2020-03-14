@@ -906,14 +906,11 @@ std::list<TContext *> PlaylistData_BySongName;
 
 /**
  * Very important global variable: points to the current context in the playlist.
- * This is a list::iterator, so dereferencing it (e.g. *PlaylistPosition)
- * gives an element, that is a pointer to a Context. Then dereference another
- * time to get to the context.
  * E.g: TContext MyContext;
- *      MyContext = **PlaylistPosition;
+ *      MyContext = *PlaylistPosition;
  *      printf("%s", MyContext.SongName.c_str());
  */
-std::list<TContext *>::iterator PlaylistPosition;
+TContext * PlaylistPosition;
 std::mutex PlaylistPosition_mtx;
 
  
@@ -1042,13 +1039,20 @@ void ContextPreviousPress(void)
 {
     // Protect PlaylistPosition from concurrent access
     std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-    if (PlaylistPosition != PlaylistData.begin())
+    if (* PlaylistData.begin() == PlaylistPosition )
     {
-        PlaylistPosition--;
-        TContext Context = **PlaylistPosition;
-        Context.Init();
+        // Already at the beginning of the list
+        // Do nothing        
+    }
+    else
+    {
+        auto it = std::find(PlaylistData.begin(), PlaylistData.end(), PlaylistPosition);
+        std::advance(it, -1);
+        PlaylistPosition = * it;
+        PlaylistPosition->Init();
     }
 }
+
 
 /**
  * This function is called each time one wants to go to the previous context.
@@ -1065,17 +1069,22 @@ void ContextNextPress(void)
 {
     // Protect PlaylistPosition from concurrent access
     std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-
-    // Note that .end() returns an iterator that is already outside the bounds
-    // of the container.
-    std::list<TContext*>::iterator it;
-    it = PlaylistPosition;
-    it++;
-    if (it != PlaylistData.end())
+    auto it = PlaylistData.end();
+    std::advance(it, -1);
+    if (*it == PlaylistPosition )
     {
-        PlaylistPosition++;
-        TContext Context = **PlaylistPosition;
-        Context.Init();
+        // Why -1?
+        // PlaylistData.end() is already out of bounds
+        // PlaylistData.end() '-1' is the last element
+        // => Already at the end of the list
+        // Do nothing        
+    }
+    else
+    {
+        auto it = std::find(PlaylistData.begin(), PlaylistData.end(), PlaylistPosition);
+        std::advance(it, 1);
+        PlaylistPosition = * it;
+        PlaylistPosition->Init();
     }
 }
 
@@ -3439,9 +3448,9 @@ namespace MetronomeMaster
         // Protect PlaylistPosition from concurrent access
         std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
 
-        (*PlaylistPosition)->BaseTempo++;
-        if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
-        if ((*PlaylistPosition)->BaseTempo > 200) (*PlaylistPosition)->BaseTempo = 200;
+        PlaylistPosition->BaseTempo++;
+        if ((PlaylistPosition)->BaseTempo < 30) (PlaylistPosition)->BaseTempo = 30;
+        if ((PlaylistPosition)->BaseTempo > 200) (PlaylistPosition)->BaseTempo = 200;
     }
 
     void DecreaseCurrentTempo(void * foo)
@@ -3449,8 +3458,8 @@ namespace MetronomeMaster
         // Protect PlaylistPosition from concurrent access
         std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
  
-        (*PlaylistPosition)->BaseTempo--;
-        if ((*PlaylistPosition)->BaseTempo < 30) (*PlaylistPosition)->BaseTempo = 30;
+        (PlaylistPosition)->BaseTempo--;
+        if ((PlaylistPosition)->BaseTempo < 30) (PlaylistPosition)->BaseTempo = 30;
     }
 
     bool FlashFlag = false; 
@@ -3495,7 +3504,7 @@ namespace MetronomeMaster
     void threadMetronome (void)
     {
         const int PulseDuration = 100;
-        TContext Context;
+        TContext * pContext;
         init_pair(1, COLOR_WHITE, COLOR_BLACK);
         init_pair(2, COLOR_RED, COLOR_BLACK);
         init_pair(3, COLOR_GREEN, COLOR_BLACK);
@@ -3529,8 +3538,8 @@ namespace MetronomeMaster
             {
                 // Protect PlaylistPosition from concurrent access
                 std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-                Context = **PlaylistPosition;
-                Tempo = Context.BaseTempo;
+                pContext = PlaylistPosition;
+                Tempo = pContext->BaseTempo;
             }
 
             if (Tempo != previous_Tempo)
@@ -5940,18 +5949,15 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
     // If Channel 2 == FCB1010: action the corresponding digital pedal
     if (rxNote >= 1 && rxNote <= 10)
     {
-        TContext context;
+        TContext * pContext;
         {
             // Protect PlaylistPosition from concurrent access
             std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-            context = **PlaylistPosition;
+            pContext = PlaylistPosition;
         }
 
-        for (std::list<TPedalDigital>::iterator it = context.Pedalboard.PedalsDigital.begin(); \
-                it != context.Pedalboard.PedalsDigital.end(); \
-                it++)
+        for (auto PedalDigital : pContext->Pedalboard.PedalsDigital)
         {
-            TPedalDigital PedalDigital = *it;
             if (rxNote == PedalDigital.GetNumber())
             {
                 if (rxVolume > 0)
@@ -6354,24 +6360,20 @@ void MIDI_B_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBend
 // received on MIDI A IN
 void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt_0_127 rxControllerValue)
 {
-    TContext context;
+    TContext * pContext;
     {
         // Protect PlaylistPosition from concurrent access
         std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-        context = **PlaylistPosition;
+        pContext = PlaylistPosition;
     }
-    for (std::list<TPedalAnalog>::iterator it = context.Pedalboard.PedalsAnalog.begin(); \
-            it != context.Pedalboard.PedalsAnalog.end(); \
-            it++)
+    for (TPedalAnalog PedalAnalog : pContext->Pedalboard.PedalsAnalog)
     {
-        TPedalAnalog PedalAnalog = *it;
         if (rxControllerNumber == PedalAnalog.GetControllerNumber())
         {
             PedalAnalog.Change(rxControllerValue);
         }
     }
 }
-
 
 
 // This function initializes all the TContext objects, and then gathers
@@ -6841,13 +6843,8 @@ void InitializePlaylist(void)
     {
         // Protect PlaylistPosition from concurrent access
         std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-        PlaylistPosition = PlaylistData.begin();
+        PlaylistPosition = *(PlaylistData.begin());
     }
-
-    TContext Context = **PlaylistPosition;
-    
-    // Context.Init(); // The .Init() function must be called manually. I tried to overload the assignment operator but did not find a good way to do it.
-
 
     // These so-called Playlists are a bit fictive and only a copy of the original playlist, but sorted by author or by song name.
     PlaylistData_ByAuthor = PlaylistData;
@@ -6856,27 +6853,25 @@ void InitializePlaylist(void)
     PlaylistData_BySongName.sort(CompareTContextBySongName);
 }
 
-
 // Redraw screen 5 times a second.
 void threadRedraw(void)
 {
-    TContext Context;
+    TContext * pContext;
     while(1)
     {
         waitMilliseconds(200);
         {
             // Protect PlaylistPosition from concurrent access
             std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-            TContext tmpContext = **PlaylistPosition;
-            Context = tmpContext;
+            pContext = PlaylistPosition;
         }
         win_context_current.Erase();
-        mvwprintw(win_context_current.GetRef(), 0,0, Context.SongName.c_str());
+        mvwprintw(win_context_current.GetRef(), 0,0, pContext->SongName.c_str());
 
         win_context_usage.Erase();
         {
-            auto it = Context.Pedalboard.PedalsDigital.begin();
-            while(it != Context.Pedalboard.PedalsDigital.end())
+            auto it = pContext->Pedalboard.PedalsDigital.begin();
+            while(it != pContext->Pedalboard.PedalsDigital.end())
             {
                 TPedalDigital PedalDigital = *it;
                 wprintw(win_context_usage.GetRef(), "Digital Pedal %i: %s\n", PedalDigital.GetNumber(), PedalDigital.GetComment().c_str());
@@ -6884,8 +6879,8 @@ void threadRedraw(void)
             }
         }
         {
-            auto it = Context.Pedalboard.PedalsAnalog.begin();
-            while(it != Context.Pedalboard.PedalsAnalog.end())
+            auto it = pContext->Pedalboard.PedalsAnalog.begin();
+            while(it != pContext->Pedalboard.PedalsAnalog.end())
             {
                 TPedalAnalog PedalAnalog = *it;
                 wprintw(win_context_usage.GetRef(), "Expression CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
@@ -6909,7 +6904,6 @@ void SelectContextByName(std::string Name)
 {
     // Protect PlaylistPosition from concurrent access
     std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
- 
     std::list<TContext*>::iterator it;
     std::list<TContext*> ContextList = PlaylistData;
 
@@ -6919,9 +6913,8 @@ void SelectContextByName(std::string Name)
         if (Context.SongName == Name)
         {
             // Initialize context for said song
-            PlaylistPosition = it;
-            TContext Context = **PlaylistPosition;
-            Context.Init();
+            PlaylistPosition = *it;
+            PlaylistPosition->Init();
         }
     }
 }
@@ -6977,12 +6970,11 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
         // Question: we are currently pointing to a context ( *PlaylistPosition ).
         // But which position is this in the list we will display?
         // Let's find out:
-        if (*it == *PlaylistPosition)
+        if (*it == PlaylistPosition)
         {
             initial_position = idx;
         }
         idx++;
-
     }
 
 
@@ -7024,10 +7016,8 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
         {
             if (idx == scrollList->currentItem)
             {
-                PlaylistPosition = it;
-                TContext Context = **PlaylistPosition;
-                Context.Init();
-
+                PlaylistPosition = *it;
+                PlaylistPosition->Init();
                 break;
             }
             idx++;
@@ -7248,7 +7238,7 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result)
 void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
 {
 	bool match = 0;
-	//wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
+	wprintw(win_debug_messages.GetRef(), "got message '%.*s' for topic '%s'\n", message->payloadlen, (char*) message->payload, message->topic);
 
     mosquitto_topic_matches_sub("clock-synchro/ping", message->topic, &match);
     if (match)
@@ -7314,31 +7304,18 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
         // return playlist data
         std::string json_string;
         json_string = "[";
-        std::list<TContext*>::iterator it;
-        std::list<TContext*> ContextList = PlaylistData;
-
-        for (it = ContextList.begin()++; it != ContextList.end(); it++)
+        for (TContext * pContext : PlaylistData)
         {
-            TContext * pContext = *it;
             std::string tmpstring = pContext->SongName;
             json_string = json_string + '\"' + tmpstring + '\"';
-            if (it != (--ContextList.end()))
-            {
-                json_string = json_string + ",";
-            }
-            else
-            {
-                // no comma for the last element in the list
-            }
         }
+        // Remove the last comma
+        json_string.pop_back();
         json_string = json_string + "]";
         mosquitto_publish(mosq, NULL, "song-list/sorted-by/playlist", json_string.length(), json_string.c_str(), 2, false);
-        MetronomeMaster::BroadcastTempo();
-        
+        MetronomeMaster::BroadcastTempo();        
         return;
     }
-
-
 }
 
 void TestMosquitto(void)
@@ -7364,7 +7341,7 @@ void TestMosquitto(void)
         mosquitto_subscribe(mosq, NULL, "metronome/tempo/decrease", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/increase", 0);
         mosquitto_subscribe(mosq, NULL, "metronome/beat_sound/decrease", 0);
-        //mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
+        mosquitto_subscribe(mosq, NULL, "clock-synchro/ping", 0);
         mosquitto_subscribe(mosq, NULL, "get-playlist", 0);
         mosquitto_subscribe(mosq, NULL, "set-song", 0);
         
