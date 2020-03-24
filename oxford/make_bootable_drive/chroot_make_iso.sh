@@ -32,7 +32,10 @@ apt-get install --no-install-recommends --assume-yes \
     screen \
     locales \
     tmux \
-    iw
+    iw \
+    iproute2 \
+    keyboard-configuration \
+    console-setup
 
 echo "root:toor" | chpasswd
 
@@ -74,7 +77,10 @@ apt-get install --no-install-recommends --assume-yes \
     git \
     libasound2-dev \
     libncurses5-dev \
-    libncursesw5-dev
+    libncursesw5-dev \
+    mosquitto \
+    libmosquitto-dev
+
 
 apt-get clean
 
@@ -90,6 +96,13 @@ make -B
 make -B install
 cd ..
 make -B
+
+# Install Node-RED
+apt-get install ca-certificates
+bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+# Make sure it starts automatically
+systemctl enable nodered.service
+
 
 
 fi

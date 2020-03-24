@@ -1,52 +1,30 @@
 [
     {
-        "id": "3ca8863c.e795e2",
+        "id": "ebb96953.99df38",
         "type": "tab",
         "label": "Flow 1",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "b69e069b.8e412",
+        "id": "4c4e474b.c1438",
         "type": "tab",
         "label": "Flow 2",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "7f0d72e0.8a3acc",
-        "type": "mqtt-broker",
-        "z": "",
-        "name": "mqtt broker 192.168.56.57",
-        "broker": "localhost",
-        "port": "1883",
-        "clientid": "",
-        "usetls": false,
-        "compatmode": false,
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": ""
-    },
-    {
-        "id": "e75d18b7.66a8e8",
+        "id": "fa2246d8.80cf9",
         "type": "ui_group",
         "z": "",
-        "name": "Metronome",
+        "name": "Default",
         "tab": "",
         "disp": true,
         "width": "6",
         "collapse": false
     },
     {
-        "id": "937cd258.ec06f",
+        "id": "a6d1130e.114ad8",
         "type": "ui_base",
         "theme": {
             "name": "theme-light",
@@ -142,91 +120,7 @@
         }
     },
     {
-        "id": "190f3d46.d55533",
-        "type": "ui_spacer",
-        "name": "spacer",
-        "group": "287a20b8.f44ab",
-        "order": 1,
-        "width": 1,
-        "height": 1
-    },
-    {
-        "id": "6871af6b.a1b6",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 1",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "afad16e3.f7dd18",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 3",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "b88a434e.a482d",
-        "type": "ui_group",
-        "z": "",
-        "name": "demo 2",
-        "tab": "",
-        "order": 1,
-        "disp": false,
-        "width": "12",
-        "collapse": false
-    },
-    {
-        "id": "bd0f2ef7.725828",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "f78305ee.ab363",
-        "type": "mqtt-broker",
-        "z": "",
-        "name": "mqtt localhost",
-        "broker": "localhost",
-        "port": "1883",
-        "clientid": "",
-        "usetls": false,
-        "compatmode": false,
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": ""
-    },
-    {
-        "id": "5fedea24.1618ac",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "efbbb5b1.3d6cf",
+        "id": "11769350.17a9f5",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -248,7 +142,7 @@
         "willPayload": ""
     },
     {
-        "id": "94a5dbf7.81713",
+        "id": "6ad97ff8.656468",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -258,7 +152,7 @@
         "collapse": false
     },
     {
-        "id": "83e1eaf4.99c0f8",
+        "id": "196501c.082357e",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -267,7 +161,7 @@
         "height": 1
     },
     {
-        "id": "eccde35d.5f9068",
+        "id": "9d76c6a4.751228",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -278,7 +172,7 @@
         "collapse": false
     },
     {
-        "id": "f1252994.6b5c48",
+        "id": "67f0d3e2.28e814",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -289,7 +183,7 @@
         "collapse": false
     },
     {
-        "id": "b951cf72.c64898",
+        "id": "c736aad0.3a0f1",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -300,7 +194,7 @@
         "collapse": false
     },
     {
-        "id": "11301a3f.f0ee0e",
+        "id": "7e4b596c.e084c",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -310,7 +204,7 @@
         "collapse": false
     },
     {
-        "id": "9f31cde4.f5694",
+        "id": "1e9bde90.de3e79",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -332,7 +226,7 @@
         "willPayload": ""
     },
     {
-        "id": "af6f9d4a.3a5d8",
+        "id": "4650f444.594c2c",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -342,7 +236,7 @@
         "collapse": false
     },
     {
-        "id": "bd67f6e5.af853",
+        "id": "82fabc46.8ccf5",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -364,7 +258,7 @@
         "willPayload": ""
     },
     {
-        "id": "223038ba.775598",
+        "id": "463a7da8.13b3f4",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -374,7 +268,7 @@
         "collapse": false
     },
     {
-        "id": "5e2e81b0.d4f088",
+        "id": "856ee7a9.db6be",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -383,7 +277,7 @@
         "height": 1
     },
     {
-        "id": "983311d4.52af6",
+        "id": "58e5e9bc.bf89b8",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -394,7 +288,7 @@
         "collapse": false
     },
     {
-        "id": "f0956aea.ba55e8",
+        "id": "285a1827.8dad1",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -405,7 +299,7 @@
         "collapse": false
     },
     {
-        "id": "70281196.2c4a48",
+        "id": "6ffdc214.37d7cc",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -416,7 +310,7 @@
         "collapse": false
     },
     {
-        "id": "eb0bad5b.86bea",
+        "id": "130a5d45.4dc3bb",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -426,7 +320,7 @@
         "collapse": false
     },
     {
-        "id": "8d8e98cf.448f9",
+        "id": "b0fd40a8.7e2d",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -448,7 +342,7 @@
         "willPayload": ""
     },
     {
-        "id": "97808a31.f4f2f8",
+        "id": "fc38f3a5.05f978",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -458,7 +352,17 @@
         "collapse": false
     },
     {
-        "id": "4134120c.61681c",
+        "id": "55147c2d.91f98c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "2024b5d8.3b3af2",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -480,7 +384,123 @@
         "willPayload": ""
     },
     {
-        "id": "bf380aeb.821fa",
+        "id": "e3df2f3c.b74c28",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "b8bc900d.14d038",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "ef4ea13c.814e28",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "3e5a4e95.9593e2",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "efdc1011.ba5168",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "6e4ac8f.b2fb338",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "2cb6cbe3.e1a5ec",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "6cc56fe5.23356",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "b2e20e24.2fc718",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "728360b0.bc0058",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -490,7 +510,7 @@
         "collapse": false
     },
     {
-        "id": "7709436d.83c5dc",
+        "id": "9ce756fc.6ed4d8",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -499,7 +519,7 @@
         "height": 1
     },
     {
-        "id": "507859e1.4a83d8",
+        "id": "114501ad.1c44de",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -510,7 +530,7 @@
         "collapse": false
     },
     {
-        "id": "804b2efa.30996",
+        "id": "f332969b.7aea78",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -521,7 +541,7 @@
         "collapse": false
     },
     {
-        "id": "3ee8edc3.a42baa",
+        "id": "e68b42e4.4bda2",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -532,7 +552,7 @@
         "collapse": false
     },
     {
-        "id": "43f8c590.e667bc",
+        "id": "80daa3e8.17b5f",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -542,7 +562,7 @@
         "collapse": false
     },
     {
-        "id": "25404ad9.2982be",
+        "id": "cdf8d98.715b628",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -564,7 +584,7 @@
         "willPayload": ""
     },
     {
-        "id": "2790154c.a7d212",
+        "id": "7608c8dc.a9be98",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -574,7 +594,7 @@
         "collapse": false
     },
     {
-        "id": "e5dfdf01.fcb468",
+        "id": "6b0cffb0.2fe4b8",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -596,7 +616,7 @@
         "willPayload": ""
     },
     {
-        "id": "59707e61.86bb18",
+        "id": "11dc7889.ce5f3f",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -606,7 +626,7 @@
         "collapse": false
     },
     {
-        "id": "f2fdd9f2.2e1a4",
+        "id": "1ad0428e.671945",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -615,7 +635,7 @@
         "height": 1
     },
     {
-        "id": "6933d8ec.f239e8",
+        "id": "4d846678.3a8ef",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -626,7 +646,7 @@
         "collapse": false
     },
     {
-        "id": "6afb25fe.5f4894",
+        "id": "89808c0a.35a6e",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -637,7 +657,7 @@
         "collapse": false
     },
     {
-        "id": "7757f50a.8ed1c4",
+        "id": "86b9cf73.52e2c",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -648,7 +668,7 @@
         "collapse": false
     },
     {
-        "id": "ff1c24a.5201f58",
+        "id": "f86ec653.0b61",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -658,7 +678,7 @@
         "collapse": false
     },
     {
-        "id": "125e65e5.def04a",
+        "id": "297d18c4.a28298",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -680,27 +700,52 @@
         "willPayload": ""
     },
     {
-        "id": "d5e9dc81.7ff2f",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
+        "id": "55d117f2.9aa048",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 4,
+        "width": 1,
+        "height": 1
     },
     {
-        "id": "d1991f72.f13ce8",
-        "type": "ui_group",
-        "z": "",
-        "name": "Default",
-        "tab": "",
-        "disp": true,
-        "width": "6",
-        "collapse": false
+        "id": "45cbe320.09afdc",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 9,
+        "width": 1,
+        "height": 1
     },
     {
-        "id": "3a22f4a3.431524",
+        "id": "880d9153.e4172",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 11,
+        "width": 5,
+        "height": 1
+    },
+    {
+        "id": "b0e7e9f7.b30eb8",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 12,
+        "width": 5,
+        "height": 1
+    },
+    {
+        "id": "1f584bdb.cbff2c",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "11dc7889.ce5f3f",
+        "order": 13,
+        "width": 5,
+        "height": 1
+    },
+    {
+        "id": "d3ac0c4a.64f9f",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -722,7 +767,7 @@
         "willPayload": ""
     },
     {
-        "id": "2ece6743.1e30f",
+        "id": "c8f9dda.c2ad7a",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -732,7 +777,7 @@
         "collapse": false
     },
     {
-        "id": "42497fcb.69d3e",
+        "id": "30dad4ac.bfa9b4",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -741,7 +786,7 @@
         "height": 1
     },
     {
-        "id": "719503e7.4f206c",
+        "id": "f597c873.c71628",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -752,7 +797,7 @@
         "collapse": false
     },
     {
-        "id": "93f792b0.a6a2a",
+        "id": "5b472f61.4b63e",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -763,7 +808,7 @@
         "collapse": false
     },
     {
-        "id": "55b92746.397758",
+        "id": "ae2d6b80.c54f4",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -774,7 +819,7 @@
         "collapse": false
     },
     {
-        "id": "747bc0d.bde3b4",
+        "id": "83c4f9e6.2fcc58",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -784,7 +829,7 @@
         "collapse": false
     },
     {
-        "id": "1e921e4c.a5873a",
+        "id": "13e664c6.c33d03",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -806,7 +851,7 @@
         "willPayload": ""
     },
     {
-        "id": "10aff0d5.5fd76f",
+        "id": "8231c725.4c0fb8",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -816,7 +861,7 @@
         "collapse": false
     },
     {
-        "id": "c5ea933.c0898f",
+        "id": "12110500.81bdbb",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -838,7 +883,7 @@
         "willPayload": ""
     },
     {
-        "id": "743d1947.d6c048",
+        "id": "e21abeab.076ab8",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
@@ -848,7 +893,7 @@
         "collapse": false
     },
     {
-        "id": "bfb187ff.76a6b8",
+        "id": "4f02bc1f.ffb4c4",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -857,7 +902,7 @@
         "height": 1
     },
     {
-        "id": "2577689f.6c0f6",
+        "id": "d9473ff6.ce38b8",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -868,7 +913,7 @@
         "collapse": false
     },
     {
-        "id": "66e5e320.7cb0c4",
+        "id": "1930da43.bd7a7e",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -879,7 +924,7 @@
         "collapse": false
     },
     {
-        "id": "8ffdfb0f.fa9d78",
+        "id": "33940c60.87d484",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -890,7 +935,7 @@
         "collapse": false
     },
     {
-        "id": "b7a9bbc4.d6fcc8",
+        "id": "fe2df110.afc778",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -900,7 +945,7 @@
         "collapse": false
     },
     {
-        "id": "af1b3051.ec64",
+        "id": "981b6bf8.4e9488",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -922,7 +967,7 @@
         "willPayload": ""
     },
     {
-        "id": "d3a83a8d.eb003",
+        "id": "21c687cc.9af36",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -932,7 +977,7 @@
         "collapse": false
     },
     {
-        "id": "ce0c18a8.a2ad6",
+        "id": "86c192f9.eb237",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt broker 192.168.56.57",
@@ -954,26 +999,17 @@
         "willPayload": ""
     },
     {
-        "id": "b1d5533f.ed15d8",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Oxford",
-        "icon": "",
-        "disabled": false,
-        "hidden": false
-    },
-    {
-        "id": "ecd977f8.aa0b2",
+        "id": "6a6a197b.aafb",
         "type": "ui_group",
         "z": "",
         "name": "Metronome",
-        "tab": "b1d5533f.ed15d8",
+        "tab": "",
         "disp": true,
         "width": "5",
         "collapse": false
     },
     {
-        "id": "9d9ba7b4.811048",
+        "id": "6f9d43b9.161e5c",
         "type": "ui_spacer",
         "name": "spacer",
         "group": "287a20b8.f44ab",
@@ -982,7 +1018,7 @@
         "height": 1
     },
     {
-        "id": "ae96591c.bb2fe",
+        "id": "4a077f88.6a3bb",
         "type": "ui_group",
         "z": "",
         "name": "demo 1",
@@ -993,7 +1029,7 @@
         "collapse": false
     },
     {
-        "id": "ef783fb0.556a",
+        "id": "6d7c260d.122c68",
         "type": "ui_group",
         "z": "",
         "name": "demo 3",
@@ -1004,7 +1040,7 @@
         "collapse": false
     },
     {
-        "id": "d1024ce0.be0c3",
+        "id": "681503c9.b8f954",
         "type": "ui_group",
         "z": "",
         "name": "demo 2",
@@ -1015,7 +1051,7 @@
         "collapse": false
     },
     {
-        "id": "ac97663a.35d81",
+        "id": "5110381.83e4f48",
         "type": "ui_group",
         "z": "",
         "name": "Default",
@@ -1025,7 +1061,7 @@
         "collapse": false
     },
     {
-        "id": "4db28f59.d6fb5",
+        "id": "b640af64.b9a86",
         "type": "mqtt-broker",
         "z": "",
         "name": "mqtt localhost",
@@ -1047,16 +1083,597 @@
         "willPayload": ""
     },
     {
-        "id": "fc132359.4a4c6",
+        "id": "725932ed.c27714",
         "type": "ui_group",
-        "z": "3ca8863c.e795e2",
+        "z": "",
         "name": "Default",
         "tab": "",
         "disp": true,
-        "width": "6"
+        "width": "6",
+        "collapse": false
     },
     {
-        "id": "26d4a07.82d49e",
+        "id": "ee43dd48.bff928",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "e5123d23.f6cf48",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "5eb9553d.741cec",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "e683b94c.6aae",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "287e4ad8.e7cfb6",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "e95d17b3.3946b8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "247370b4.d12f2",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "b545cc54.35f478",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "69ddf0cd.0abf18",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "dc3b5f91.2bf9d8",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d76fd3c4.ea2248",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "c50d2ad1.953288",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "1317f4ca.8c812b",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "c6e3aa2a.a9f2",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "475ea6a5.e816e",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "d8644cbb.1eaa1",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "c7a3fe3b.643f88",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "4333f20d.5a6dd4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "5d9371db.ad1",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "1ea323f6.1a18fc",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d642ed9d.cee6f8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ac5c88e9.d17dc",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "22e71e7d.aabeaa",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "6ad2377d.cb2038",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "85eb8b57.24da18",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "564d55f1.3cfa14",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "7bae5fda.d4a24",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "2eb64113.5a1866",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "a853d0e9.66bd68",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "1f42a0f2.e70717",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "1915e68.912389a",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "5cfd297e.b22c3",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "265fd97b.7851ae",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "8bf28a3a.39a2",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "a124343a.427a18",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "b7c02e3e.7f66e8",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "7c27add0.d60bec",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "a66af0d0.a3a22",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "f3f1b26b.56856",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "179025e4.e1c43a",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "dd033a7b.6a3f4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b85eadfe.ec5fa",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "1e60262a.2996b2",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "65807a4b.cd5b34",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "da8a03c1.794638",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "11166dc8.28266a",
         "type": "ui_group",
         "name": "Group 2",
         "tab": "",
@@ -1065,22 +1682,2037 @@
         "width": 6
     },
     {
-        "id": "dc9e61bc.8f953",
+        "id": "89a2bf62.88bb78",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "1304a785.480988",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "25230e2a.8b7b02",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "7c0b2c19.b8fdd4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "49b9d713.e864c8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "9b4d5cb6.9bc37",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "fb4f750b.e34bd",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "fd1edacf.637068",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "8668f765.476c6",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "228d7cc5.1d4564",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "a8f7331d.4d8d6",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "3235f282.281196",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "5c7b8837.5b65a8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "6ad5f3b2.867f94",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "31c1208e.809f98",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "2e80c252.757686",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ba8311c0.5e31c8",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "e249d2cc.5f6c5",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "47c9148b.e5d43c",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "bfecf41e.68d9e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "b2071efb.3f972",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "2152f9d.60d2a86",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "cf4f2b3b.1d153",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "9c6ac31b.bb11d",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "65846e66.a0ee18",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "5ca264c5.6f46b4",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "42db7144.47838",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "79142924.692e48",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "a04bc4cf.8be8f8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "54225914.634568",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "4bfbd8e8.d2753",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "84d3ec79.08b68",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "cde3bb58.06011",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "831d602d.b3d638",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "10c2836d.c0735d",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "a1a918f4.745f9",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "2342d04a.15d1f",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "740761f.1ce4d2",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "aea73bb2.ced07",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "36d4ec08.a68a9c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "bb3b2b86.3bd2b8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "87e70e9a.dd0628",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "bf9a506.306a93",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "30c2d13d.e4f1b6",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "3f6d4cda.66d2e4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ed8a41bc.3ad008",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "4421c2d7.b4bd14",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "3063c481.9bc404",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "7e906e11.b9fea",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "a53df20.09e9e9",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "658245c7.78e06c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b98b336.3f5295",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "c8e31968.3c7d7",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "203150ba.ca534",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "25928dc8.ceccca",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "61a4b12d.41b8b",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "19ba8a63.494a46",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "31ad9b15.fe2734",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "78af4d3.1b513b4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "406937cc.5dabe8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "d18c831c.165298",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "8d4eb1a0.72a3a",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "27d731f3.f4edde",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "4c2191b0.59dae",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "2c1a12c5.df46be",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "86138d45.20d3",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Oxford",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "f66e2e5a.4d4a7",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "86138d45.20d3",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "100c1456.2e5024",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "e64c54f.e64a4a8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "e8c6540c.997db8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "84b8c3eb.144aa8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "a3b34c4b.fdef08",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "15bc38f3.aee2b7",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "9de8d15c.54adb",
+        "type": "ui_group",
+        "name": "Group 2",
+        "tab": "",
+        "order": 2,
+        "disp": true,
+        "width": 6
+    },
+    {
+        "id": "639e73b0.8ac12c",
+        "type": "ui_group",
+        "name": "Group 2",
+        "tab": "",
+        "order": 2,
+        "disp": true,
+        "width": 6
+    },
+    {
+        "id": "4f191d58.403214",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "30c337ee.db7e7",
+        "order": 2,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "b8ea3c22.68e0c",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "c6a18c6d.1024a8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "212e3c4c.a6bde4",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "6177d819.d316c",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "d8cbf208.620d58",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "2d210e36.a68be2",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "586a8594.5aeb8c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "d0ffd66b.c1a5e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "cb9dc71b.b4922",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "31b77a98.1eb31e",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "785cf23b.5173d4",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "f997c0f4.2c4d18",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "654ddd53.5a4dec",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "e97b9a6e.48a7e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "5973f104.e1dbf",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "a91991d5.d6f6e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ca1c6f90.5b132",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "1dd7ff96.2d3f2",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "9faf892.1e1dcf8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "17d67bb8.08820c",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d561ef00.985078",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "9806dca1.28a64",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "40a6546c.b9a554",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "d41eec73.f06e9",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "aaa1be77.3a3508",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "12492f77.865861",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "246783da.633624",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "a88e74f1.3e8a5",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "e768b3aa.ec57f8",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d8cb295e.7e2f",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "ce6d03e.da54b",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "831102e6.0f9da",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "54fad546.abf7b4",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ac3afd97.b1af8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b282077c.63c4e8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "8f53b68d.c7aa68",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "9a264778.0b5f78",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "44b01eae.e0afb",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "651b1633.6de4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "77bbfef5.8484f",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "ecd12a29.02e018",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ebcd5061.abf3d",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "d2988b60.b35eb8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "95b9329d.062f68",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "72ccfd45.5ad32c",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "6ab1cc07.143a3c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "293e41c5.d15e2e",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "1172cf49.3c0501",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "cbed51b2.300c9",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "6cd52902.419818",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "c7617aa1.2821a",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "da57dd36.50b1f8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "20d19b8b.62372c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "f258bb72.512c78",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "14e09071.d4dbe",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "4a31c93f.656c2",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "6e792960.8d858",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "85ebaf28.224f2",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "6a530f65.59f1",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "506a9ea6.ed94a8",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "9266dbae.6d4d08",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "f94b71e1.70a428",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "7e490721.390618",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "935c1634.e38e4",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "6614e4ce.5c9294",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "f7ff4b06.438198",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt broker 192.168.56.57",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "393643dc.424ac4",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Oxford",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "bb4bc046.d55f98",
+        "type": "ui_group",
+        "z": "",
+        "name": "Metronome",
+        "tab": "393643dc.424ac4",
+        "disp": true,
+        "width": "5",
+        "collapse": false
+    },
+    {
+        "id": "930cc588.6b769",
+        "type": "ui_spacer",
+        "name": "spacer",
+        "group": "287a20b8.f44ab",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "7e539a68.d9954c",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 1",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "1db7b2d3.94a675",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 3",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "a55e84dd.d443",
+        "type": "ui_group",
+        "z": "",
+        "name": "demo 2",
+        "tab": "",
+        "order": 1,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "b23ea853.4c4428",
+        "type": "ui_group",
+        "z": "",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "7d060994.5ea468",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mqtt localhost",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "79ed295a.56b1b",
+        "type": "ui_group",
+        "z": "ebb96953.99df38",
+        "name": "Default",
+        "tab": "",
+        "disp": true,
+        "width": "6"
+    },
+    {
+        "id": "12651b90.4e4e8c",
+        "type": "ui_group",
+        "name": "Group 2",
+        "tab": "",
+        "order": 2,
+        "disp": true,
+        "width": 6
+    },
+    {
+        "id": "46e32014.6781e8",
         "type": "ui_group",
         "z": "",
         "name": "Lyrics",
-        "tab": "b1d5533f.ed15d8",
+        "tab": "393643dc.424ac4",
         "order": 2,
         "disp": true,
         "width": "6",
         "collapse": true
     },
     {
-        "id": "f3e08467.0bb958",
+        "id": "7da8a414.36564c",
         "type": "ui_button",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 6,
         "width": 1,
         "height": 1,
@@ -1097,14 +3729,14 @@
         "y": 280,
         "wires": [
             [
-                "2613123.ac6c2ee"
+                "f0c3b76f.d93208"
             ]
         ]
     },
     {
-        "id": "8ff1289c.f9b28",
+        "id": "2e9d604e.8c0908",
         "type": "debug",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1117,9 +3749,9 @@
         "wires": []
     },
     {
-        "id": "49e95ea8.74212",
+        "id": "a54ddb14.df3a18",
         "type": "inject",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "",
         "payload": "",
@@ -1132,16 +3764,16 @@
         "y": 280,
         "wires": [
             [
-                "f3e08467.0bb958"
+                "7da8a414.36564c"
             ]
         ]
     },
     {
-        "id": "6f8df87.a612f08",
+        "id": "a0d8746e.cf0ab",
         "type": "ui_button",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 7,
         "width": 1,
         "height": 1,
@@ -1158,14 +3790,14 @@
         "y": 340,
         "wires": [
             [
-                "2613123.ac6c2ee"
+                "f0c3b76f.d93208"
             ]
         ]
     },
     {
-        "id": "9a3ed80d.8111a",
+        "id": "725ef799.278e78",
         "type": "inject",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "",
         "payload": "",
@@ -1178,45 +3810,45 @@
         "y": 340,
         "wires": [
             [
-                "6f8df87.a612f08"
+                "a0d8746e.cf0ab"
             ]
         ]
     },
     {
-        "id": "b712b076.f5aeb8",
+        "id": "b5c6d809.48e26",
         "type": "mqtt in",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "#",
         "qos": "2",
         "datatype": "auto",
-        "broker": "4db28f59.d6fb5",
+        "broker": "7d060994.5ea468",
         "x": 210,
         "y": 140,
         "wires": [
             [
-                "8709b524.e9ffd",
-                "eeffa24.0bb6ae"
+                "216b5cff.61092c",
+                "e6c5bcf8.8d99"
             ]
         ]
     },
     {
-        "id": "2613123.ac6c2ee",
+        "id": "f0c3b76f.d93208",
         "type": "mqtt out",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "",
         "qos": "2",
         "retain": "true",
-        "broker": "4db28f59.d6fb5",
+        "broker": "7d060994.5ea468",
         "x": 1010,
         "y": 300,
         "wires": []
     },
     {
-        "id": "8709b524.e9ffd",
+        "id": "216b5cff.61092c",
         "type": "debug",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1228,11 +3860,11 @@
         "wires": []
     },
     {
-        "id": "eeffa24.0bb6ae",
+        "id": "e6c5bcf8.8d99",
         "type": "ui_template",
-        "z": "3ca8863c.e795e2",
-        "group": "ecd977f8.aa0b2",
-        "name": "",
+        "z": "ebb96953.99df38",
+        "group": "bb4bc046.d55f98",
+        "name": "Local Javascript code - metronome",
         "order": 8,
         "width": 0,
         "height": 0,
@@ -1240,19 +3872,19 @@
         "storeOutMessages": true,
         "fwdInMessages": false,
         "templateScope": "local",
-        "x": 440,
+        "x": 480,
         "y": 140,
         "wires": [
             [
-                "8ff1289c.f9b28",
-                "47af4582.73ecd4"
+                "2e9d604e.8c0908",
+                "e9e1be28.bebd18"
             ]
         ]
     },
     {
-        "id": "ec656e54.049ba",
+        "id": "38365e72.ebea4a",
         "type": "function",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "func": "var date = Date.now();\nmsg.payload = date;\nreturn msg;",
         "outputs": 1,
@@ -1261,14 +3893,14 @@
         "y": 665,
         "wires": [
             [
-                "ed243b01.ed84b8"
+                "c4a53549.e72c28"
             ]
         ]
     },
     {
-        "id": "ed243b01.ed84b8",
+        "id": "c4a53549.e72c28",
         "type": "debug",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1280,9 +3912,9 @@
         "wires": []
     },
     {
-        "id": "b62dad70.83ea78",
+        "id": "c7b8e79c.000138",
         "type": "inject",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "",
         "payload": "",
@@ -1295,29 +3927,29 @@
         "y": 665,
         "wires": [
             [
-                "ec656e54.049ba"
+                "38365e72.ebea4a"
             ]
         ]
     },
     {
-        "id": "47af4582.73ecd4",
+        "id": "e9e1be28.bebd18",
         "type": "mqtt out",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "",
         "qos": "",
         "retain": "",
-        "broker": "25404ad9.2982be",
+        "broker": "8f53b68d.c7aa68",
         "x": 720,
         "y": 200,
         "wires": []
     },
     {
-        "id": "e717fe0f.1dbd38",
+        "id": "f487096c.190658",
         "type": "ui_button",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "Click sound +",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 3,
         "width": 1,
         "height": 1,
@@ -1334,16 +3966,16 @@
         "y": 400,
         "wires": [
             [
-                "2613123.ac6c2ee"
+                "f0c3b76f.d93208"
             ]
         ]
     },
     {
-        "id": "deffd7b4.6661e8",
+        "id": "1e6c560e.3e90ba",
         "type": "ui_button",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "Click sound -",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 4,
         "width": 1,
         "height": 1,
@@ -1360,19 +3992,19 @@
         "y": 440,
         "wires": [
             [
-                "2613123.ac6c2ee"
+                "f0c3b76f.d93208"
             ]
         ]
     },
     {
-        "id": "b1953407.1a0ae",
+        "id": "9de6a8f1.a9c048",
         "type": "ui_dropdown",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "label": "",
         "tooltip": "",
         "place": "Select option",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 9,
         "width": 4,
         "height": 1,
@@ -1384,32 +4016,32 @@
         "y": 800,
         "wires": [
             [
-                "6510cb6a.35f6b4"
+                "5390e78d.af044"
             ]
         ]
     },
     {
-        "id": "b6a7fa3f.69ae9",
+        "id": "86f7b62b.d7d34",
         "type": "mqtt in",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "song-list/sorted-by/playlist",
         "qos": "2",
         "datatype": "auto",
-        "broker": "4db28f59.d6fb5",
+        "broker": "7d060994.5ea468",
         "x": 130,
         "y": 800,
         "wires": [
             [
-                "f9276359.83451",
-                "9bc5a4f7.dd06f"
+                "6fc5773f.c8126",
+                "33d3035.8eb687c"
             ]
         ]
     },
     {
-        "id": "f9276359.83451",
+        "id": "6fc5773f.c8126",
         "type": "change",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "rules": [
             {
@@ -1429,15 +4061,15 @@
         "y": 800,
         "wires": [
             [
-                "24936061.57795",
-                "7b149ba5.ff4a9c"
+                "d30d5e8f.f97cc",
+                "f65cdc01.a46528"
             ]
         ]
     },
     {
-        "id": "24936061.57795",
+        "id": "d30d5e8f.f97cc",
         "type": "debug",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1450,9 +4082,9 @@
         "wires": []
     },
     {
-        "id": "9bc5a4f7.dd06f",
+        "id": "33d3035.8eb687c",
         "type": "debug",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "active": false,
         "tosidebar": true,
@@ -1465,9 +4097,9 @@
         "wires": []
     },
     {
-        "id": "7b149ba5.ff4a9c",
+        "id": "f65cdc01.a46528",
         "type": "json",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "property": "options",
         "action": "",
@@ -1476,15 +4108,15 @@
         "y": 800,
         "wires": [
             [
-                "b1953407.1a0ae"
+                "9de6a8f1.a9c048"
             ]
         ]
     },
     {
-        "id": "5aadce81.435728",
+        "id": "6fbc75a.6dc090c",
         "type": "ui_text",
-        "z": "3ca8863c.e795e2",
-        "group": "ecd977f8.aa0b2",
+        "z": "ebb96953.99df38",
+        "group": "bb4bc046.d55f98",
         "order": 5,
         "width": 3,
         "height": 1,
@@ -1497,10 +4129,10 @@
         "wires": []
     },
     {
-        "id": "cf24a296.e637e",
+        "id": "f7976ee.a6f381",
         "type": "ui_text",
-        "z": "3ca8863c.e795e2",
-        "group": "ecd977f8.aa0b2",
+        "z": "ebb96953.99df38",
+        "group": "bb4bc046.d55f98",
         "order": 2,
         "width": 3,
         "height": 1,
@@ -1513,29 +4145,29 @@
         "wires": []
     },
     {
-        "id": "b3f363f2.8c096",
+        "id": "3ab21574.2c1462",
         "type": "mqtt in",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "topic": "song/name",
         "qos": "2",
         "datatype": "auto",
-        "broker": "4db28f59.d6fb5",
+        "broker": "7d060994.5ea468",
         "x": 630,
         "y": 720,
         "wires": [
             [
-                "b1953407.1a0ae",
-                "5f2668cc.491c9"
+                "9de6a8f1.a9c048",
+                "bd878f6f.5e6f9"
             ]
         ]
     },
     {
-        "id": "2f51fc8c.333624",
+        "id": "c1c5318e.20a3a8",
         "type": "ui_button",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
-        "group": "ecd977f8.aa0b2",
+        "group": "bb4bc046.d55f98",
         "order": 10,
         "width": 1,
         "height": 1,
@@ -1552,14 +4184,14 @@
         "y": 500,
         "wires": [
             [
-                "449f1030.9df5a"
+                "46e6ddb0.381fdc"
             ]
         ]
     },
     {
-        "id": "6510cb6a.35f6b4",
+        "id": "5390e78d.af044",
         "type": "change",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "",
         "rules": [
             {
@@ -1582,23 +4214,23 @@
         ]
     },
     {
-        "id": "449f1030.9df5a",
+        "id": "46e6ddb0.381fdc",
         "type": "mqtt out",
-        "z": "3ca8863c.e795e2",
+        "z": "ebb96953.99df38",
         "name": "MQTT QoS=0",
         "topic": "",
         "qos": "0",
         "retain": "true",
-        "broker": "4db28f59.d6fb5",
+        "broker": "7d060994.5ea468",
         "x": 1100,
         "y": 500,
         "wires": []
     },
     {
-        "id": "5f2668cc.491c9",
+        "id": "bd878f6f.5e6f9",
         "type": "ui_text",
-        "z": "3ca8863c.e795e2",
-        "group": "ecd977f8.aa0b2",
+        "z": "ebb96953.99df38",
+        "group": "bb4bc046.d55f98",
         "order": 1,
         "width": 0,
         "height": 0,
@@ -1611,11 +4243,11 @@
         "wires": []
     },
     {
-        "id": "39b6f90.e190f88",
+        "id": "2277aa0f.aa4316",
         "type": "ui_button",
-        "z": "b69e069b.8e412",
+        "z": "4c4e474b.c1438",
         "name": "",
-        "group": "dc9e61bc.8f953",
+        "group": "46e32014.6781e8",
         "order": 0,
         "width": 0,
         "height": 0,
@@ -1635,10 +4267,10 @@
         ]
     },
     {
-        "id": "98a6cc62.69cf",
+        "id": "e6b5125a.360018",
         "type": "ui_text",
-        "z": "b69e069b.8e412",
-        "group": "dc9e61bc.8f953",
+        "z": "4c4e474b.c1438",
+        "group": "46e32014.6781e8",
         "order": 1,
         "width": 0,
         "height": 0,
@@ -1651,10 +4283,10 @@
         "wires": []
     },
     {
-        "id": "11a972b5.83fbfd",
+        "id": "d0186874.52d488",
         "type": "ui_template",
-        "z": "b69e069b.8e412",
-        "group": "dc9e61bc.8f953",
+        "z": "4c4e474b.c1438",
+        "group": "46e32014.6781e8",
         "name": "",
         "order": 2,
         "width": 0,
@@ -1665,6 +4297,25 @@
         "templateScope": "local",
         "x": 140,
         "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1bbc0d69.d9944b",
+        "type": "ui_template",
+        "z": "ebb96953.99df38",
+        "group": "bb4bc046.d55f98",
+        "name": "no sleep",
+        "order": 10,
+        "width": 0,
+        "height": 0,
+        "format": "<!DOCTYPE html>\n<html>\n  <head>\n    <title>NoSleep.js - Simple Test Page</title>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  </head>\n  <body>\n    <h1>NoSleep Test Page</h1>\n    <script src=\"../dist/NoSleep.min.js\"></script>\n\n    <input type=\"button\" id=\"toggle\" value=\"Wake Lock is disabled\" />\n\n    <script>\n      var noSleep = new NoSleep();\n\n      var wakeLockEnabled = false;\n      var toggleEl = document.querySelector(\"#toggle\");\n      toggleEl.addEventListener('click', function() {\n        if (!wakeLockEnabled) {\n          noSleep.enable(); // keep the screen on!\n          wakeLockEnabled = true;\n          toggleEl.value = \"Wake Lock is enabled\";\n          document.body.style.backgroundColor = \"green\";\n        } else {\n          noSleep.disable(); // let the screen turn off.\n          wakeLockEnabled = false;\n          toggleEl.value = \"Wake Lock is disabled\";\n          document.body.style.backgroundColor = \"\";\n        }\n      }, false);\n    </script>\n\n    <!-- Github Ribbon -->\n    <a href=\"https://github.com/richtr/NoSleep.js\"><img style=\"position: absolute; top: 0; right: 0; border: 0;\" src=\"https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67\" alt=\"Fork me on GitHub\" data-canonical-src=\"https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png\"></a>\n\n\n\n\n\n\n\n\n\n\n\n\n<script>\nconst  webm: 'data:video/webm;base64,GkXfo0AgQoaBAUL3gQFC8oEEQvOBCEKCQAR3ZWJtQoeBAkKFgQIYU4BnQI0VSalmQCgq17FAAw9CQE2AQAZ3aGFtbXlXQUAGd2hhbW15RIlACECPQAAAAAAAFlSua0AxrkAu14EBY8WBAZyBACK1nEADdW5khkAFVl9WUDglhohAA1ZQOIOBAeBABrCBCLqBCB9DtnVAIueBAKNAHIEAAIAwAQCdASoIAAgAAUAmJaQAA3AA/vz0AAA=';\nconst   mp4: 'data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAACKBtZGF0AAAC8wYF///v3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYxIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTEgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MToweDExMSBtZT1oZXggc3VibWU9MiBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0wIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MCA4eDhkY3Q9MCBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0wIHRocmVhZHM9NiBsb29rYWhlYWRfdGhyZWFkcz0xIHNsaWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWluZWRfaW50cmE9MCBiZnJhbWVzPTMgYl9weXJhbWlkPTIgYl9hZGFwdD0xIGJfYmlhcz0wIGRpcmVjdD0xIHdlaWdodGI9MSBvcGVuX2dvcD0wIHdlaWdodHA9MSBrZXlpbnQ9MzAwIGtleWludF9taW49MzAgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD0xMCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIwLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IHZidl9tYXhyYXRlPTIwMDAwIHZidl9idWZzaXplPTI1MDAwIGNyZl9tYXg9MC4wIG5hbF9ocmQ9bm9uZSBmaWxsZXI9MCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAOWWIhAA3//p+C7v8tDDSTjf97w55i3SbRPO4ZY+hkjD5hbkAkL3zpJ6h/LR1CAABzgB1kqqzUorlhQAAAAxBmiQYhn/+qZYADLgAAAAJQZ5CQhX/AAj5IQAD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';\n\n\n// Detect iOS browsers < version 10\nconst oldIOS = typeof navigator !== 'undefined' && parseFloat(\n  ('' + (/CPU.*OS ([0-9_]{3,4})[0-9_]{0,1}|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])\n    .replace('undefined', '3_2').replace('_', '.').replace('_', '')\n) < 10 && !window.MSStream\n\nclass NoSleep {\n  constructor () {\n    if (oldIOS) {\n      this.noSleepTimer = null\n    } else {\n      // Set up no sleep video element\n      this.noSleepVideo = document.createElement('video')\n\n      this.noSleepVideo.setAttribute('muted', '')\n      this.noSleepVideo.setAttribute('title', 'No Sleep')\n      this.noSleepVideo.setAttribute('playsinline', '')\n\n      this._addSourceToVideo(this.noSleepVideo, 'webm', webm)\n      this._addSourceToVideo(this.noSleepVideo, 'mp4', mp4)\n\n      this.noSleepVideo.addEventListener('loadedmetadata', () => {\n        if (this.noSleepVideo.duration <= 1) { // webm source\n          this.noSleepVideo.setAttribute('loop', '')\n        } else { // mp4 source\n          this.noSleepVideo.addEventListener('timeupdate', () => {\n            if (this.noSleepVideo.currentTime > 0.5) {\n              this.noSleepVideo.currentTime = Math.random()\n            }\n          })\n        }\n      })\n    }\n  }\n\n  _addSourceToVideo (element, type, dataURI) {\n    var source = document.createElement('source')\n    source.src = dataURI\n    source.type = `video/${type}`\n    element.appendChild(source)\n  }\n\n  enable () {\n    if (oldIOS) {\n      this.disable()\n      console.warn(`\n        NoSleep enabled for older iOS devices. This can interrupt\n        active or long-running network requests from completing successfully.\n        See https://github.com/richtr/NoSleep.js/issues/15 for more details.\n      `)\n      this.noSleepTimer = window.setInterval(() => {\n        if (!document.hidden) {\n          window.location.href = window.location.href.split('#')[0]\n          window.setTimeout(window.stop, 0)\n        }\n      }, 15000)\n    } else {\n      this.noSleepVideo.play()\n    }\n  }\n\n  disable () {\n    if (oldIOS) {\n      if (this.noSleepTimer) {\n        console.warn(`\n          NoSleep now disabled for older iOS devices.\n        `)\n        window.clearInterval(this.noSleepTimer)\n        this.noSleepTimer = null\n      }\n    } else {\n      this.noSleepVideo.pause()\n    }\n  }\n};\n\nmodule.exports = NoSleep\n\n</script>\n\n\n\n  </body>\n\n</html>\n\n\n\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 200,
+        "y": 460,
         "wires": [
             []
         ]

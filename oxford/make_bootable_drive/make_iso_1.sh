@@ -37,7 +37,6 @@ cp live_autorun.sh $PROJECT_HOME/LIVE_BOOT/chroot/root
 cp chroot_set_root_autologin.sh $PROJECT_HOME/LIVE_BOOT/chroot/root
 cp mount_rw_partition.sh $PROJECT_HOME/LIVE_BOOT/chroot/root
 
-
 # While in the chroot environment, some installers will need
 # access to some kind of proc/dev/sys filesystems.
 # We pass the proc/dev/sys of the host environment (this computer)
