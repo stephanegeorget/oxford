@@ -100,6 +100,16 @@ make -B
 # Install Node-RED
 apt-get install ca-certificates
 bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+
+# Install node-red-dashboard
+pushd /root/.node-red
+npm install node-red-dashboard
+popd
+
+# Copy this project's main Node-RED configuration file
+pwd
+cp node-red-oxford-flows.json /root/.node-red/flows_$(uname -n).json
+
 # Make sure it starts automatically
 systemctl enable nodered.service
 
