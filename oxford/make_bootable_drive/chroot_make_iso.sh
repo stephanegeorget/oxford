@@ -108,7 +108,7 @@ popd
 
 # Copy this project's main Node-RED configuration file
 pwd
-cp node-red-oxford-flows.json /root/.node-red/flows_$(uname -n).json
+cp node-red-oxford-flows.json /root/.node-red/flows_$(cat /etc/hostname).json
 
 # Make sure it starts automatically
 systemctl enable nodered.service
