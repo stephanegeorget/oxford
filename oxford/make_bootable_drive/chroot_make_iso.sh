@@ -16,7 +16,7 @@ apt-get install --no-install-recommends --assume-yes \
     live-boot \
     systemd-sysv \
     network-manager \
-    net-tools \
+    dhcpcd5 \
     wireless-tools \
     wpagui \
     curl \
@@ -34,6 +34,7 @@ apt-get install --no-install-recommends --assume-yes \
     tmux \
     iw \
     iproute2 \
+    netbase \
     keyboard-configuration \
     console-setup
 
@@ -79,6 +80,7 @@ apt-get install --no-install-recommends --assume-yes \
     libncurses5-dev \
     libncursesw5-dev \
     mosquitto \
+    mosquitto-clients \
     libmosquitto-dev
 
 
@@ -98,7 +100,7 @@ cd ..
 make -B
 
 # Install Node-RED
-apt-get install ca-certificates
+apt-get install --no-install-recommends --assume-yes ca-certificates
 bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
 
 # Install node-red-dashboard
