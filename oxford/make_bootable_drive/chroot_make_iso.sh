@@ -36,7 +36,21 @@ apt-get install --no-install-recommends --assume-yes \
     iproute2 \
     netbase \
     keyboard-configuration \
-    console-setup
+    console-setup \
+    firmware-b43-installer
+
+# install wireless firmware for broadcom
+# add what is required to add non-free to sources list
+apt-get update
+apt-get install --no-install-recommends --assume-yes software-properties-common
+apt-get update
+# add non-free to sources list
+apt-add-repository non-free
+apt-get update
+# add wifi firmware
+apt-get install --no-install-recommends --assume-yes firmware-b43-installer
+
+
 
 echo "root:toor" | chpasswd
 
