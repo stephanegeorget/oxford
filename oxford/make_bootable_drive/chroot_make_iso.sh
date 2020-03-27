@@ -9,6 +9,7 @@ echo "oxford-live" > /etc/hostname
 
 if [ "$1" != "debug" ]; then
 
+# The following packages must be in the "main" apt repository source list
 apt-get update
 apt-get install --no-install-recommends --assume-yes \
     linux-image-4.9.0-12-rt-amd64 \
@@ -36,27 +37,33 @@ apt-get install --no-install-recommends --assume-yes \
     iproute2 \
     netbase \
     keyboard-configuration \
-    console-setup \
-    firmware-b43-installer
+    console-setup
 
-# install wireless firmware for broadcom
-# add what is required to add non-free to sources list
+# Install wireless firmware for broadcom
+# First, add what is required to add "contrib" and "non-free" to sources list
+# For now, we should have only "main":
+cat /etc/apt/sources.list
 apt-get update
 apt-get install --no-install-recommends --assume-yes software-properties-common
 apt-get update
-# add non-free to sources list
+# Now we have access to apt-add-repository tool
+# Add contrib and non-free to sources list
 apt-add-repository non-free
+apt-add-repository contrib
+# Update apt sources with these non-free and contrib sources
 apt-get update
-# add wifi firmware
+# Now, firmware-b43-installer is accessible. Install it:
 apt-get install --no-install-recommends --assume-yes firmware-b43-installer
 
 
-
+# Set up root account
 echo "root:toor" | chpasswd
 
+# Call this script which set things up to automatically log in as root
 . chroot_set_root_autologin.sh
 
-
+# bashrc is the default terminal.
+# Modify .bashrc to add our entry point script named live_autorun.sh
 echo "Add entry in .bashrc"
 gawk '{if(/live_autorun/){exit 1;}}' /root/.bashrc
 if [ $? -eq 0 ]; then
@@ -73,9 +80,8 @@ echo "Fix logind.conf to disregard laptop lid close events"
 # into:
 # HandleLidSwitch[optionally_more_stuff]=ignore
 gawk "{if(/HandleLidSwitch/){print gensub(/.*(HandleLidSwitch[a-zA-Z]*)=(.*)/, \"\\\\1=ignore\", \"g\", \$0)}else{print \$0}}" /etc/systemd/logind.conf > /etc/systemd/logind.conf.wip
+# Line below is a shorthand for mv /etc/systemd/logind.conf.wip /etc/systemd/logind.conf
 mv /etc/systemd/logind.conf{.wip,}
-
-
 
 
 #echo "Press any key..."
@@ -86,6 +92,7 @@ cd /root
 # Fix link to linux headers to make it easy to find
 ln -s /usr/src/linux-headers-4.9.0-12-rt-amd64 /usr/src/linux-headers-$(uname -r)
 
+# Install the necessary tools to build Oxford from source code
 apt-get install --no-install-recommends --assume-yes \
     libpopt-dev \
     build-essential \
@@ -106,14 +113,19 @@ git config --global http.sslVerify false
 
 git clone https://www.github.com/stephanegeorget/oxford
 
+# Build the Curses Development Kit (cdk)
 cd oxford/oxford/cdk-5.0-20171209
 ./configure
 make -B
 make -B install
 cd ..
+# Build oxford
 make -B
+# No need to install, we'll call the binary from its build folder directly
+
 
 # Install Node-RED
+# But first ensure that ca-certificates is installed, to pull the script below from https
 apt-get install --no-install-recommends --assume-yes ca-certificates
 bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
 
@@ -126,7 +138,7 @@ popd
 pwd
 cp node-red-oxford-flows.json /root/.node-red/flows_$(cat /etc/hostname).json
 
-# Make sure it starts automatically
+# Make sure Node-RED starts automatically
 systemctl enable nodered.service
 
 
