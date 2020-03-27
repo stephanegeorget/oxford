@@ -7307,7 +7307,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj, const struct mosqu
         for (TContext * pContext : PlaylistData)
         {
             std::string tmpstring = pContext->SongName;
-            json_string = json_string + '\"' + tmpstring + '\"';
+            json_string = json_string + '\"' + tmpstring + '\"' + ',';
         }
         // Remove the last comma
         json_string.pop_back();
