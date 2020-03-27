@@ -7151,7 +7151,7 @@ int main(int argc, char** argv)
     win_context_prev.Init("CONTEXT PREV", 3, 0.33*term_cols, 0, 0);
     win_context_current.Init("CONTEXT CURRENT", 3, 0.33*term_cols, 0, 0.33*term_cols +1);
     win_context_next.Init("CONTEXT NEXT", 3, 0.33*term_cols, 0, 0.33*term_cols +1 + 0.33*term_cols +1);
-    win_debug_messages.Init("DEBUG MESSAGES", 10, term_cols -6-6, term_lines-11, 0);
+    win_debug_messages.Init("DEBUG MESSAGES", term_lines - 3 -1 -(term_lines -3)/2, term_cols -6-6, (term_lines -3)/2 +3, 0);
     win_context_usage.Init("CONTEXT USAGE", (term_lines -3)/2, (term_cols -6-6)/2, 3, 0);
     win_context_user_specific.Init("CONTEXT SPECIFIC", (term_lines -3)/2, (term_cols -6-6)/2, 3, (term_cols -6-6)/2);
     win_context_select_menu.Init("CONTEXT SELECTION MENU", term_lines, term_cols, 0, 0);
