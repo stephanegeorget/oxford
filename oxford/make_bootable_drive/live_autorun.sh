@@ -22,6 +22,9 @@ if [ ! -f /root/DISTRO_INIT_DONE ]; then
     # prevent screen from turning off
     setterm -blank 0 -powerdown 0
 
+    # launch nmtui, to give the user the possibility to connect via Wi-Fi
+    nmtui
+
     # Launch Oxford
     /root/oxford/oxford/bin/Release/oxford
 fi
