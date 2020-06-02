@@ -5064,10 +5064,10 @@ namespace I_Follow_Rivers
     // Note there must be a note event on the first press and first release - in our case,
     // the first release is simple a note OFF (special value 999)
     //
-    // Because some notes must be played between the beats, we need to call Sequence with
-    // InferTempo = itDownswingAndUpswing (other than itNone)
+    // Take tempo from SetBeatTime()
+    // InferTempo = itDownswingOnly
 
-    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, true, 1.5);
+    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -5086,10 +5086,52 @@ namespace I_Follow_Rivers
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_C, 106); // Dyno Toms
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        // Get rid of any panning
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
 
         // Ani's piano is a piano with a bit of reverb
         XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
 
+    }
+
+    // To be called on beat 1, then again on beat 1 of next bar (assuming 4-beats bars)
+    // -> so there is one bar between two calls
+    // -> infer tempo from that
+    void TapTempo(void)
+    {
+        static bool init_flag = false;
+        static struct timeval tv1, tv2;
+        float BeatTime_local = 0;
+        float Intervals = 4;
+        if (init_flag == false)
+        {
+            // First beat
+            init_flag = true;
+            gettimeofday(&tv1, NULL);  
+        }
+        else
+        {
+            // Second beat
+            init_flag = false;
+            gettimeofday(&tv2, NULL);
+            // Compute time lapse between two calls
+            BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
+            // Update this song's tempo
+            cIFollowRivers.BaseTempo = 120.0 / BeatTime_local;
+            // Update sequence forced tempo
+            Sequence_1.SetBeatTime(60.0 / cIFollowRivers.BaseTempo);
+        }
     }
 }
 
@@ -6689,7 +6731,8 @@ void InitializePlaylist(void)
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
-    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
+    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::TapTempo, NULL, "Tap tempo"));
+    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
 
     cIsThisLove.Author = "Bob Marley";
