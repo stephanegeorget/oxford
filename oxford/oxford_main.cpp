@@ -4102,8 +4102,9 @@ Press/Release to turn off the last note. If AutoOff is non-zero, a pair number o
 pedal upswing (release), and the Note OFF event will be sent automatically AutoOff milliseconds after the
 last pedal release motion. AutoOff makes sense only when InferTempo_param is set to false.
 
-ForceBeatTime is a flag that indicates the sequence tempo should come from function SetBeatTime().
-- Set InferTempo=false and ForceBeatTime=true to enforce the tempo from the value passed by SetBeatTime.
+ForceBeatTime is a flag that indicates the sequence tempo should come from the global tempo value for the
+currently active context (song).
+- Set InferTempo=false and ForceBeatTime=true to enforce the tempo of the current context
   In that case, the sequence is triggered from the first Pedal Down event, and unrolls at said tempo.
 - Set InferTempo=true and ForceBeatTime=false so infer the tempo from the first few upswing/downswing of the pedal.
 - Set InferTempo=false and ForceBeatTime=false to play incrementally each sequence note upon each pedal action
@@ -4314,6 +4315,7 @@ private:
                 CurrentNote = *it;
                 wprintw(win_debug_messages.GetRef(), "TSequence: START\n");
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
+                SetBeatTime();
                 if (ForceBeatTime == true && ForcedBeatTime_ms != 0)
                 {
                     // Wait for BeatTime_ms; then this case ends and loops to the next note
@@ -4456,6 +4458,22 @@ private:
         ForceBeatTime_seq_stop_flag = true;
     }
 
+    void SetBeatTime(void)
+    {
+        if (ForceBeatTime == true)
+        {
+            TContext * pContext;
+            {
+                // Protect PlaylistPosition from concurrent access
+                std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+                pContext = PlaylistPosition;
+            }
+
+            ForcedBeatTime_ms = (long) (60.0 / pContext->BaseTempo) * 1000.0;
+        }
+    }
+
+
 public:
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
@@ -4497,14 +4515,6 @@ public:
     float GetBeatTime(void)
     {
         return ((float) BeatTime_ms) / 1000.0; 
-    }
-
-    void SetBeatTime(float param)
-    {
-        if (ForceBeatTime == true)
-        {
-            ForcedBeatTime_ms = (int) (param * 1000.0);
-        }
     }
 
     void Start_PedalPressed(void)
@@ -4949,11 +4959,6 @@ void TapTempo(void)
         BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
         // Update this song's tempo
         cThisGirl.BaseTempo = 60.0 / BeatTime_local;
-        // Update sequence forced tempo
-        Sequence_1.SetBeatTime(60.0 / cThisGirl.BaseTempo);
-        Sequence_2.SetBeatTime(60.0 / cThisGirl.BaseTempo);
-        Sequence_3.SetBeatTime(60.0 / cThisGirl.BaseTempo);
-
     }
 //    Sequence_1.Start_PedalPressed();
 }
@@ -5001,8 +5006,6 @@ void Init(void)
     Sequence_1.Init();
     Sequence_2.Init();
     Sequence_3.Init();
-
-    Sequence_3.SetBeatTime(60.0 / cThisGirl.BaseTempo);
 
     // Force XV5080 to performance mode
     XV5080.System.SystemCommon.SoundMode.Perform();
@@ -5067,7 +5070,9 @@ namespace I_Follow_Rivers
     // Take tempo from SetBeatTime()
     // InferTempo = itDownswingOnly
 
-    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+//    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    // Change from counting half beats to counting beats
+    TSequence Sequence_1({{84, 0.5}, {999, 1}, {76, 0.75}, {76, 0.75}, {76, 0.5}, {72, 0.25}, {69, 0.25}, {72, 0.25}, {69, 0.5}, {69, 0.25}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -5128,9 +5133,7 @@ namespace I_Follow_Rivers
             // Compute time lapse between two calls
             BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
             // Update this song's tempo
-            cIFollowRivers.BaseTempo = 120.0 / BeatTime_local;
-            // Update sequence forced tempo
-            Sequence_1.SetBeatTime(60.0 / cIFollowRivers.BaseTempo);
+            cIFollowRivers.BaseTempo = 60.0 / BeatTime_local;
         }
     }
 }
