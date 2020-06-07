@@ -996,6 +996,7 @@ TContext cCaCestVraimentToi;
 TContext cMixPolice;
 TContext cHotStuff;
 TContext cAmericanIdiot;
+TContext cHabits;
 
 /**
  * This function is needed to sort lists of elements.
@@ -5857,7 +5858,22 @@ namespace MixPolice
     }
 }
 
+namespace Habits
+{
+    void Init(void)
+    {
+        // Nothing special to do for that song
+    }
 
+    void Uh_uh(void)
+    {
+        // Uh-uh sample is normally on the Oxford samples 'drum kit' CD-A:001 Ox Samples,
+        // on is midi note 33
+        // The Oxford samples 'drum kit' is normally @ Midi Address 16
+        PlayNote(16, 33, 2000, 127);
+
+    }
+}
 
 namespace ElevenRack
 {
@@ -6848,6 +6864,13 @@ void InitializePlaylist(void)
     cAmericanIdiot.SongName = "American Idiot";
     cAmericanIdiot.BaseTempo = 94;
 
+    cHabits.Author = "Tove Lo";
+    cHabits.SongName = "Habits";
+    cHabits.BaseTempo = 120;
+    cHabits.SetInitFunc(Habits::Init);
+    cHabits.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Habits::Uh_uh, NULL, "Sample UH-UH"));
+
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -6937,6 +6960,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cMixPolice);
     PlaylistData.push_back(&cHotStuff);
     PlaylistData.push_back(&cAmericanIdiot);
+    PlaylistData.push_back(&cHabits);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
