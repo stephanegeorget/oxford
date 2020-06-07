@@ -467,6 +467,7 @@ namespace I_Follow_Rivers
 {
 void Sequence_1_Start_PedalPressed(void);
 void Sequence_1_Start_PedalReleased(void);
+void TapTempo(void);
 }
 
 namespace People_Help_The_People
@@ -3116,6 +3117,39 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } ToneAlternatePanDepth{OffsetAddress};
+
+            class TWaveNumberL_Mono : TParameter
+            {
+                public:
+                TWaveNumberL_Mono(int val) : TParameter(val + 0x002C, 0, 16384, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
+                /** Value between 0 (OFF), 1 (1) and 16384 (16384) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } WaveNumberL_Mono{OffsetAddress};
+
+            class TWaveNumberR : TParameter
+            {
+                public:
+                TWaveNumberR(int val) : TParameter(val + 0x0030, 0, 16384, "0000 aaaa 0000 bbbb 0000 cccc 0000 dddd") {};
+                /** Value between 0 (OFF), 1 (1) and 16384 (16384) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } WaveNumberR{OffsetAddress};
+
+            class TTVAEnvTime2 : TParameter
+            {
+                public:
+                TTVAEnvTime2(int val) : TParameter(val + 0x0067, 0, 127, "0aaa aaaa") {};
+                /** TVA Envelope Time #2, value between 0 and 127 */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } TVAEnvTime2{OffsetAddress};
         };
         std::array<TPatchTone, 4> PatchTone = { OffsetAddress + 0x002000, 
                                                 OffsetAddress + 0x002200,
@@ -3708,8 +3742,8 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
-    Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
+    //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
+    I_Follow_Rivers::TapTempo();
     //People_Help_The_People::BellPedalPressed();
  //   Djadja::Sequence_1_Start_PedalPressed();
 
@@ -3717,8 +3751,8 @@ void Z_p(void * pVoid)
 
 void Z_r(void * pVoid)
 {
-    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
-    //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+//    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
+//    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
     //People_Help_The_People::BellPedalReleased();
 //    Djadja::Sequence_1_Start_PedalReleased();
 
@@ -3726,8 +3760,16 @@ void Z_r(void * pVoid)
 
 void X_p(void * pVoid)
 {
-    Kungs_This_Girl::TapTempo();
+    //Kungs_This_Girl::TapTempo();
+    I_Follow_Rivers::Sequence_1_Start_PedalPressed();
 }
+
+void X_r(void * pVoid)
+{
+    //Kungs_This_Girl::TapTempo();
+    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+}
+
 
 void V_p(void * pVoid)
 {
@@ -4468,8 +4510,10 @@ private:
                 std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
                 pContext = PlaylistPosition;
             }
-
-            ForcedBeatTime_ms = (long) (60.0 / pContext->BaseTempo) * 1000.0;
+            if (pContext->BaseTempo > 30)
+            {
+                ForcedBeatTime_ms = (long) ((60.0 / (float) pContext->BaseTempo) * 1000.0);
+            }
         }
     }
 
@@ -5072,7 +5116,7 @@ namespace I_Follow_Rivers
 
 //    TSequence Sequence_1({{84, 1}, {999, 2}, {76, 1.5}, {76, 1.5}, {76, 1}, {72, 0.5}, {69, 0.5}, {72, 0.5}, {69, 1}, {69, 0.5}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
     // Change from counting half beats to counting beats
-    TSequence Sequence_1({{84, 0.5}, {999, 1}, {76, 0.75}, {76, 0.75}, {76, 0.5}, {72, 0.25}, {69, 0.25}, {72, 0.25}, {69, 0.5}, {69, 0.25}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_1({{84, 0.5}, {999, 1}, {71, 0.75}, {71, 0.75}, {71, 0.5}, {71, 0.25}, {65, 0.25}, {71, 0.25}, {65, 0.5}, {65, 0.25}}, SynthTom_ON, SynthTom_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
     void Sequence_1_Start_PedalPressed(void)
     {
@@ -5104,6 +5148,16 @@ namespace I_Follow_Rivers
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
+        // Change the Wave Group number - set Conga open low
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].WaveNumberL_Mono.Set(845);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].WaveNumberL_Mono.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].WaveNumberL_Mono.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].WaveNumberL_Mono.Set(0);
+        // Extend a bit the Time 2 on the TVA, to lenghten the sound
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TVAEnvTime2.Set(55);
+        // And detune so it fits the song nicely
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneCoarseTune.Set(1);
+
 
         // Ani's piano is a piano with a bit of reverb
         XV5080.TemporaryPerformance.PerformancePart[MASTER_KBD_PART_INDEX].SelectPatch(TXV5080::PatchGroup::PR_D, 1); // Echo Piano
@@ -6734,6 +6788,7 @@ void InitializePlaylist(void)
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
+    cIFollowRivers.BaseTempo = 120;
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::TapTempo, NULL, "Tap tempo"));
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
