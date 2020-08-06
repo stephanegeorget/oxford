@@ -997,6 +997,9 @@ TContext cMixPolice;
 TContext cHotStuff;
 TContext cAmericanIdiot;
 TContext cHabits;
+TContext cCrazy;
+TContext cLaFoule;
+TContext cLaGrenade;
 
 /**
  * This function is needed to sort lists of elements.
@@ -6870,6 +6873,17 @@ void InitializePlaylist(void)
     cHabits.SetInitFunc(Habits::Init);
     cHabits.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Habits::Uh_uh, NULL, "Sample UH-UH"));
 
+    cCrazy.Author = "Gnarls Barkley";
+    cCrazy.SongName = "Crazy";
+    cCrazy.BaseTempo = 120;
+
+    cLaFoule.Author = "Edith Piaf";
+    cLaFoule.SongName = "La Foule";
+    cLaFoule.BaseTempo = 120;
+
+    cLaGrenade.Author = "Clara Luciani";
+    cLaGrenade.SongName = "La Grenade";
+    cLaGrenade.BaseTempo = 120;
 
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
@@ -6881,48 +6895,60 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
 
-    PlaylistData.push_back(&cLockedOutOfHeaven);
+    PlaylistData.push_back(&cIsntSheLovely);
+    PlaylistData.push_back(&cJammin);
+    PlaylistData.push_back(&cCrazy);
+    PlaylistData.push_back(&cBillieJean);
     PlaylistData.push_back(&cGetLucky);
     PlaylistData.push_back(&cIllusion);
-    PlaylistData.push_back(&cManDown);
-    PlaylistData.push_back(&cBackToBlack);
-    PlaylistData.push_back(&cILoveRockNRoll);
-    PlaylistData.push_back(&c25years);
-    PlaylistData.push_back(&cHuman);
-    PlaylistData.push_back(&cPeople);
-    PlaylistData.push_back(&cIFollowRivers);
     PlaylistData.push_back(&cTakeOnMe);
-    PlaylistData.push_back(&cLesFillesDesForges);
-    PlaylistData.push_back(&cHighwayToHell);
-    PlaylistData.push_back(&cAllumerLeFeu);
-    PlaylistData.push_back(&cProudMary);
-
-
-    PlaylistData.push_back(&cBillieJean);
-    PlaylistData.push_back(&cNewYorkAvecToi);
-    PlaylistData.push_back(&cIFeelGood);
-    PlaylistData.push_back(&cShouldIStay);
-    PlaylistData.push_back(&cAllInYou);
-
-
-    PlaylistData.push_back(&cJammin);
+    PlaylistData.push_back(&cHotStuff);
+    PlaylistData.push_back(&cCaCestVraimentToi);
+    PlaylistData.push_back(&cILoveRockNRoll);
+    PlaylistData.push_back(&cIsThisLove);
+    PlaylistData.push_back(&cEncoreUnMatin);
+    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
-    PlaylistData.push_back(&cLongTrainRunning);
-    PlaylistData.push_back(&cGetBack);
-    PlaylistData.push_back(&cThatsAllRight);
-    PlaylistData.push_back(&cWhatsUp);
-    PlaylistData.push_back(&cLesCitesDOr);
+    PlaylistData.push_back(&cIFeelGood);
+    PlaylistData.push_back(&cRehab);
+    PlaylistData.push_back(&cProudMary);
     PlaylistData.push_back(&cUptownFunk);
     PlaylistData.push_back(&cLeFreak);
     PlaylistData.push_back(&cRappersDelight);
     PlaylistData.push_back(&cMachistador);
     PlaylistData.push_back(&cAnotherOneBiteTheDust);
     PlaylistData.push_back(&cWot);
+    PlaylistData.push_back(&cThisGirl);
+    PlaylistData.push_back(&cLongTrainRunning);
+    PlaylistData.push_back(&cBackToBlack);
+    PlaylistData.push_back(&cHuman);
+    PlaylistData.push_back(&cAllInYou);
+    PlaylistData.push_back(&cLady);
+    PlaylistData.push_back(&cMorrissonJig);
+    PlaylistData.push_back(&cPeople);
+    PlaylistData.push_back(&cLockedOutOfHeaven);
+    PlaylistData.push_back(&cManDown);
+    PlaylistData.push_back(&cUnchainMyHeart);
+    PlaylistData.push_back(&c25years);
+    PlaylistData.push_back(&cLaFoule);
+    PlaylistData.push_back(&cLaGrenade);
+    PlaylistData.push_back(&cIFollowRivers);
+    PlaylistData.push_back(&cAmericanIdiot);
+    PlaylistData.push_back(&cMixPolice);
+    PlaylistData.push_back(&cAllumerLeFeu);
+    
+
+
+    PlaylistData.push_back(&cLesFillesDesForges);
+    PlaylistData.push_back(&cHighwayToHell);
+    PlaylistData.push_back(&cNewYorkAvecToi);
+    PlaylistData.push_back(&cShouldIStay);
+    PlaylistData.push_back(&cGetBack);
+    PlaylistData.push_back(&cThatsAllRight);
+    PlaylistData.push_back(&cWhatsUp);
+    PlaylistData.push_back(&cLesCitesDOr);
     PlaylistData.push_back(&cCapitaineFlam);
     PlaylistData.push_back(&cAllShookUp);
-    PlaylistData.push_back(&cUnchainMyHeart);
-    PlaylistData.push_back(&cIsntSheLovely);
-    PlaylistData.push_back(&cRehab);
     PlaylistData.push_back(&cKnockOnWood);
     PlaylistData.push_back(&cMercy);
     PlaylistData.push_back(&cFlyMeToTheMoon);
@@ -6945,21 +6971,9 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cWildThoughts);
     PlaylistData.push_back(&cGangstaParadise);
     PlaylistData.push_back(&cBeatIt);
-    PlaylistData.push_back(&cLady);
     PlaylistData.push_back(&cChandelier);
-    PlaylistData.push_back(&cThisGirl);
-    PlaylistData.push_back(&cEncoreUnMatin);
-    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cDumbo);
-    PlaylistData.push_back(&cIsThisLove);
-    PlaylistData.push_back(&cMorrissonJig);
-
     PlaylistData.push_back(&cDjadja);
-    PlaylistData.push_back(&cCaCestVraimentToi);
-
-    PlaylistData.push_back(&cMixPolice);
-    PlaylistData.push_back(&cHotStuff);
-    PlaylistData.push_back(&cAmericanIdiot);
     PlaylistData.push_back(&cHabits);
 
     // Set the current active context here.
