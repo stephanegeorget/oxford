@@ -1,6 +1,7 @@
 #!/bin/bash -x
 # run apt-cache search linux-image to find the proper version of linux image and HEADERS to install.
 # These change from time to time with a new release of debootstrap.
+# Do that from within the chroot environment, not from the host!
 
 cd /root
 chmod +x *.sh
@@ -12,8 +13,8 @@ if [ "$1" != "debug" ]; then
 # The following packages must be in the "main" apt repository source list
 apt-get update
 apt-get install --no-install-recommends --assume-yes \
-    linux-image-4.9.0-12-rt-amd64 \
-    linux-headers-4.9.0-12-rt-amd64 \
+    linux-image-4.9.0-13-rt-amd64 \
+    linux-headers-4.9.0-13-rt-amd64 \
     live-boot \
     systemd-sysv \
     network-manager \
