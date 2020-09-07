@@ -483,6 +483,12 @@ namespace Kungs_This_Girl
     void TapTempo();
 }
 
+namespace Crazy
+{
+    void OpeningSequence();
+    void Sax();
+}
+
 namespace Djadja
 {
     void Sequence_1_Start_PedalPressed(void);
@@ -3759,19 +3765,21 @@ void Z_r(void * pVoid)
 //    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
     //People_Help_The_People::BellPedalReleased();
 //    Djadja::Sequence_1_Start_PedalReleased();
-
+    Crazy::Sax();
 }
 
 void X_p(void * pVoid)
 {
     //Kungs_This_Girl::TapTempo();
-    I_Follow_Rivers::Sequence_1_Start_PedalPressed();
+    //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
+    Crazy::OpeningSequence();
+//    Crazy::Sax();
 }
 
 void X_r(void * pVoid)
 {
     //Kungs_This_Girl::TapTempo();
-    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+    //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
 }
 
 
@@ -5878,6 +5886,70 @@ namespace Habits
     }
 }
 
+namespace Crazy
+{
+    void Strings_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
+    }
+
+    void Strings_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 0);
+    }
+
+    void Sax_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+    }
+
+    void Sax_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 0);
+    }
+
+
+    TSequence Sequence_1({{36, 1}, {33, 1}, {36, 1}, {41, 1}, {40, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_2({{52, 1}, {37, 1}, {40, 1}, {45, 1}, {44, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
+
+    TSequence Sequence_3({{48, 1}, {47, 1}, {45, 1}, {43, 1}, {40, 1}, {38, 1}, {36, 1}}, Sax_ON, Sax_OFF, 12, false, 5, 0, false, TSequence::pbDownswingAndUpswing);
+
+    void Init(void)
+    {
+        // On Part #1 (numbered 0 below), Midi Rx channel 1, put some lavish strings
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_E, 74); // Film strings
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(0);
+
+        // Sax on part #2 (numbered 1 below), MIDI channel 4 (2 is for keyboard, 3 is for B2M which we don't use at present)
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_B, 111); // Sax
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+        XV5080.TemporaryPerformance.PerformancePart[1].PartOctaveShift.Set(0);
+
+        Sequence_1.Init();
+        Sequence_2.Init();
+        Sequence_3.Init();
+
+    }
+
+
+
+    void OpeningSequence(void)
+    {
+        Sequence_1.Start_PedalPressed();
+        Sequence_2.Start_PedalPressed();
+    }
+
+    void Sax(void)
+    {
+        Sequence_3.Start_PedalPressed();
+    }
+}
+
 namespace ElevenRack
 {
 
@@ -6876,6 +6948,10 @@ void InitializePlaylist(void)
     cCrazy.Author = "Gnarls Barkley";
     cCrazy.SongName = "Crazy";
     cCrazy.BaseTempo = 120;
+    cCrazy.SetInitFunc(Crazy::Init);
+    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Crazy::OpeningSequence, NULL, "Opening"));
+    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Crazy::Sax, NULL, "Sax"));
+ 
 
     cLaFoule.Author = "Edith Piaf";
     cLaFoule.SongName = "La Foule";
@@ -6975,6 +7051,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cDumbo);
     PlaylistData.push_back(&cDjadja);
     PlaylistData.push_back(&cHabits);
+    PlaylistData.push_back(&cCrazy);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
