@@ -20,7 +20,7 @@ else
     echo "Looking for device with size $1"
 fi
 
-disk=/dev/$(lsblk | awk "{if(/$1/){print \$1; exit}}")
+disk=/dev/$(lsblk --list | awk "{if(/$1/){print \$1; exit}}")
 
 if [ "${disk}" == "/dev/" ]; then
     echo "Could not find proper disk"
