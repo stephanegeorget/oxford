@@ -1232,7 +1232,7 @@ public:
         wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
         if (handle_midi_hw_out != 0)
         {
-            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write_protected(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
@@ -1285,7 +1285,7 @@ public:
         wprintw(win_midi_out.GetRef(), "%i\n%i\n%i\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
         if (handle_midi_hw_out != 0)
         {
-            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write_protected(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
@@ -1312,7 +1312,7 @@ public:
         wprintw(win_midi_out.GetRef(), "%02x\n%02x\n", (int) charArray[0], (int) charArray[1]);
         if(handle_midi_hw_out != 0)
         {
-            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write_protected(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
@@ -1340,7 +1340,7 @@ public:
         if (handle_midi_hw_out != 0)
         {
             wprintw(win_midi_out.GetRef(), "%02x\n%02x\n%02x\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write_protected(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
@@ -1367,7 +1367,7 @@ public:
         if (handle_midi_hw_out != 0)
         {
             wprintw(win_midi_out.GetRef(), "%02x\n%02x\n%02x\n", (int) charArray[0], (int) charArray[1], (int) charArray[2]);
-            snd_rawmidi_write(handle_midi_hw_out, &charArray, sizeof(charArray));
+            snd_rawmidi_write_protected(handle_midi_hw_out, &charArray, sizeof(charArray));
         }
     }
 
@@ -1381,7 +1381,7 @@ public:
 
         if (handle_midi_hw_out != 0)
         {
-            snd_rawmidi_write(handle_midi_hw_out, &data[0], data.size());
+            snd_rawmidi_write_protected(handle_midi_hw_out, &data[0], data.size());
         }
     }
 
@@ -1411,6 +1411,7 @@ public:
     }
 
 private:
+    std::mutex MIDI_Port_Mutex;
     std::string name_midi_hw;
     std::thread::native_handle_type ThreadNativeHandle = 0;
     int err;
@@ -1454,6 +1455,14 @@ private:
     THookProcessControllerChangeEvent HookProcessControllerChangeEvent = 0;
     // Hook function called whenever a pitch bend change event is received
     THookProcessPitchBendChangeEvent HookProcessPitchBendChangeEvent = 0;
+
+    // Same as snd_rawmidi_write, protected by a mutex
+    // Within this program, only use the protected version.
+    void snd_rawmidi_write_protected(snd_rawmidi_t * rmidi, const void *buffer, size_t size)
+    {
+        std::lock_guard<std::mutex> lock(MIDI_Port_Mutex);
+        snd_rawmidi_write(rmidi, buffer, size);
+    }
 
     // Talk to ALSA and open a midi port in RAW mode, for data going IN.
     // (into the computer, into this program, from the pedalboard, from the keyboard...)
