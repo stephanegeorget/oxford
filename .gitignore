@@ -1,3 +1,4 @@
 *.o
 *.a
 oxford/bin/*
+oxford/make_bootable_drive/LIVE_BOOT/*

@@ -4644,9 +4644,9 @@ namespace CapitaineFlam
 
 void Partial_On(int NoteNumber)
 {
-    MIDI_A.SendNoteOnEvent(3, NoteNumber, 100);
-    MIDI_A.SendNoteOnEvent(4, NoteNumber, 100);
-    MIDI_A.SendNoteOnEvent(5, NoteNumber, 100);
+    MIDI_A.SendNoteOnEvent(3, NoteNumber, 127);
+    MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+    MIDI_A.SendNoteOnEvent(5, NoteNumber, 127);
 }
 
 void Partial_Off(int NoteNumber)
@@ -4682,7 +4682,7 @@ void * Laser_Cycle(void * pMessage)
 {
     while (poorMansSemaphore)
     {
-        MIDI_A.SendNoteOnEvent(2, 30, 100);
+        MIDI_A.SendNoteOnEvent(2, 30, 127);
         waitMilliseconds(100);
 //        TMidiNoteOffEvent noff(2, 30, 0);
         //waitMilliseconds(30);
@@ -4755,7 +4755,7 @@ namespace LockedOutOfHeaven
     void FunctionNoteOn(int note)
     {
         // Oxford samples 'drum kit' on channel 16
-        MIDI_A.SendNoteOnEvent(16, note, 100);
+        MIDI_A.SendNoteOnEvent(16, note, 127);
     }
 
     void FunctionNoteOff(int note)
@@ -4974,6 +4974,103 @@ void Chord4_Off(void)
 }
 
 }
+
+void TapTempo(void)
+{
+    enum TTapTempoStateMachine {ttsmInit, ttsmWaitFirstTap, ttsmComputeTempo} TapTempoStateMachine = ttsmInit;
+    std::vector<struct timeval> TimeValues_vec = {};
+    std::vector<float> DeltaTime_vec = {};
+    static struct timeval tv;
+    float BeatTime_local = 0;
+    float Intervals = 4;
+    switch (TapTempoStateMachine)
+    {
+        case ttsmInit:
+        TimeValues_vec.clear();
+        TapTempoStateMachine = ttsmWaitFirstTap;
+        // Do more init stuff
+        // no break;
+        case ttsmWaitFirstTap:
+        // First beat
+        gettimeofday(&tv, NULL);  
+        TimeValues_vec.push_back(tv);
+        TapTempoStateMachine = ttsmComputeTempo;
+        break;
+
+        case ttsmComputeTempo:
+        bool flag_start = true;
+        struct timeval last_timeval;
+        DeltaTime_vec.clear();
+        for (auto val : TimeValue_vec)
+        {
+            if (flag_start == true)
+            {
+                flag_start = false;
+                last_timeval = val;
+            }
+            else
+            {
+                struct timeval tv1, tv2;
+                tv1 = last_timeval;
+                tv2 = val;
+                float DeltaTime = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0);
+                DeltaTime_vec.push_back(DeltaTime);
+            }
+        }
+        // If the last delta time is too large, it means this algorithm has paused for a long time
+        // since the last time it was called, and that the last call was probably not a call to update
+        // the tempo, but the first call of a new request to find a new tempo, so restart the algorithm,
+        // while taking into account the last timeval that came in.
+        if (DeltaTime_vec.back() > 4.0) // more than 4 seconds
+        {
+            DeltaTime_vec.clear();
+            struct timeval tv = TimeValues_vec.back();
+            TimeValues_vec.clear();
+            Timevalues_vec.push_back(tv);
+        }
+        else
+        {
+            // Do the tempo calculation
+            float DeltaTimeMean = 0;
+            float DeltaTimeMean_limit_low = 0;
+            float DeltaTimeMean_limit_high = 0;
+            for (auto val : DeltaTime_vec)
+            {
+                DeltaTimeMean += val;
+            }
+            DeltaTimeMean /= DeltaTime_vec.size();
+            DeltaTimeMean_limit_low = 0.60 * DeltaTimeMean;
+            DeltaTimeMean_limit_high = 1.4 * DeltaTimeMean;
+
+            // Get rid of any measurement that deviates too much from the mean
+            // This is an easy way of eliminating "outliers", e.g. if one beat was missed
+            for (auto val: DeltaTime_vec)
+            {
+                if (val < DeltaTimeMean_limit_low || val > DeltaTimeMean_limit_high)
+                {
+
+                }
+            }
+        }
+
+        break;
+    }
+    }
+    else
+    {
+        // Second beat
+        init_flag = false;
+        gettimeofday(&tv2, NULL);
+        // Compute time lapse between two calls
+        BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
+        // Update this song's tempo
+        cThisGirl.BaseTempo = 60.0 / BeatTime_local;
+    }
+//    Sequence_1.Start_PedalPressed();
+
+
+}
+
 
 
 namespace Kungs_This_Girl
@@ -5294,8 +5391,8 @@ namespace People_Help_The_People
     void Bell_ON(int note)
     {
         // Do octave dyads rather than single notes
-        MIDI_A.SendNoteOnEvent(4, note, 90);
-        MIDI_A.SendNoteOnEvent(4, note -12, 100); // One octave lower
+        MIDI_A.SendNoteOnEvent(4, note, 117);
+        MIDI_A.SendNoteOnEvent(4, note -12, 127); // One octave lower
         
     }
 
@@ -6959,7 +7056,7 @@ void InitializePlaylist(void)
     cCrazy.BaseTempo = 120;
     cCrazy.SetInitFunc(Crazy::Init);
     cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Crazy::OpeningSequence, NULL, "Opening"));
-    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Crazy::Sax, NULL, "Sax"));
+    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Crazy::Sax, Crazy::Sax, "Sax"));
  
 
     cLaFoule.Author = "Edith Piaf";
