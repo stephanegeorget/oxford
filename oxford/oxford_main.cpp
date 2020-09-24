@@ -5026,7 +5026,7 @@ void TapTempo(void)
             DeltaTime_vec.clear();
             struct timeval tv = TimeValues_vec.back();
             TimeValues_vec.clear();
-            Timevalues_vec.push_back(tv);
+            TimeValues_vec.push_back(tv);
         }
         else
         {
@@ -5044,13 +5044,43 @@ void TapTempo(void)
 
             // Get rid of any measurement that deviates too much from the mean
             // This is an easy way of eliminating "outliers", e.g. if one beat was missed
+            int MeasurementsCount = 0;
+            float DeltaTimeMeanRobust = 0;
             for (auto val: DeltaTime_vec)
             {
                 if (val < DeltaTimeMean_limit_low || val > DeltaTimeMean_limit_high)
                 {
-
+                    // Don't use that measurement                    
+                }
+                else
+                {
+                    // Do use that measurement
+                    MeasurementsCount += 1;
+                    DeltaTimeMeanRobust += val;
                 }
             }
+
+            if (MeasurementsCount >= 1)
+            {
+                DeltaTimeMeanRobust /= MeasurementsCount;
+            }
+            else
+            {
+                // Calculation error - restart state machine
+                TapTempoStateMachine = ttsmInit;
+                break;
+            }
+            
+
+            if (DeltaTimeMeanRobust > 0.01)
+            {
+                float TempoBPM = 60.0 / DeltaTimeMeanRobust;
+                TContext * pContext;
+        {
+            // Protect PlaylistPosition from concurrent access
+            std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+            pContext = PlaylistPosition;
+        }
         }
 
         break;
