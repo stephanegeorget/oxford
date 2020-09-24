@@ -3665,6 +3665,7 @@ namespace MetronomeMaster
 
 
 
+void TapTempo(void);
 
 
 namespace MiniSynth
@@ -3753,7 +3754,6 @@ void N(void * pVoid)
     ComputerKeyboard::EnableCallbacks();
 }
 
-
 void Z_p(void * pVoid)
 {
     //system("aplay ./wav/FXCarpenterLaserBig.wav &");
@@ -3762,7 +3762,7 @@ void Z_p(void * pVoid)
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    I_Follow_Rivers::TapTempo();
+    TapTempo();
     //People_Help_The_People::BellPedalPressed();
  //   Djadja::Sequence_1_Start_PedalPressed();
 
@@ -4977,29 +4977,31 @@ void Chord4_Off(void)
 
 void TapTempo(void)
 {
-    enum TTapTempoStateMachine {ttsmInit, ttsmWaitFirstTap, ttsmComputeTempo} TapTempoStateMachine = ttsmInit;
-    std::vector<struct timeval> TimeValues_vec = {};
-    std::vector<float> DeltaTime_vec = {};
+    static enum TTapTempoStateMachine {ttsmInit, ttsmWaitFirstTap, ttsmComputeTempo} TapTempoStateMachine = ttsmInit;
+    static std::vector<struct timeval> TimeValue_vec = {};
+    static std::vector<float> DeltaTime_vec = {};
     static struct timeval tv;
-    float BeatTime_local = 0;
-    float Intervals = 4;
     switch (TapTempoStateMachine)
     {
         case ttsmInit:
-        TimeValues_vec.clear();
+        TimeValue_vec.clear();
         TapTempoStateMachine = ttsmWaitFirstTap;
+        wprintw(win_debug_messages.GetRef(), "Tap tempo INIT\n");
         // Do more init stuff
         // no break;
         case ttsmWaitFirstTap:
         // First beat
         gettimeofday(&tv, NULL);  
-        TimeValues_vec.push_back(tv);
+        TimeValue_vec.push_back(tv);
         TapTempoStateMachine = ttsmComputeTempo;
         break;
 
         case ttsmComputeTempo:
+        wprintw(win_debug_messages.GetRef(), "Tap tempo COMPUTE\n");
         bool flag_start = true;
         struct timeval last_timeval;
+        gettimeofday(&tv, NULL);  
+        TimeValue_vec.push_back(tv);
         DeltaTime_vec.clear();
         for (auto val : TimeValue_vec)
         {
@@ -5015,6 +5017,7 @@ void TapTempo(void)
                 tv2 = val;
                 float DeltaTime = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0);
                 DeltaTime_vec.push_back(DeltaTime);
+                last_timeval = tv2;
             }
         }
         // If the last delta time is too large, it means this algorithm has paused for a long time
@@ -5024,9 +5027,11 @@ void TapTempo(void)
         if (DeltaTime_vec.back() > 4.0) // more than 4 seconds
         {
             DeltaTime_vec.clear();
-            struct timeval tv = TimeValues_vec.back();
-            TimeValues_vec.clear();
-            TimeValues_vec.push_back(tv);
+            struct timeval tv;
+            gettimeofday(&tv, NULL);  
+            TimeValue_vec.clear();
+            TimeValue_vec.push_back(tv);
+            break;
         }
         else
         {
@@ -5059,6 +5064,7 @@ void TapTempo(void)
                     DeltaTimeMeanRobust += val;
                 }
             }
+            wprintw(win_debug_messages.GetRef(), "Tap tempo meas=%i,total=%i\n", MeasurementsCount, DeltaTime_vec.size());
 
             if (MeasurementsCount >= 1)
             {
@@ -5076,29 +5082,21 @@ void TapTempo(void)
             {
                 float TempoBPM = 60.0 / DeltaTimeMeanRobust;
                 TContext * pContext;
-        {
-            // Protect PlaylistPosition from concurrent access
-            std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
-            pContext = PlaylistPosition;
+                {
+                    // Protect PlaylistPosition from concurrent access
+                    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+                    pContext = PlaylistPosition;
+                }
+                pContext->BaseTempo = round(TempoBPM);
+            }
+            else
+            {
+                // Calculation error - restart state machine
+                TapTempoStateMachine = ttsmInit;
+                break;
+            }
         }
-        }
-
-        break;
     }
-    }
-    else
-    {
-        // Second beat
-        init_flag = false;
-        gettimeofday(&tv2, NULL);
-        // Compute time lapse between two calls
-        BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
-        // Update this song's tempo
-        cThisGirl.BaseTempo = 60.0 / BeatTime_local;
-    }
-//    Sequence_1.Start_PedalPressed();
-
-
 }
 
 
@@ -5315,7 +5313,7 @@ namespace I_Follow_Rivers
     // To be called on beat 1, then again on beat 1 of next bar (assuming 4-beats bars)
     // -> so there is one bar between two calls
     // -> infer tempo from that
-    void TapTempo(void)
+    void TapTempo_deletethat(void)
     {
         static bool init_flag = false;
         static struct timeval tv1, tv2;
@@ -6993,7 +6991,7 @@ void InitializePlaylist(void)
     cThisGirl.Author = "Kung";
     cThisGirl.SongName = "This Girl";
     cThisGirl.BaseTempo = 122;
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Kungs_This_Girl::TapTempo, NULL,"Tap tempo - 1 bar"));
+    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL,"Tap tempo"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Kungs_This_Girl::Sequence_3_Start_PedalPressed, Kungs_This_Girl::Sequence_3_Start_PedalReleased,"Sequence 3"));
@@ -7016,7 +7014,7 @@ void InitializePlaylist(void)
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
     cIFollowRivers.BaseTempo = 120;
-    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::TapTempo, NULL, "Tap tempo"));
+    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
 
