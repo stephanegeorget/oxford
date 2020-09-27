@@ -3839,6 +3839,7 @@ void TapTempo(void);
 namespace   All_In_You
 {
     void Filter(int value);
+    void SoaringLead(int value);
 }
 
 
@@ -3935,8 +3936,8 @@ void Z_p(void * pVoid)
     value = value -8;
     if (value < 0) value = 0;
 
-    All_In_You::Filter(value);
-
+//    All_In_You::Filter(value);
+    All_In_You::SoaringLead(value);
         //system("aplay ./wav/FXCwarpenterLaserBig.wav &");
     /*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
@@ -3964,8 +3965,8 @@ void X_p(void * pVoid)
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
     value = value +8;
     if (value > 127) value = 127;
-    All_In_You::Filter(value);
-
+//    All_In_You::Filter(value);
+    All_In_You::SoaringLead(value);
 //    Crazy::OpeningSequence();
 //    Crazy::Sax();
 }
@@ -6305,6 +6306,35 @@ namespace All_In_You
         // We are in the key of "D" - adjust so that azertyuiop corresponds to that scale
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchCoarseTune.Set(61); // -3 semitones = 64-3 = 61from C to A 
 
+        // Now takle the soaring lead
+        // On midi channel 2
+        // Tied to the second analog pedal
+//        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_F, 11); // Square Roots
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_B, 4); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(2);
+
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_G, 77); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(2);
+
+
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[4].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[5].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[6].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[7].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[8].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[9].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[10].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[11].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[12].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[13].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[14].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[15].ReceiveSwitch.Set(0);
+
     }
 
     void Filter(int Value)
@@ -6319,6 +6349,54 @@ namespace All_In_You
         MIDI_A.SendControlChange(1, 1, interpolate(In_Pedal, Out_CC01, Value, false));        
         MIDI_A.SendControlChange(1, 8, interpolate(In_Pedal, Out_CC08, Value, false));        
         MIDI_A.SendControlChange(1, 9, interpolate(In_Pedal, Out_CC09, Value, false));        
+    }
+
+    void SoaringLead(int Value)
+    {
+        static enum TSoaringLeadStateMachine {smInit,smWaitStart, smStartSound, smSoaring} SoaringLeadStateMachine = smInit;
+        // Callback from the second analog pedal
+        switch (SoaringLeadStateMachine)
+        {
+            case smInit:
+            // Wait until Value is less than 10
+            if (Value < 10)
+            {
+                SoaringLeadStateMachine = smWaitStart;
+            }
+            break;
+
+            case smWaitStart:
+            if (Value > 15)
+            {
+                // Ok - start
+                // Sound ON
+                MIDI_A.SendNoteOnEvent(2, 45, 127);
+                MIDI_A.SendNoteOnEvent(2, 57, 127);
+                MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
+                SoaringLeadStateMachine = smSoaring;
+            }
+            break;
+
+            case smSoaring:
+            if (Value <118 & Value >= 10)
+            {
+                MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
+            }
+            else
+            {
+                // Sound off
+                MIDI_A.SendNoteOffEvent(2, 45, 0);
+                MIDI_A.SendNoteOffEvent(2, 57, 0);
+                MIDI_A.SendControlChange(2, 7, 0); // CC07 is volume
+                // Reset state machine
+                SoaringLeadStateMachine = smInit;
+            }
+            break;
+
+            default:
+            SoaringLeadStateMachine = smInit;
+            break;
+        }
     }
 }
 
@@ -7226,6 +7304,7 @@ void InitializePlaylist(void)
     cAllInYou.BaseTempo = 120;
     cAllInYou.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
     cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, All_In_You::Filter,"Filter"));
+    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(2, All_In_You::SoaringLead,"Soaring Lead"));
     cAllInYou.SetInitFunc(All_In_You::Init);
 
     cChandelier.Author = "Sia";
