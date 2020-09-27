@@ -3049,6 +3049,17 @@ public:
                 }
             } PatchPan{OffsetAddress};
 
+            class TPatchCoarseTune : TParameter
+            {
+            public:
+                TPatchCoarseTune(int val) : TParameter(val + 0x0011, 16, 112, "0aaa aaaa") {};
+                /** Patch Coarse Tune: -48 semitones (16) to +48 semitones (112) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchCoarseTune{OffsetAddress};
+
             class TAnalogFeel : TParameter
             {
             public:
@@ -3162,7 +3173,7 @@ public:
             class TPatchTempo : TParameter
             {
                 public:
-                TPatchTempo(int val): TParameter(val + 0x001F, 0, 1, "0000 aaaa 0000 bbbb") {};
+                TPatchTempo(int val): TParameter(val + 0x001F, 20, 250, "0000 aaaa 0000 bbbb") {};
                 /** Patch tempo (20-250) */
                 void Set(int Value_param)
                 {
@@ -3921,7 +3932,9 @@ int value = 0;
 
 void Z_p(void * pVoid)
 {
-    value = value -10;
+    value = value -8;
+    if (value < 0) value = 0;
+
     All_In_You::Filter(value);
 
         //system("aplay ./wav/FXCwarpenterLaserBig.wav &");
@@ -3949,7 +3962,8 @@ void X_p(void * pVoid)
 {
     //Kungs_This_Girl::TapTempo();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-    value = value +10;
+    value = value +8;
+    if (value > 127) value = 127;
     All_In_You::Filter(value);
 
 //    Crazy::OpeningSequence();
@@ -6285,6 +6299,12 @@ namespace All_In_You
 
         // Our miniphaser (or whatever bass we use) tempo source should be the system tempo, not patch tempo
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchClockSource.Set(1);
+        // Switch to monophonic, much easier to play on a computer keyboard...
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.MonoPoly.Set(0);
+
+        // We are in the key of "D" - adjust so that azertyuiop corresponds to that scale
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchCoarseTune.Set(61); // -3 semitones = 64-3 = 61from C to A 
+
     }
 
     void Filter(int Value)
