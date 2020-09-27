@@ -2151,6 +2151,52 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } SystemTempo{OffsetAddress};
+         
+            class TSystemControl1Source : TParameter
+            {
+                public:
+                TSystemControl1Source(int val) : TParameter(val + 0x0018, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl1Source{OffsetAddress};
+
+            class TSystemControl2Source : TParameter
+            {
+                public:
+                TSystemControl2Source(int val) : TParameter(val + 0x0019, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl2Source{OffsetAddress};
+
+            class TSystemControl3Source : TParameter
+            {
+                public:
+                TSystemControl3Source(int val) : TParameter(val + 0x001A, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl3Source{OffsetAddress};
+
+            class TSystemControl4Source : TParameter
+            {
+                public:
+                TSystemControl4Source(int val) : TParameter(val + 0x001B, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl4Source{OffsetAddress};
+
+
          } SystemCommon{OffsetAddress + 0x000000};
     } System;
 
@@ -3013,6 +3059,116 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } AnalogFeel{OffsetAddress};
+
+            class TMonoPoly : TParameter
+            {
+                public:
+                TMonoPoly(int val) : TParameter(val + 0x0016, 0, 1, "0000 000a") {};
+                /** Set patch to MONOPHONIC (0) or POLYPHONIC (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } MonoPoly{OffsetAddress};
+
+            class TLegatoSwitch : TParameter
+            {
+                public:
+                TLegatoSwitch(int val): TParameter(val + 0x0017, 0, 1, "0000 000a") {};
+                /** Legato OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } LegatoSwitch{OffsetAddress};
+            
+            class TLegatoRetrigger : TParameter
+            {
+                public:
+                TLegatoRetrigger(int val): TParameter(val + 0x0018, 0, 1, "0000 000a") {};
+                /** Legato Retrigger OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } LegatoRetrigger{OffsetAddress};
+            
+            class TPortamentoSwitch : TParameter
+            {
+                public:
+                TPortamentoSwitch(int val): TParameter(val + 0x0019, 0, 1, "0000 000a") {};
+                /** Portamento switch OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoSwitch{OffsetAddress};
+
+            class TPortamentoMode : TParameter
+            {
+                public:
+                TPortamentoMode(int val): TParameter(val + 0x001A, 0, 1, "0000 000a") {};
+                /** Portamento Mode NORMAL (0) or LEGATO (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoMode{OffsetAddress};
+
+            class TPortamentoType : TParameter
+            {
+                public:
+                TPortamentoType(int val): TParameter(val + 0x001B, 0, 1, "0000 000a") {};
+                /** Portamento Type RATE (0) or TIME (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoType{OffsetAddress};
+
+            class TPortamentoStart : TParameter
+            {
+                public:
+                TPortamentoStart(int val): TParameter(val + 0x001C, 0, 1, "0000 000a") {};
+                /** Portamento Start: PITCH (0) or NOTE (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoStart{OffsetAddress};
+
+            class TPortamentoTime : TParameter
+            {
+                public:
+                TPortamentoTime(int val): TParameter(val + 0x001D, 0, 1, "0aaa aaaa") {};
+                /** Portamento Time (0-127) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoTime{OffsetAddress};
+
+            class TPatchClockSource : TParameter
+            {
+                public:
+                TPatchClockSource(int val): TParameter(val + 0x001E, 0, 1, "0000 000a") {};
+                /** Patch Clock Source: tempo from PATCH (0) or tempo from SYSTEM (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchClockSource{OffsetAddress};
+
+            class TPatchTempo : TParameter
+            {
+                public:
+                TPatchTempo(int val): TParameter(val + 0x001F, 0, 1, "0000 aaaa 0000 bbbb") {};
+                /** Patch tempo (20-250) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchTempo{OffsetAddress};
         } PatchCommon{OffsetAddress};
 
         class TPatchCommonReverb : TParameterSection
@@ -3624,6 +3780,9 @@ namespace MetronomeMaster
                 unsigned long int TimeSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeStart.time_since_epoch()).count();
                 std::string TimeSinceEpoch_ms_str = std::to_string(TimeSinceEpoch_ms);
                 mosquitto_publish(mosq, NULL, "song/tempo/timestart", TimeSinceEpoch_ms_str.length(), TimeSinceEpoch_ms_str.c_str(), 2, false);
+
+                // Also send the tempo to the XV5080
+                XV5080.System.SystemCommon.SystemTempo.Set(static_cast<int>(Tempo));
             }
 
             beat_number ++;
@@ -3666,6 +3825,10 @@ namespace MetronomeMaster
 
 
 void TapTempo(void);
+namespace   All_In_You
+{
+    void Filter(int value);
+}
 
 
 namespace MiniSynth
@@ -3754,15 +3917,19 @@ void N(void * pVoid)
     ComputerKeyboard::EnableCallbacks();
 }
 
+int value = 0;
+
 void Z_p(void * pVoid)
 {
-    //system("aplay ./wav/FXCarpenterLaserBig.wav &");
+    value = value -10;
+    All_In_You::Filter(value);
+
+        //system("aplay ./wav/FXCwarpenterLaserBig.wav &");
     /*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    TapTempo();
     //People_Help_The_People::BellPedalPressed();
  //   Djadja::Sequence_1_Start_PedalPressed();
 
@@ -3777,11 +3944,15 @@ void Z_r(void * pVoid)
     Crazy::Sax();
 }
 
+
 void X_p(void * pVoid)
 {
     //Kungs_This_Girl::TapTempo();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-    Crazy::OpeningSequence();
+    value = value +10;
+    All_In_You::Filter(value);
+
+//    Crazy::OpeningSequence();
 //    Crazy::Sax();
 }
 
@@ -3830,6 +4001,7 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 1, "x", 2, false);}, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 1, "1", 2, false);}, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 1, "1", 2, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTCTRL, [](void * foo){TapTempo();}, 0);
     
 
 
@@ -6084,6 +6256,53 @@ namespace Crazy
     }
 }
 
+namespace All_In_You
+{
+
+    void Init(void)
+    {
+        // Bass lead on part on part 1, midi channel 1
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 48); 
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+//        XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+/*        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].  ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+*/
+        // On this song, the bass lead is played from computer keyboard
+        MiniSynth::octave = 2;
+        MiniSynth::channel = 1;
+        XV5080.System.SystemCommon.SystemControl1Source.Set(1); // Use CC01 as SYS-CTRL1 (mod)
+        XV5080.System.SystemCommon.SystemControl2Source.Set(8); // Use CC08 as SYS-CTRL2 (filter cutoff)
+        XV5080.System.SystemCommon.SystemControl3Source.Set(9); // Use CC09 as SYS-CTRL3 (resonance)
+
+        // Our miniphaser (or whatever bass we use) tempo source should be the system tempo, not patch tempo
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchClockSource.Set(1);
+    }
+
+    void Filter(int Value)
+    {
+        using std::vector;
+        vector<double> In_Pedal = {0, 64, 127}; // position of the pedal, from 0 to 127
+        vector<double> Out_CC01 = {0, 0, 64}; // corresponding values of the control change event 99
+        vector<double> Out_CC08 = {127, 0, 0}; // corresponding values of the control change event 99
+        vector<double> Out_CC09 = {0, 32, 127}; // corresponding values of the control change event 99
+
+
+        MIDI_A.SendControlChange(1, 1, interpolate(In_Pedal, Out_CC01, Value, false));        
+        MIDI_A.SendControlChange(1, 8, interpolate(In_Pedal, Out_CC08, Value, false));        
+        MIDI_A.SendControlChange(1, 9, interpolate(In_Pedal, Out_CC09, Value, false));        
+    }
+}
+
+
 namespace ElevenRack
 {
 
@@ -6984,6 +7203,10 @@ void InitializePlaylist(void)
 
     cAllInYou.Author = "Synapson";
     cAllInYou.SongName = "All In You";
+    cAllInYou.BaseTempo = 120;
+    cAllInYou.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
+    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, All_In_You::Filter,"Filter"));
+    cAllInYou.SetInitFunc(All_In_You::Init);
 
     cChandelier.Author = "Sia";
     cChandelier.SongName = "Chandelier";
