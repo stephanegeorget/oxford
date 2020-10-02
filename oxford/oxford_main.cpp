@@ -4058,6 +4058,29 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_V, V_p, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_C, C_p, 0);
 
+    // The pedal board digital pedals can be activated here, with keys QSDFGHJKLM
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Release();}, 0);
+
+
 //    kbd_callbacks[KEY_A] =
 
     while (1)
@@ -4831,21 +4854,26 @@ namespace CapitaineFlam
 
 void Partial_On(int NoteNumber)
 {
-    MIDI_A.SendNoteOnEvent(3, NoteNumber, 127);
-    MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
-    MIDI_A.SendNoteOnEvent(5, NoteNumber, 127);
 }
 
 void Partial_Off(int NoteNumber)
 {
-    MIDI_A.SendNoteOffEvent(3, NoteNumber, 0);
     MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
-    MIDI_A.SendNoteOffEvent(5, NoteNumber, 0);
 }
 
+void Brass_ON(int NoteNumber)
+{
+    MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+}
 
-TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Partial_On, Partial_Off, 72, false, 1);
+void Brass_OFF(int NoteNumber)
+{
+    MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
+}
 
+TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Brass_ON, Brass_OFF, 72, false, 1);
+
+TSequence Sequence_1({{0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {7, 2}, {999, 2}, {0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {12, 3}}, Brass_ON, Brass_OFF, 74, false, 1);
 
 void Sequence_Start_PedalDown(void)
 {
@@ -4857,10 +4885,20 @@ void Sequence_Start_PedalUp(void)
     Sequence.Start_PedalReleased();
 }
 
+void Sequence_1_Start_PedalDown(void)
+{
+    Sequence_1.Start_PedalPressed();
+}
+
+void Sequence_1_Start_PedalUp(void)
+{
+    Sequence_1.Start_PedalReleased();
+}
 
 void Sequence_Stop_PedalDown(void)
 {
     Sequence.Stop_PedalPressed();
+    Sequence_1.Stop_PedalPressed();
 }
 
 int poorMansSemaphore = 0;
@@ -4869,7 +4907,8 @@ void * Laser_Cycle(void * pMessage)
 {
     while (poorMansSemaphore)
     {
-        MIDI_A.SendNoteOnEvent(2, 30, 127);
+        PlayNote(1, 63, 2000, 127);
+//        MIDI_A.SendNoteOnEvent(1, 50, 127);
         waitMilliseconds(100);
 //        TMidiNoteOffEvent noff(2, 30, 0);
         //waitMilliseconds(30);
@@ -4881,20 +4920,24 @@ void * Laser_Cycle(void * pMessage)
 pthread_t thread;
 
 
-void Init(void)
-{
-    Sequence.Init();
-    // For a reason that eludes me, changing the variation of the part
-    // must be sent twice...
-    // We want to select the LaserGun (program 128, variation 2)
-    MIDI_A.SendProgramChange(2, 128);
-    MIDI_A.SendControlChange(2, 0, 2);
-    MIDI_A.SendProgramChange(2, 128);
-    MIDI_A.SendControlChange(2, 0, 2);
+    void Init(void)
+    {
+        Sequence.Init();
+        Sequence_1.Init();
+        // Laser on part 1, channel 1
+        // Laser is custom made sound, on CD_A (Card)
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::CD_A, 1); 
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
 
-    MIDI_A.SendProgramChange(3, 57); // channel 3, trumpet
-    MIDI_A.SendProgramChange(4, 64); // channel 3, synth brass
-    MIDI_A.SendProgramChange(5, 61); // channel 3, trumpet
+        // Brass with trumpet on part 2, channel 4
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_E, 98); 
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+
 
 }
 
@@ -4922,13 +4965,14 @@ void Laser_Off(void)
 
 void Starship1(void)
 {
-    system("aplay ./wav/FXCarpenterLaserBig.wav &");
+    // Oxfox rhythm kit, that contains samples, on MIDI channel 16, note C1
+    PlayNote(16, 24, 3000, 127);
 }
 
 
 void Starship2(void)
 {
-    system("aplay ./wav/FXAlienWoosh.wav &");
+    PlayNote(16, 26, 5000, 127);
 }
 
 
@@ -7226,10 +7270,12 @@ void InitializePlaylist(void)
 
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
+    cCapitaineFlam.BaseTempo = 153;
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship1, NULL, "Starship Fx 1"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
