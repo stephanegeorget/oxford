@@ -4873,7 +4873,7 @@ void Brass_OFF(int NoteNumber)
 
 TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Brass_ON, Brass_OFF, 72, false, 1);
 
-TSequence Sequence_1({{0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {7, 2}, {999, 2}, {0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {12, 3}}, Brass_ON, Brass_OFF, 74, false, 1);
+TSequence Sequence_1({{0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {7, 2}, {999, 2}, {0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {12, 3}}, Brass_ON, Brass_OFF, 74, false, 1, 0, true);
 
 void Sequence_Start_PedalDown(void)
 {
@@ -4907,9 +4907,9 @@ void * Laser_Cycle(void * pMessage)
 {
     while (poorMansSemaphore)
     {
-        PlayNote(1, 63, 2000, 127);
+        PlayNote(1, 60, 2000, 127);
 //        MIDI_A.SendNoteOnEvent(1, 50, 127);
-        waitMilliseconds(100);
+        waitMilliseconds(80);
 //        TMidiNoteOffEvent noff(2, 30, 0);
         //waitMilliseconds(30);
 
@@ -7273,9 +7273,9 @@ void InitializePlaylist(void)
     cCapitaineFlam.BaseTempo = 153;
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship1, NULL, "Starship Fx 1"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
+//    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
