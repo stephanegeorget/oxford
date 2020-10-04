@@ -1006,6 +1006,8 @@ TContext cHabits;
 TContext cCrazy;
 TContext cLaFoule;
 TContext cLaGrenade;
+TContext cLAmourALaPlage;
+
 
 /**
  * This function is needed to sort lists of elements.
@@ -4423,6 +4425,8 @@ private:
     bool ForceBeatTime = false;
     long int ForcedBeatTime_ms = 0;
     bool ForceBeatTime_seq_stop_flag  = false;
+    bool RetriggerFlag = false; // Flag used to retrigger immediately a sequence, the case that forcebeattime = true, if pedal is pressed before the end of the sequence
+
 
     void TurnNoteOn(int value)
     {
@@ -4625,10 +4629,20 @@ private:
                 if (it == MelodyNotes.end())
                 {
                     // That was the end of the sequence
-                    PhraseSequencerStateMachine = pssmNote1;
-                    BeatTimeStateMachine = btsmCancel; // prepare message to thread
-                    MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
-                    break;
+                    if (RetriggerFlag == false)
+                    {
+                        // That's really the end
+                        PhraseSequencerStateMachine = pssmNote1;
+                        BeatTimeStateMachine = btsmCancel; // prepare message to thread
+                        MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
+                        break;
+                    }
+                    else
+                    {
+                        // We're in for another round yippee!
+                        RetriggerFlag = false;
+                        it = MelodyNotes.begin();
+                    }                   
                 }
 
                 // else
@@ -4805,6 +4819,13 @@ public:
         else
         {
             // Pedal controls the sequencer directly
+            if (PhraseSequencerStateMachine != pssmNote1)
+            {
+                // We received a pedal down even while no sequence was being played (wating on first note)
+                // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
+                // cycle.
+                RetriggerFlag = true;
+            }
             MsgToPhraseSequencer.Send(msgBeatReceived);
         }
     }
@@ -5461,7 +5482,7 @@ namespace I_Follow_Rivers
 {
     void SynthTom_ON(int NoteNumber)
     {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
     }
 
     void SynthTom_OFF(int NoteNumber)
@@ -5569,6 +5590,121 @@ namespace I_Follow_Rivers
     }
 }
 
+
+namespace LAmourALaPlage
+{
+
+    void BellPad_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
+    }
+
+    void BellPad_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+    void Synth_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+    }
+
+    void Synth_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
+    }
+
+
+    // On "L'amour à la plage" (Niagara), there is a bell pad riff almost all along the song
+    // It's perhaps chords of 3 notes, or 2 notes; here it is done using two sequence objects.
+    // G G G     B B G G G     A A    ) x3  sauf dernier G *B* G,    G G G A A A G G G F F F    (Midi notes 43  45  47)
+    // E E E     G G E E E     EbEb   ) x3                           E E E G G G E E E EbEbEb   (Midi notes 51  52  55)
+    TSequence Sequence_11({{43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {47, 0.5}, {999, 0.5}, {47, 0.5}, {43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {45, 0.5}, {999, 0.5}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_12({{52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {55, 0.5}, {999, 0.5}, {55, 0.5}, {52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {51, 0.5}, {999, 0.5}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_21({ {43, 0.75}, {43, 0.75}, {43, 0.5}, \
+                            {47, 0.75}, {47, 0.75}, {47, 0.5}, \
+                            {43, 0.75}, {43, 0.75}, {43, 0.5}, \
+                            {45, 0.75}, {45, 0.75}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_22({{52, 0.75}, {52, 0.75}, {52, 0.5},\
+                           {55, 0.75}, {55, 0.75}, {55, 0.5},\
+                           {52, 0.75}, {52, 0.75}, {52, 0.5},\
+                           {51, 0.75}, {51, 0.75}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    TSequence Sequence_31({{79, 0.25}, {78, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 3.5}},\
+                             Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_32({{76, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 0.25}, {59, 3.5}},\
+                             Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+
+
+
+    void Init(void)
+    {
+        Sequence_11.Init();
+        Sequence_12.Init();
+        Sequence_21.Init();
+        Sequence_22.Init();
+        Sequence_31.Init();
+        Sequence_32.Init();
+
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 24); // 2.2 Bell Pad
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        // Get rid of any panning
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
+
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_D, 26); // A69 ,not bad either some keyboard or synth
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);        
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+    }    
+
+    void BellPad_Seq1(void)
+    {
+        Sequence_11.Start_PedalPressed();
+        Sequence_12.Start_PedalPressed();
+    }
+
+    void BellPad_Seq2(void)
+    {
+        Sequence_21.Start_PedalPressed();
+        Sequence_22.Start_PedalPressed();
+    }
+
+    void Synth_Seq1(void)
+    {
+        Sequence_31.Start_PedalPressed();
+    }
+
+    void Synth_Seq2(void)
+    {
+        Sequence_32.Start_PedalPressed();
+    }
+
+
+    void StopAll(void)
+    {
+        Sequence_11.Stop_PedalPressed();
+        Sequence_12.Stop_PedalPressed();
+        Sequence_21.Stop_PedalPressed();
+        Sequence_22.Stop_PedalPressed();
+        Sequence_31.Stop_PedalPressed();
+        Sequence_32.Stop_PedalPressed();
+
+    }
+}
 
 namespace Djadja
 {
@@ -7463,6 +7599,16 @@ void InitializePlaylist(void)
     cLaGrenade.SongName = "La Grenade";
     cLaGrenade.BaseTempo = 120;
 
+    cLAmourALaPlage.Author = "Niagara";
+    cLAmourALaPlage.SongName = "L'amour a la plage";
+    cLAmourALaPlage.BaseTempo = 119;
+    cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq1, NULL, "Synth Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Synth_Seq2, NULL, "Synth Seq 2"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::StopAll, NULL, "Panic stop"));
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -7554,6 +7700,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cDjadja);
     PlaylistData.push_back(&cHabits);
     PlaylistData.push_back(&cCrazy);
+    PlaylistData.push_back(&cLAmourALaPlage);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
