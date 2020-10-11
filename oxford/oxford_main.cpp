@@ -1007,6 +1007,7 @@ TContext cCrazy;
 TContext cLaFoule;
 TContext cLaGrenade;
 TContext cLAmourALaPlage;
+TContext cHavanna;
 
 
 /**
@@ -4577,14 +4578,21 @@ private:
             {
             case pssmNote1:
                 wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
-
-                if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                if(RetriggerFlag == true)
                 {
-                    // Reset state machine
-                    TurnPreviousNoteOff();
-                    PhraseSequencerStateMachine = pssmNote1;
-                    break;
+                    RetriggerFlag = false;
                 }
+                else
+                {
+                    if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                    {
+                        // Reset state machine
+                        TurnPreviousNoteOff();
+                        PhraseSequencerStateMachine = pssmNote1;
+                        break;
+                    }
+                }
+                
                 // First note
                 ForceBeatTime_seq_stop_flag = false;
                 TimeStart = std::chrono::system_clock::now();
@@ -4640,8 +4648,9 @@ private:
                     else
                     {
                         // We're in for another round yippee!
-                        RetriggerFlag = false;
-                        it = MelodyNotes.begin();
+  //                      it = MelodyNotes.begin();
+                        PhraseSequencerStateMachine = pssmNote1;
+                        break;
                     }                   
                 }
 
@@ -4705,7 +4714,30 @@ private:
                 else if (ForceBeatTime == true && ForcedBeatTime_ms != 0)
                 {
                     // Wait for BeatTime_ms; then this case ends and loops to the next note
-                    std::this_thread::sleep_for(std::chrono::milliseconds((long)((float)ForcedBeatTime_ms * CurrentNote.NoteDuration)));
+                    // Fully recompute time to wait, from the beginning of the sequence.
+                    // This is to accommodate any change in tempo
+                    // NOTE - TODO: of course this is inefficient - rewrite that
+                    float FullLength_ms = 0;
+                    for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
+                    {
+                        TNote Note = *i;
+                        FullLength_ms += Note.NoteDuration * 1000.0;
+                        if (i == it)
+                        {
+                            // currently pointing to the note we're playing
+                            // we can end here
+                            break;
+                        }
+                    }
+                    // Adjust time as per current beat length
+                    FullLength_ms *= (((float) ForcedBeatTime_ms) / 1000.0);
+                    std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
+                    std::this_thread::sleep_until(TimeNext);
+
+
+
+
+//                    std::this_thread::sleep_for(std::chrono::milliseconds((long)((float)ForcedBeatTime_ms * CurrentNote.NoteDuration)));
                     // Inspect whether sequence should be cancelled
                     if(ForceBeatTime_seq_stop_flag == true)
                     {
@@ -5705,6 +5737,119 @@ namespace LAmourALaPlage
 
     }
 }
+
+
+namespace Havanna
+{
+    void Piano_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
+    }
+
+    void Piano_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+    // On "Havanna", there are two major piano riffs.
+    // #1 is a sequence of chords, with up to 4 notes played at the same time, so we need
+    // 4 TSequence objects to handle that.
+    //
+    // 01 - G1
+    // 02 -
+    // 03 - G2   Bb2  D3
+    // 04 - D2
+    // 05 - D#1
+    // 06 - D#1
+    // 07 - D#2  G2   Bb2
+    // 08 - D1
+    // 09 -
+    // 10 - A1 (passage)
+    // 11 - D2   F#2  A2    C3
+    // 12 - 
+    // 13 - 
+    // 14 - A2
+    // 15 - D2 A2 D#3
+    // 16 - A2 D3
+
+
+    // G1 = 31
+    // G2 = 43
+    // Bb2 = 46
+    // D3 = 50
+    // D2 = 38
+    // D#1 = 27
+    // D#2 = 39
+    // D#3 = 51
+    // D1 = 26
+    // A1 = 33
+    // F#2 = 42
+    // A2 = 45
+    // C3 = 48
+
+
+    TSequence Sequence_11({{31, 1},  {43, 0.5}, {38, 0.5}, {27, 0.5}, {27, 0.5}, {39, 0.5}, {26, 1}, {33, 0.5}, {38, 1.5}, {45, 0.5}, {38, 0.5},  {45, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_12({{999, 1}, {46, 1},              {999, 1},             {43, 1},      {999, 1},        {42, 2},              {45, 0.5},  {50, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_13({{999, 1}, {50, 1},              {999, 1},             {46, 1},      {999, 1},        {45, 2},              {51, 0.5}, {999, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_14({{999, 5},                                                                            {48, 2},              {999, 1}             }, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    // Second riff during Yan's break dance / rap solo
+    // G2 G2 Bb2 Bb2     G2    Gb2     Gb2 A2 A2     C3 Eb3 D3
+    TSequence Sequence_2({{43, 0.5}, {43, 0.5}, {46, 0.5}, {46, 0.5}, {999, 0.5}, {43, 0.5}, {999, 0.5}, {42, 0.5}, {999, 0.5}, {42, 0.5},  {45, 0.5}, {45, 0.5}, {999, 0.5}, {48, 0.5}, {51, 0.5}, {50, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    void Init(void)
+    {
+        Sequence_11.Init();
+        Sequence_12.Init();
+        Sequence_13.Init();
+        Sequence_14.Init();
+        Sequence_2.Init();
+
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 2); // Upright Piano
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        // Get rid of any panning
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
+
+
+
+
+    }    
+
+    void PianoRiff_1(void)
+    {
+        Sequence_11.Start_PedalPressed();
+        Sequence_12.Start_PedalPressed();
+        Sequence_13.Start_PedalPressed();
+        Sequence_14.Start_PedalPressed();
+    }
+
+    void PianoRiff_2(void)
+    {
+        Sequence_2.Start_PedalPressed();
+    }
+
+    void StopAll(void)
+    {
+        Sequence_11.Stop_PedalPressed();
+        Sequence_12.Stop_PedalPressed();
+        Sequence_13.Stop_PedalPressed();
+        Sequence_14.Stop_PedalPressed();
+        Sequence_2.Stop_PedalPressed();
+    }
+}
+
 
 namespace Djadja
 {
@@ -7609,6 +7754,15 @@ void InitializePlaylist(void)
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Synth_Seq2, NULL, "Synth Seq 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::StopAll, NULL, "Panic stop"));
 
+    cHavanna.Author = "Camila Cabello";
+    cHavanna.SongName = "Havanna";
+    cHavanna.BaseTempo = 105;
+    cHavanna.SetInitFunc(Havanna::Init);
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(1,Havanna:: PianoRiff_1, NULL, "Piano Riff #1"));
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Havanna::PianoRiff_2, NULL, "Piano Riff #2"));
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Havanna::StopAll, NULL, "Stop All"));
+
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -7701,6 +7855,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cHabits);
     PlaylistData.push_back(&cCrazy);
     PlaylistData.push_back(&cLAmourALaPlage);
+    PlaylistData.push_back(&cHavanna);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
