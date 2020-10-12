@@ -5596,7 +5596,7 @@ namespace LAmourALaPlage
 
     void BellPad_ON(int NoteNumber)
     {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
     }
 
     void BellPad_OFF(int NoteNumber)
