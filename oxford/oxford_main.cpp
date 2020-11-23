@@ -5743,7 +5743,7 @@ namespace Havanna
 {
     void Piano_ON(int NoteNumber)
     {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 85);
     }
 
     void Piano_OFF(int NoteNumber)
@@ -7421,7 +7421,7 @@ void InitializePlaylist(void)
 
     cIFeelGood.Author = "James Brown";
     cIFeelGood.SongName = "I feel good";
-    cIFeelGood.BaseTempo = 140;
+    cIFeelGood.BaseTempo = 137;
 
     cPapasGotABrandNewBag.Author = "James Brown";
     cPapasGotABrandNewBag.SongName = "Papa's got a brand new bag";
@@ -7662,7 +7662,7 @@ void InitializePlaylist(void)
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
-    cIFollowRivers.BaseTempo = 120;
+    cIFollowRivers.BaseTempo = 118;
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
@@ -7756,7 +7756,7 @@ void InitializePlaylist(void)
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
-    cHavanna.BaseTempo = 105;
+    cHavanna.BaseTempo = 112; // 105
     cHavanna.SetInitFunc(Havanna::Init);
     cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(1,Havanna:: PianoRiff_1, NULL, "Piano Riff #1"));
     cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Havanna::PianoRiff_2, NULL, "Piano Riff #2"));
@@ -7773,6 +7773,14 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
 
+    PlaylistData.push_back(&cLaGrenade);
+    PlaylistData.push_back(&cThisGirl);
+    PlaylistData.push_back(&cIFollowRivers);
+    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
+    PlaylistData.push_back(&cHavanna);
+    PlaylistData.push_back(&cLaFoule);
+
+
     PlaylistData.push_back(&cIsntSheLovely);
     PlaylistData.push_back(&cJammin);
     PlaylistData.push_back(&cCrazy);
@@ -7785,7 +7793,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cILoveRockNRoll);
     PlaylistData.push_back(&cIsThisLove);
     PlaylistData.push_back(&cEncoreUnMatin);
-    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
     PlaylistData.push_back(&cIFeelGood);
     PlaylistData.push_back(&cRehab);
@@ -7796,7 +7803,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cMachistador);
     PlaylistData.push_back(&cAnotherOneBiteTheDust);
     PlaylistData.push_back(&cWot);
-    PlaylistData.push_back(&cThisGirl);
     PlaylistData.push_back(&cLongTrainRunning);
     PlaylistData.push_back(&cBackToBlack);
     PlaylistData.push_back(&cHuman);
@@ -7808,8 +7814,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cManDown);
     PlaylistData.push_back(&cUnchainMyHeart);
     PlaylistData.push_back(&c25years);
-    PlaylistData.push_back(&cLaFoule);
-    PlaylistData.push_back(&cLaGrenade);
     PlaylistData.push_back(&cIFollowRivers);
     PlaylistData.push_back(&cAmericanIdiot);
     PlaylistData.push_back(&cMixPolice);
@@ -7855,7 +7859,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cHabits);
     PlaylistData.push_back(&cCrazy);
     PlaylistData.push_back(&cLAmourALaPlage);
-    PlaylistData.push_back(&cHavanna);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
