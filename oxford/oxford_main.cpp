@@ -5667,7 +5667,7 @@ namespace LAmourALaPlage
     TSequence Sequence_32({{76, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 0.25}, {59, 3.5}},\
                              Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
-
+    TSequence Sequence_41({{54, 0.5},{55, 0.5}, {54, 0.5}, {50, 0.5}, {47, 0.5}, {50, 0.5}, {52, 0.5}},BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
 
     void Init(void)
@@ -5678,6 +5678,7 @@ namespace LAmourALaPlage
         Sequence_22.Init();
         Sequence_31.Init();
         Sequence_32.Init();
+        Sequence_41.Init();
 
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 24); // 2.2 Bell Pad
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
@@ -5725,6 +5726,10 @@ namespace LAmourALaPlage
         Sequence_32.Start_PedalPressed();
     }
 
+    void BellPad_Seq3(void)
+    {
+        Sequence_41.Start_PedalPressed();
+    }
 
     void StopAll(void)
     {
@@ -5734,7 +5739,7 @@ namespace LAmourALaPlage
         Sequence_22.Stop_PedalPressed();
         Sequence_31.Stop_PedalPressed();
         Sequence_32.Stop_PedalPressed();
-
+        Sequence_41.Stop_PedalPressed();
     }
 }
 
@@ -7752,7 +7757,8 @@ void InitializePlaylist(void)
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq1, NULL, "Synth Seq 1"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Synth_Seq2, NULL, "Synth Seq 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::StopAll, NULL, "Panic stop"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
