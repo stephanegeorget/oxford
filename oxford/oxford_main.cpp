@@ -4851,7 +4851,7 @@ public:
         else
         {
             // Pedal controls the sequencer directly
-            if (PhraseSequencerStateMachine != pssmNote1)
+            if (PhraseSequencerStateMachine != pssmNote1 && (InferTempo == true || ForceBeatTime == true))
             {
                 // We received a pedal down even while no sequence was being played (wating on first note)
                 // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
@@ -6555,8 +6555,8 @@ namespace Crazy
     }
 
 
-    TSequence Sequence_1({{36, 1}, {33, 1}, {36, 1}, {41, 1}, {40, 1}, {999, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
-    TSequence Sequence_2({{52, 1}, {37, 1}, {40, 1}, {45, 1}, {44, 1}, {999, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_1({{36, 1}, {33, 1}, {36, 1}, {41, 1}, {40, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_2({{52, 1}, {37, 1}, {40, 1}, {45, 1}, {44, 1}}, Strings_ON, Strings_OFF, 0, false, 10, 0, false, TSequence::pbDownswingOnly);
 
     TSequence Sequence_3({{48, 1}, {47, 1}, {45, 1}, {43, 1}, {40, 1}, {38, 1}, {36, 1}}, Sax_ON, Sax_OFF, 12, false, 5, 0, false, TSequence::pbDownswingAndUpswing);
 
