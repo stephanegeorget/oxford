@@ -4388,6 +4388,10 @@ currently active context (song).
 
 PedalBehavior can be pbDownswingAndUpswing or pbDownswingOnly
 
+PhraseBehavior can be AutoLoop or OneShot.
+- If set to AutoLoop, the phrase restarts automatically at the end of the sequence. The same event that triggered
+  the start of the sequence is used to stop it
+- If set to OneShot (default), the phrase is played, then stops
 
 */
 class TSequence
@@ -4398,6 +4402,7 @@ public:
 private:
     int AutoOff;
     enum TPedalPosition {ppUnknown, ppReleased, ppPressed} PedalPosition = ppUnknown;
+    enum TPhraseBehavior {pbAutoLoop, pbOneShot} PhraseBehavior = pbOneShot;
     struct timeval tv1, tv2;
     pthread_t thread;
     long int BeatTime_ms = 0;
@@ -4637,6 +4642,11 @@ private:
                 if (it == MelodyNotes.end())
                 {
                     // That was the end of the sequence
+                    if (PhraseBehavior == pbAutoLoop)
+                    {
+                        RetriggerFlag = true;
+                    }
+
                     if (RetriggerFlag == false)
                     {
                         // That's really the end
@@ -4850,15 +4860,35 @@ public:
         }
         else
         {
-            // Pedal controls the sequencer directly
-            if (PhraseSequencerStateMachine != pssmNote1 && (InferTempo == true || ForceBeatTime == true))
+            if (PhraseBehavior == pbOneShot)
             {
-                // We received a pedal down even while no sequence was being played (wating on first note)
-                // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
-                // cycle.
-                RetriggerFlag = true;
+                // Pedal controls the sequencer directly
+                if (PhraseSequencerStateMachine != pssmNote1 && (InferTempo == true || ForceBeatTime == true))
+                {
+                    // We received a pedal down even while the sequence was being played (not wating on first note)
+                    // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
+                    // cycle.
+                    RetriggerFlag = true;
+                }
+            
+
+                MsgToPhraseSequencer.Send(msgBeatReceived);
             }
-            MsgToPhraseSequencer.Send(msgBeatReceived);
+
+            if (PhraseBehavior == pbAutoLoop)
+            {
+                // If a phrase was not being played, then start the sequencer process
+                if (PhraseSequencerStateMachine == pssmNote1)
+                {
+                    MsgToPhraseSequencer.Send(msgBeatReceived);
+                }
+
+                // If a phrase we being played, then stop the sequencer
+                if (PhraseSequencerStateMachine != pssmNote1)
+                {
+                    Stop_PedalPressed();
+                }
+            }
         }
     }
 
@@ -5625,7 +5655,7 @@ namespace I_Follow_Rivers
 
 namespace LAmourALaPlage
 {
-
+    // Bell pads on MIDI channel 1
     void BellPad_ON(int NoteNumber)
     {
         MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
@@ -5636,6 +5666,7 @@ namespace LAmourALaPlage
         MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
     }
 
+    // Harpsichord on MIDI channel 4
     void Synth_ON(int NoteNumber)
     {
         MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
@@ -5646,6 +5677,16 @@ namespace LAmourALaPlage
         MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
     }
 
+    // Bassline on MIDI channel 5
+    void Bass_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(5,NoteNumber,127);
+    }
+
+    void Bass_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(5,NoteNumber,0);
+    }
 
     // On "L'amour à la plage" (Niagara), there is a bell pad riff almost all along the song
     // It's perhaps chords of 3 notes, or 2 notes; here it is done using two sequence objects.
@@ -5669,6 +5710,9 @@ namespace LAmourALaPlage
 
     TSequence Sequence_41({{54, 0.5},{55, 0.5}, {54, 0.5}, {50, 0.5}, {47, 0.5}, {50, 0.5}, {52, 0.5}},BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
+    TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
+                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 50, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
 
     void Init(void)
     {
@@ -5679,11 +5723,12 @@ namespace LAmourALaPlage
         Sequence_31.Init();
         Sequence_32.Init();
         Sequence_41.Init();
+        Sequence_Bassline.Init();
 
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 24); // 2.2 Bell Pad
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
-        // Get rid of any panning
+        // Get rid of any panning of the Bells
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
@@ -5697,10 +5742,17 @@ namespace LAmourALaPlage
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
         XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
 
+        // For the two small breaks at harpsichord
         XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_D, 26); // A69 ,not bad either some keyboard or synth
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+        // For the synth bass - target MIDI channel 5
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_A,1); // Select a nice synth bass of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
 
     }    
 
@@ -5740,6 +5792,7 @@ namespace LAmourALaPlage
         Sequence_31.Stop_PedalPressed();
         Sequence_32.Stop_PedalPressed();
         Sequence_41.Stop_PedalPressed();
+        Sequence_Bassline.StopPedalPressed();
     }
 }
 
