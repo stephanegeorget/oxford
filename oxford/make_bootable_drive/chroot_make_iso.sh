@@ -93,6 +93,13 @@ cd /root
 # Fix link to linux headers to make it easy to find
 ln -s /usr/src/linux-headers-4.9.0-12-rt-amd64 /usr/src/linux-headers-$(uname -r)
 
+# Some packages required to get Oxford going
+apt-get install --no-install-recommends --assume-yes \
+    usbutils \
+    alsa-base \
+    midisport-firmware\
+    console-data
+
 # Install the necessary tools to build Oxford from source code
 apt-get install --no-install-recommends --assume-yes \
     libpopt-dev \
