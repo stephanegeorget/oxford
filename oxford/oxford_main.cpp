@@ -4402,7 +4402,6 @@ public:
 private:
     int AutoOff;
     enum TPedalPosition {ppUnknown, ppReleased, ppPressed} PedalPosition = ppUnknown;
-    enum TPhraseBehavior {pbAutoLoop, pbOneShot} PhraseBehavior = pbOneShot;
     struct timeval tv1, tv2;
     pthread_t thread;
     long int BeatTime_ms = 0;
@@ -4806,10 +4805,11 @@ private:
 
 
 public:
+    enum TPhraseBehavior {pbAutoLoop, pbOneShot} PhraseBehavior = pbOneShot;
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0, bool ForceBeatTime_param = false, TPedalBehavior PedalBehavior_param = pbDownswingAndUpswing)
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0, bool ForceBeatTime_param = false, TPedalBehavior PedalBehavior_param = pbDownswingAndUpswing, TPhraseBehavior PhraseBehavior_param = pbOneShot)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
@@ -4825,6 +4825,7 @@ public:
         InferTempo = InferTempo_param;
         PedalBehavior = PedalBehavior_param;
         ForceBeatTime = ForceBeatTime_param;
+        PhraseBehavior = PhraseBehavior_param;
     }
 
     void Init(void)
@@ -5711,7 +5712,7 @@ namespace LAmourALaPlage
     TSequence Sequence_41({{54, 0.5},{55, 0.5}, {54, 0.5}, {50, 0.5}, {47, 0.5}, {50, 0.5}, {52, 0.5}},BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
     TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
-                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 50, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
 
 
     void Init(void)
@@ -5749,7 +5750,7 @@ namespace LAmourALaPlage
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
 
         // For the synth bass - target MIDI channel 5
-        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_A,1); // Select a nice synth bass of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_F,59); // Select a nice synth bass of the 80's
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
@@ -5783,6 +5784,11 @@ namespace LAmourALaPlage
         Sequence_41.Start_PedalPressed();
     }
 
+    void Bassline_Sequence(void)
+    {
+        Sequence_Bassline.Start_PedalPressed();
+    }
+
     void StopAll(void)
     {
         Sequence_11.Stop_PedalPressed();
@@ -5792,7 +5798,7 @@ namespace LAmourALaPlage
         Sequence_31.Stop_PedalPressed();
         Sequence_32.Stop_PedalPressed();
         Sequence_41.Stop_PedalPressed();
-        Sequence_Bassline.StopPedalPressed();
+        Sequence_Bassline.Stop_PedalPressed();
     }
 }
 
@@ -7812,6 +7818,7 @@ void InitializePlaylist(void)
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Synth_Seq2, NULL, "Synth Seq 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(9, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline loop"));
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
