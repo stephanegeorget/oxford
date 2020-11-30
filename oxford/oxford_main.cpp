@@ -4431,7 +4431,7 @@ private:
     long int ForcedBeatTime_ms = 0;
     bool ForceBeatTime_seq_stop_flag  = false;
     bool RetriggerFlag = false; // Flag used to retrigger immediately a sequence, the case that forcebeattime = true, if pedal is pressed before the end of the sequence
-
+    bool SequenceIsPlaying = false;
 
     void TurnNoteOn(int value)
     {
@@ -4584,12 +4584,15 @@ private:
                 wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
                 if(RetriggerFlag == true)
                 {
+                    SequenceIsPlaying = true;
                     RetriggerFlag = false;
                 }
                 else
                 {
+                    SequenceIsPlaying = false;
                     if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
                     {
+                        SequenceIsPlaying = true;
                         // Reset state machine
                         TurnPreviousNoteOff();
                         PhraseSequencerStateMachine = pssmNote1;
@@ -4879,13 +4882,13 @@ public:
             if (PhraseBehavior == pbAutoLoop)
             {
                 // If a phrase was not being played, then start the sequencer process
-                if (PhraseSequencerStateMachine == pssmNote1)
+                if (SequenceIsPlaying == false)
                 {
                     MsgToPhraseSequencer.Send(msgBeatReceived);
                 }
 
                 // If a phrase we being played, then stop the sequencer
-                if (PhraseSequencerStateMachine != pssmNote1)
+                if (SequenceIsPlaying == true)
                 {
                     Stop_PedalPressed();
                 }
@@ -4908,7 +4911,7 @@ public:
         }
         else // simple pedal-triggered sequence
         {
-            if (PhraseSequencerStateMachine != pssmNote1)
+            if (SequenceIsPlaying == true)
             {
                 MsgToPhraseSequencer.Send(msgBeatReceived);
             }
@@ -5714,6 +5717,7 @@ namespace LAmourALaPlage
     TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
                                  {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
 
+    bool SynthSeq_toggle = false;
 
     void Init(void)
     {
@@ -5755,6 +5759,7 @@ namespace LAmourALaPlage
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
 
+        SynthSeq_toggle = false;
     }    
 
     void BellPad_Seq1(void)
@@ -5768,7 +5773,6 @@ namespace LAmourALaPlage
         Sequence_21.Start_PedalPressed();
         Sequence_22.Start_PedalPressed();
     }
-
     void Synth_Seq1(void)
     {
         Sequence_31.Start_PedalPressed();
@@ -5777,6 +5781,20 @@ namespace LAmourALaPlage
     void Synth_Seq2(void)
     {
         Sequence_32.Start_PedalPressed();
+    }
+
+    void Synth_Seq(void)
+    {
+        if (SynthSeq_toggle == false)
+        {
+            SynthSeq_toggle = true;
+            Synth_Seq1();
+        }
+        else
+        {
+            SynthSeq_toggle = false;
+            Synth_Seq2();
+        }
     }
 
     void BellPad_Seq3(void)
@@ -7814,11 +7832,10 @@ void InitializePlaylist(void)
     cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq1, NULL, "Synth Seq 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Synth_Seq2, NULL, "Synth Seq 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq, NULL, "Synth Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(9, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline loop"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline loop"));
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
