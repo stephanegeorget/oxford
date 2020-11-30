@@ -1006,6 +1006,9 @@ TContext cHabits;
 TContext cCrazy;
 TContext cLaFoule;
 TContext cLaGrenade;
+TContext cLAmourALaPlage;
+TContext cHavanna;
+
 
 /**
  * This function is needed to sort lists of elements.
@@ -2151,6 +2154,52 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } SystemTempo{OffsetAddress};
+         
+            class TSystemControl1Source : TParameter
+            {
+                public:
+                TSystemControl1Source(int val) : TParameter(val + 0x0018, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl1Source{OffsetAddress};
+
+            class TSystemControl2Source : TParameter
+            {
+                public:
+                TSystemControl2Source(int val) : TParameter(val + 0x0019, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl2Source{OffsetAddress};
+
+            class TSystemControl3Source : TParameter
+            {
+                public:
+                TSystemControl3Source(int val) : TParameter(val + 0x001A, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl3Source{OffsetAddress};
+
+            class TSystemControl4Source : TParameter
+            {
+                public:
+                TSystemControl4Source(int val) : TParameter(val + 0x001B, 0, 97, "0aaa aaaa") {};
+                /** 0-97 == OFF, CC01-CC31, CC33-CC95, BEND, AFT */
+                void Set(int Value_param_0_97)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param_0_97));
+                }
+            } SystemControl4Source{OffsetAddress};
+
+
          } SystemCommon{OffsetAddress + 0x000000};
     } System;
 
@@ -3003,6 +3052,17 @@ public:
                 }
             } PatchPan{OffsetAddress};
 
+            class TPatchCoarseTune : TParameter
+            {
+            public:
+                TPatchCoarseTune(int val) : TParameter(val + 0x0011, 16, 112, "0aaa aaaa") {};
+                /** Patch Coarse Tune: -48 semitones (16) to +48 semitones (112) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchCoarseTune{OffsetAddress};
+
             class TAnalogFeel : TParameter
             {
             public:
@@ -3013,6 +3073,116 @@ public:
                     pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
                 }
             } AnalogFeel{OffsetAddress};
+
+            class TMonoPoly : TParameter
+            {
+                public:
+                TMonoPoly(int val) : TParameter(val + 0x0016, 0, 1, "0000 000a") {};
+                /** Set patch to MONOPHONIC (0) or POLYPHONIC (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } MonoPoly{OffsetAddress};
+
+            class TLegatoSwitch : TParameter
+            {
+                public:
+                TLegatoSwitch(int val): TParameter(val + 0x0017, 0, 1, "0000 000a") {};
+                /** Legato OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } LegatoSwitch{OffsetAddress};
+            
+            class TLegatoRetrigger : TParameter
+            {
+                public:
+                TLegatoRetrigger(int val): TParameter(val + 0x0018, 0, 1, "0000 000a") {};
+                /** Legato Retrigger OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } LegatoRetrigger{OffsetAddress};
+            
+            class TPortamentoSwitch : TParameter
+            {
+                public:
+                TPortamentoSwitch(int val): TParameter(val + 0x0019, 0, 1, "0000 000a") {};
+                /** Portamento switch OFF (0) or ON (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoSwitch{OffsetAddress};
+
+            class TPortamentoMode : TParameter
+            {
+                public:
+                TPortamentoMode(int val): TParameter(val + 0x001A, 0, 1, "0000 000a") {};
+                /** Portamento Mode NORMAL (0) or LEGATO (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoMode{OffsetAddress};
+
+            class TPortamentoType : TParameter
+            {
+                public:
+                TPortamentoType(int val): TParameter(val + 0x001B, 0, 1, "0000 000a") {};
+                /** Portamento Type RATE (0) or TIME (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoType{OffsetAddress};
+
+            class TPortamentoStart : TParameter
+            {
+                public:
+                TPortamentoStart(int val): TParameter(val + 0x001C, 0, 1, "0000 000a") {};
+                /** Portamento Start: PITCH (0) or NOTE (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoStart{OffsetAddress};
+
+            class TPortamentoTime : TParameter
+            {
+                public:
+                TPortamentoTime(int val): TParameter(val + 0x001D, 0, 1, "0aaa aaaa") {};
+                /** Portamento Time (0-127) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PortamentoTime{OffsetAddress};
+
+            class TPatchClockSource : TParameter
+            {
+                public:
+                TPatchClockSource(int val): TParameter(val + 0x001E, 0, 1, "0000 000a") {};
+                /** Patch Clock Source: tempo from PATCH (0) or tempo from SYSTEM (1) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchClockSource{OffsetAddress};
+
+            class TPatchTempo : TParameter
+            {
+                public:
+                TPatchTempo(int val): TParameter(val + 0x001F, 20, 250, "0000 aaaa 0000 bbbb") {};
+                /** Patch tempo (20-250) */
+                void Set(int Value_param)
+                {
+                    pTXV5080->ExclusiveMsgSetParameter(OffsetAddress, GetDataBytes(Value_param));
+                }
+            } PatchTempo{OffsetAddress};
         } PatchCommon{OffsetAddress};
 
         class TPatchCommonReverb : TParameterSection
@@ -3624,6 +3794,9 @@ namespace MetronomeMaster
                 unsigned long int TimeSinceEpoch_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TimeStart.time_since_epoch()).count();
                 std::string TimeSinceEpoch_ms_str = std::to_string(TimeSinceEpoch_ms);
                 mosquitto_publish(mosq, NULL, "song/tempo/timestart", TimeSinceEpoch_ms_str.length(), TimeSinceEpoch_ms_str.c_str(), 2, false);
+
+                // Also send the tempo to the XV5080
+                XV5080.System.SystemCommon.SystemTempo.Set(static_cast<int>(Tempo));
             }
 
             beat_number ++;
@@ -3665,6 +3838,12 @@ namespace MetronomeMaster
 
 
 
+void TapTempo(void);
+namespace   All_In_You
+{
+    void Filter(int value);
+    void SoaringLead(int value);
+}
 
 
 namespace MiniSynth
@@ -3753,16 +3932,21 @@ void N(void * pVoid)
     ComputerKeyboard::EnableCallbacks();
 }
 
+int value = 0;
 
 void Z_p(void * pVoid)
 {
-    //system("aplay ./wav/FXCarpenterLaserBig.wav &");
+    value = value -8;
+    if (value < 0) value = 0;
+
+//    All_In_You::Filter(value);
+    All_In_You::SoaringLead(value);
+        //system("aplay ./wav/FXCwarpenterLaserBig.wav &");
     /*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
         XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
         XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
         XV5080.System.SystemCommon.SystemTempo.Set(130);*/
     //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    I_Follow_Rivers::TapTempo();
     //People_Help_The_People::BellPedalPressed();
  //   Djadja::Sequence_1_Start_PedalPressed();
 
@@ -3777,11 +3961,16 @@ void Z_r(void * pVoid)
     Crazy::Sax();
 }
 
+
 void X_p(void * pVoid)
 {
     //Kungs_This_Girl::TapTempo();
     //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
-    Crazy::OpeningSequence();
+    value = value +8;
+    if (value > 127) value = 127;
+//    All_In_You::Filter(value);
+    All_In_You::SoaringLead(value);
+//    Crazy::OpeningSequence();
 //    Crazy::Sax();
 }
 
@@ -3830,6 +4019,7 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_DOWN, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/tempo/decrease", 1, "x", 2, false);}, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/decrease", 1, "1", 2, false);}, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_RIGHT, [](void * foo){mosquitto_publish(mosq, NULL, "metronome/beat_sound/increase", 1, "1", 2, false);}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_LEFTCTRL, [](void * foo){TapTempo();}, 0);
     
 
 
@@ -3870,6 +4060,29 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_X, X_p, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_V, V_p, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_C, C_p, 0);
+
+    // The pedal board digital pedals can be activated here, with keys QSDFGHJKLM
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Release();}, 0);
+
 
 //    kbd_callbacks[KEY_A] =
 
@@ -4175,6 +4388,10 @@ currently active context (song).
 
 PedalBehavior can be pbDownswingAndUpswing or pbDownswingOnly
 
+PhraseBehavior can be AutoLoop or OneShot.
+- If set to AutoLoop, the phrase restarts automatically at the end of the sequence. The same event that triggered
+  the start of the sequence is used to stop it
+- If set to OneShot (default), the phrase is played, then stops
 
 */
 class TSequence
@@ -4213,6 +4430,8 @@ private:
     bool ForceBeatTime = false;
     long int ForcedBeatTime_ms = 0;
     bool ForceBeatTime_seq_stop_flag  = false;
+    bool RetriggerFlag = false; // Flag used to retrigger immediately a sequence, the case that forcebeattime = true, if pedal is pressed before the end of the sequence
+    bool SequenceIsPlaying = false;
 
     void TurnNoteOn(int value)
     {
@@ -4363,14 +4582,24 @@ private:
             {
             case pssmNote1:
                 wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
-
-                if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                if(RetriggerFlag == true)
                 {
-                    // Reset state machine
-                    TurnPreviousNoteOff();
-                    PhraseSequencerStateMachine = pssmNote1;
-                    break;
+                    SequenceIsPlaying = true;
+                    RetriggerFlag = false;
                 }
+                else
+                {
+                    SequenceIsPlaying = false;
+                    if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
+                    {
+                        SequenceIsPlaying = true;
+                        // Reset state machine
+                        TurnPreviousNoteOff();
+                        PhraseSequencerStateMachine = pssmNote1;
+                        break;
+                    }
+                }
+                
                 // First note
                 ForceBeatTime_seq_stop_flag = false;
                 TimeStart = std::chrono::system_clock::now();
@@ -4415,10 +4644,26 @@ private:
                 if (it == MelodyNotes.end())
                 {
                     // That was the end of the sequence
-                    PhraseSequencerStateMachine = pssmNote1;
-                    BeatTimeStateMachine = btsmCancel; // prepare message to thread
-                    MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
-                    break;
+                    if (PhraseBehavior == pbAutoLoop)
+                    {
+                        RetriggerFlag = true;
+                    }
+
+                    if (RetriggerFlag == false)
+                    {
+                        // That's really the end
+                        PhraseSequencerStateMachine = pssmNote1;
+                        BeatTimeStateMachine = btsmCancel; // prepare message to thread
+                        MsgToBeatTime.Send(msgPedalReleased); // force thread to awaken
+                        break;
+                    }
+                    else
+                    {
+                        // We're in for another round yippee!
+  //                      it = MelodyNotes.begin();
+                        PhraseSequencerStateMachine = pssmNote1;
+                        break;
+                    }                   
                 }
 
                 // else
@@ -4481,7 +4726,30 @@ private:
                 else if (ForceBeatTime == true && ForcedBeatTime_ms != 0)
                 {
                     // Wait for BeatTime_ms; then this case ends and loops to the next note
-                    std::this_thread::sleep_for(std::chrono::milliseconds((long)((float)ForcedBeatTime_ms * CurrentNote.NoteDuration)));
+                    // Fully recompute time to wait, from the beginning of the sequence.
+                    // This is to accommodate any change in tempo
+                    // NOTE - TODO: of course this is inefficient - rewrite that
+                    float FullLength_ms = 0;
+                    for (std::list<TNote>::iterator i = MelodyNotes.begin(); i != MelodyNotes.end(); i++)
+                    {
+                        TNote Note = *i;
+                        FullLength_ms += Note.NoteDuration * 1000.0;
+                        if (i == it)
+                        {
+                            // currently pointing to the note we're playing
+                            // we can end here
+                            break;
+                        }
+                    }
+                    // Adjust time as per current beat length
+                    FullLength_ms *= (((float) ForcedBeatTime_ms) / 1000.0);
+                    std::chrono::system_clock::time_point TimeNext = TimeStart + std::chrono::milliseconds((long int)FullLength_ms);
+                    std::this_thread::sleep_until(TimeNext);
+
+
+
+
+//                    std::this_thread::sleep_for(std::chrono::milliseconds((long)((float)ForcedBeatTime_ms * CurrentNote.NoteDuration)));
                     // Inspect whether sequence should be cancelled
                     if(ForceBeatTime_seq_stop_flag == true)
                     {
@@ -4540,10 +4808,11 @@ private:
 
 
 public:
+    enum TPhraseBehavior {pbAutoLoop, pbOneShot} PhraseBehavior = pbOneShot;
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
-              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0, bool ForceBeatTime_param = false, TPedalBehavior PedalBehavior_param = pbDownswingAndUpswing)
+              int RootNoteNumber_param, bool InferTempo_param, float Timeout_param, int AutoOff_param = 0, bool ForceBeatTime_param = false, TPedalBehavior PedalBehavior_param = pbDownswingAndUpswing, TPhraseBehavior PhraseBehavior_param = pbOneShot)
     {
         MelodyNotes = MelodyNotes_param;
         pFuncNoteOn = pFuncNoteOn_param;
@@ -4559,6 +4828,7 @@ public:
         InferTempo = InferTempo_param;
         PedalBehavior = PedalBehavior_param;
         ForceBeatTime = ForceBeatTime_param;
+        PhraseBehavior = PhraseBehavior_param;
     }
 
     void Init(void)
@@ -4594,8 +4864,35 @@ public:
         }
         else
         {
-            // Pedal controls the sequencer directly
-            MsgToPhraseSequencer.Send(msgBeatReceived);
+            if (PhraseBehavior == pbOneShot)
+            {
+                // Pedal controls the sequencer directly
+                if (PhraseSequencerStateMachine != pssmNote1 && (InferTempo == true || ForceBeatTime == true))
+                {
+                    // We received a pedal down even while the sequence was being played (not wating on first note)
+                    // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
+                    // cycle.
+                    RetriggerFlag = true;
+                }
+            
+
+                MsgToPhraseSequencer.Send(msgBeatReceived);
+            }
+
+            if (PhraseBehavior == pbAutoLoop)
+            {
+                // If a phrase was not being played, then start the sequencer process
+                if (SequenceIsPlaying == false)
+                {
+                    MsgToPhraseSequencer.Send(msgBeatReceived);
+                }
+
+                // If a phrase we being played, then stop the sequencer
+                if (SequenceIsPlaying == true)
+                {
+                    Stop_PedalPressed();
+                }
+            }
         }
     }
 
@@ -4614,7 +4911,7 @@ public:
         }
         else // simple pedal-triggered sequence
         {
-            if (PhraseSequencerStateMachine != pssmNote1)
+            if (SequenceIsPlaying == true)
             {
                 MsgToPhraseSequencer.Send(msgBeatReceived);
             }
@@ -4644,21 +4941,26 @@ namespace CapitaineFlam
 
 void Partial_On(int NoteNumber)
 {
-    MIDI_A.SendNoteOnEvent(3, NoteNumber, 127);
-    MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
-    MIDI_A.SendNoteOnEvent(5, NoteNumber, 127);
 }
 
 void Partial_Off(int NoteNumber)
 {
-    MIDI_A.SendNoteOffEvent(3, NoteNumber, 0);
     MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
-    MIDI_A.SendNoteOffEvent(5, NoteNumber, 0);
 }
 
+void Brass_ON(int NoteNumber)
+{
+    MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+}
 
-TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Partial_On, Partial_Off, 72, false, 1);
+void Brass_OFF(int NoteNumber)
+{
+    MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
+}
 
+TSequence Sequence({{0, 1}, {4, 0.5}, {0, 0.25}, {4, 0.25}, {7, 2}}, Brass_ON, Brass_OFF, 72, false, 1);
+
+TSequence Sequence_1({{0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {7, 2}, {999, 2}, {0, 2}, {5, 1.25}, {999, 0.25}, {5, 0.5}, {12, 3}}, Brass_ON, Brass_OFF, 74, false, 1, 0, true);
 
 void Sequence_Start_PedalDown(void)
 {
@@ -4670,10 +4972,20 @@ void Sequence_Start_PedalUp(void)
     Sequence.Start_PedalReleased();
 }
 
+void Sequence_1_Start_PedalDown(void)
+{
+    Sequence_1.Start_PedalPressed();
+}
+
+void Sequence_1_Start_PedalUp(void)
+{
+    Sequence_1.Start_PedalReleased();
+}
 
 void Sequence_Stop_PedalDown(void)
 {
     Sequence.Stop_PedalPressed();
+    Sequence_1.Stop_PedalPressed();
 }
 
 int poorMansSemaphore = 0;
@@ -4682,8 +4994,9 @@ void * Laser_Cycle(void * pMessage)
 {
     while (poorMansSemaphore)
     {
-        MIDI_A.SendNoteOnEvent(2, 30, 127);
-        waitMilliseconds(100);
+        PlayNote(1, 60, 2000, 127);
+//        MIDI_A.SendNoteOnEvent(1, 50, 127);
+        waitMilliseconds(80);
 //        TMidiNoteOffEvent noff(2, 30, 0);
         //waitMilliseconds(30);
 
@@ -4694,20 +5007,24 @@ void * Laser_Cycle(void * pMessage)
 pthread_t thread;
 
 
-void Init(void)
-{
-    Sequence.Init();
-    // For a reason that eludes me, changing the variation of the part
-    // must be sent twice...
-    // We want to select the LaserGun (program 128, variation 2)
-    MIDI_A.SendProgramChange(2, 128);
-    MIDI_A.SendControlChange(2, 0, 2);
-    MIDI_A.SendProgramChange(2, 128);
-    MIDI_A.SendControlChange(2, 0, 2);
+    void Init(void)
+    {
+        Sequence.Init();
+        Sequence_1.Init();
+        // Laser on part 1, channel 1
+        // Laser is custom made sound, on CD_A (Card)
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::CD_A, 1); 
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
 
-    MIDI_A.SendProgramChange(3, 57); // channel 3, trumpet
-    MIDI_A.SendProgramChange(4, 64); // channel 3, synth brass
-    MIDI_A.SendProgramChange(5, 61); // channel 3, trumpet
+        // Brass with trumpet on part 2, channel 4
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_E, 98); 
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+
 
 }
 
@@ -4735,13 +5052,14 @@ void Laser_Off(void)
 
 void Starship1(void)
 {
-    system("aplay ./wav/FXCarpenterLaserBig.wav &");
+    // Oxfox rhythm kit, that contains samples, on MIDI channel 16, note C1
+    PlayNote(16, 24, 3000, 127);
 }
 
 
 void Starship2(void)
 {
-    system("aplay ./wav/FXAlienWoosh.wav &");
+    PlayNote(16, 26, 5000, 127);
 }
 
 
@@ -4977,29 +5295,31 @@ void Chord4_Off(void)
 
 void TapTempo(void)
 {
-    enum TTapTempoStateMachine {ttsmInit, ttsmWaitFirstTap, ttsmComputeTempo} TapTempoStateMachine = ttsmInit;
-    std::vector<struct timeval> TimeValues_vec = {};
-    std::vector<float> DeltaTime_vec = {};
+    static enum TTapTempoStateMachine {ttsmInit, ttsmWaitFirstTap, ttsmComputeTempo} TapTempoStateMachine = ttsmInit;
+    static std::vector<struct timeval> TimeValue_vec = {};
+    static std::vector<float> DeltaTime_vec = {};
     static struct timeval tv;
-    float BeatTime_local = 0;
-    float Intervals = 4;
     switch (TapTempoStateMachine)
     {
         case ttsmInit:
-        TimeValues_vec.clear();
+        TimeValue_vec.clear();
         TapTempoStateMachine = ttsmWaitFirstTap;
+        wprintw(win_debug_messages.GetRef(), "Tap tempo INIT\n");
         // Do more init stuff
         // no break;
         case ttsmWaitFirstTap:
         // First beat
         gettimeofday(&tv, NULL);  
-        TimeValues_vec.push_back(tv);
+        TimeValue_vec.push_back(tv);
         TapTempoStateMachine = ttsmComputeTempo;
         break;
 
         case ttsmComputeTempo:
+        wprintw(win_debug_messages.GetRef(), "Tap tempo COMPUTE\n");
         bool flag_start = true;
         struct timeval last_timeval;
+        gettimeofday(&tv, NULL);  
+        TimeValue_vec.push_back(tv);
         DeltaTime_vec.clear();
         for (auto val : TimeValue_vec)
         {
@@ -5015,6 +5335,7 @@ void TapTempo(void)
                 tv2 = val;
                 float DeltaTime = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0);
                 DeltaTime_vec.push_back(DeltaTime);
+                last_timeval = tv2;
             }
         }
         // If the last delta time is too large, it means this algorithm has paused for a long time
@@ -5024,9 +5345,11 @@ void TapTempo(void)
         if (DeltaTime_vec.back() > 4.0) // more than 4 seconds
         {
             DeltaTime_vec.clear();
-            struct timeval tv = TimeValues_vec.back();
-            TimeValues_vec.clear();
-            Timevalues_vec.push_back(tv);
+            struct timeval tv;
+            gettimeofday(&tv, NULL);  
+            TimeValue_vec.clear();
+            TimeValue_vec.push_back(tv);
+            break;
         }
         else
         {
@@ -5044,31 +5367,54 @@ void TapTempo(void)
 
             // Get rid of any measurement that deviates too much from the mean
             // This is an easy way of eliminating "outliers", e.g. if one beat was missed
+            int MeasurementsCount = 0;
+            float DeltaTimeMeanRobust = 0;
             for (auto val: DeltaTime_vec)
             {
                 if (val < DeltaTimeMean_limit_low || val > DeltaTimeMean_limit_high)
                 {
-
+                    // Don't use that measurement                    
+                }
+                else
+                {
+                    // Do use that measurement
+                    MeasurementsCount += 1;
+                    DeltaTimeMeanRobust += val;
                 }
             }
+            wprintw(win_debug_messages.GetRef(), "Tap tempo meas=%i,total=%i\n", MeasurementsCount, DeltaTime_vec.size());
+
+            if (MeasurementsCount >= 1)
+            {
+                DeltaTimeMeanRobust /= MeasurementsCount;
+            }
+            else
+            {
+                // Calculation error - restart state machine
+                TapTempoStateMachine = ttsmInit;
+                break;
+            }
+            
+
+            if (DeltaTimeMeanRobust > 0.01)
+            {
+                float TempoBPM = 60.0 / DeltaTimeMeanRobust;
+                TContext * pContext;
+                {
+                    // Protect PlaylistPosition from concurrent access
+                    std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+                    pContext = PlaylistPosition;
+                }
+                pContext->BaseTempo = round(TempoBPM);
+            }
+            else
+            {
+                // Calculation error - restart state machine
+                TapTempoStateMachine = ttsmInit;
+                break;
+            }
         }
-
-        break;
     }
-    }
-    else
-    {
-        // Second beat
-        init_flag = false;
-        gettimeofday(&tv2, NULL);
-        // Compute time lapse between two calls
-        BeatTime_local = ((tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000000.0) / ((float) Intervals);
-        // Update this song's tempo
-        cThisGirl.BaseTempo = 60.0 / BeatTime_local;
-    }
-//    Sequence_1.Start_PedalPressed();
-
-
 }
 
 
@@ -5202,7 +5548,7 @@ namespace I_Follow_Rivers
 {
     void SynthTom_ON(int NoteNumber)
     {
-        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 127);
     }
 
     void SynthTom_OFF(int NoteNumber)
@@ -5285,7 +5631,7 @@ namespace I_Follow_Rivers
     // To be called on beat 1, then again on beat 1 of next bar (assuming 4-beats bars)
     // -> so there is one bar between two calls
     // -> infer tempo from that
-    void TapTempo(void)
+    void TapTempo_deletethat(void)
     {
         static bool init_flag = false;
         static struct timeval tv1, tv2;
@@ -5307,6 +5653,282 @@ namespace I_Follow_Rivers
             // Update this song's tempo
             cIFollowRivers.BaseTempo = 60.0 / BeatTime_local;
         }
+    }
+}
+
+
+namespace LAmourALaPlage
+{
+    // Bell pads on MIDI channel 1
+    void BellPad_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
+    }
+
+    void BellPad_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+    // Harpsichord on MIDI channel 4
+    void Synth_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+    }
+
+    void Synth_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
+    }
+
+    // Bassline on MIDI channel 5
+    void Bass_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(5,NoteNumber,127);
+    }
+
+    void Bass_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(5,NoteNumber,0);
+    }
+
+    // On "L'amour à la plage" (Niagara), there is a bell pad riff almost all along the song
+    // It's perhaps chords of 3 notes, or 2 notes; here it is done using two sequence objects.
+    // G G G     B B G G G     A A    ) x3  sauf dernier G *B* G,    G G G A A A G G G F F F    (Midi notes 43  45  47)
+    // E E E     G G E E E     EbEb   ) x3                           E E E G G G E E E EbEbEb   (Midi notes 51  52  55)
+    TSequence Sequence_11({{43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {47, 0.5}, {999, 0.5}, {47, 0.5}, {43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {45, 0.5}, {999, 0.5}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_12({{52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {55, 0.5}, {999, 0.5}, {55, 0.5}, {52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {51, 0.5}, {999, 0.5}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_21({ {43, 0.75}, {43, 0.75}, {43, 0.5}, \
+                            {47, 0.75}, {47, 0.75}, {47, 0.5}, \
+                            {43, 0.75}, {43, 0.75}, {43, 0.5}, \
+                            {45, 0.75}, {45, 0.75}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_22({{52, 0.75}, {52, 0.75}, {52, 0.5},\
+                           {55, 0.75}, {55, 0.75}, {55, 0.5},\
+                           {52, 0.75}, {52, 0.75}, {52, 0.5},\
+                           {51, 0.75}, {51, 0.75}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    TSequence Sequence_31({{79, 0.25}, {78, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 3.5}},\
+                             Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_32({{76, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 0.25}, {59, 3.5}},\
+                             Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    TSequence Sequence_41({{54, 0.5},{55, 0.5}, {54, 0.5}, {50, 0.5}, {47, 0.5}, {50, 0.5}, {52, 0.5}},BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
+                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+
+    bool SynthSeq_toggle = false;
+
+    void Init(void)
+    {
+        Sequence_11.Init();
+        Sequence_12.Init();
+        Sequence_21.Init();
+        Sequence_22.Init();
+        Sequence_31.Init();
+        Sequence_32.Init();
+        Sequence_41.Init();
+        Sequence_Bassline.Init();
+
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 24); // 2.2 Bell Pad
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        // Get rid of any panning of the Bells
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
+
+        // For the two small breaks at harpsichord
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_D, 26); // A69 ,not bad either some keyboard or synth
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);        
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
+
+        // For the synth bass - target MIDI channel 5
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_F,59); // Select a nice synth bass of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
+
+        SynthSeq_toggle = false;
+    }    
+
+    void BellPad_Seq1(void)
+    {
+        Sequence_11.Start_PedalPressed();
+        Sequence_12.Start_PedalPressed();
+    }
+
+    void BellPad_Seq2(void)
+    {
+        Sequence_21.Start_PedalPressed();
+        Sequence_22.Start_PedalPressed();
+    }
+    void Synth_Seq1(void)
+    {
+        Sequence_31.Start_PedalPressed();
+    }
+
+    void Synth_Seq2(void)
+    {
+        Sequence_32.Start_PedalPressed();
+    }
+
+    void Synth_Seq(void)
+    {
+        if (SynthSeq_toggle == false)
+        {
+            SynthSeq_toggle = true;
+            Synth_Seq1();
+        }
+        else
+        {
+            SynthSeq_toggle = false;
+            Synth_Seq2();
+        }
+    }
+
+    void BellPad_Seq3(void)
+    {
+        Sequence_41.Start_PedalPressed();
+    }
+
+    void Bassline_Sequence(void)
+    {
+        Sequence_Bassline.Start_PedalPressed();
+    }
+
+    void StopAll(void)
+    {
+        Sequence_11.Stop_PedalPressed();
+        Sequence_12.Stop_PedalPressed();
+        Sequence_21.Stop_PedalPressed();
+        Sequence_22.Stop_PedalPressed();
+        Sequence_31.Stop_PedalPressed();
+        Sequence_32.Stop_PedalPressed();
+        Sequence_41.Stop_PedalPressed();
+        Sequence_Bassline.Stop_PedalPressed();
+    }
+}
+
+
+namespace Havanna
+{
+    void Piano_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 85);
+    }
+
+    void Piano_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+    }
+
+    // On "Havanna", there are two major piano riffs.
+    // #1 is a sequence of chords, with up to 4 notes played at the same time, so we need
+    // 4 TSequence objects to handle that.
+    //
+    // 01 - G1
+    // 02 -
+    // 03 - G2   Bb2  D3
+    // 04 - D2
+    // 05 - D#1
+    // 06 - D#1
+    // 07 - D#2  G2   Bb2
+    // 08 - D1
+    // 09 -
+    // 10 - A1 (passage)
+    // 11 - D2   F#2  A2    C3
+    // 12 - 
+    // 13 - 
+    // 14 - A2
+    // 15 - D2 A2 D#3
+    // 16 - A2 D3
+
+
+    // G1 = 31
+    // G2 = 43
+    // Bb2 = 46
+    // D3 = 50
+    // D2 = 38
+    // D#1 = 27
+    // D#2 = 39
+    // D#3 = 51
+    // D1 = 26
+    // A1 = 33
+    // F#2 = 42
+    // A2 = 45
+    // C3 = 48
+
+
+    TSequence Sequence_11({{31, 1},  {43, 0.5}, {38, 0.5}, {27, 0.5}, {27, 0.5}, {39, 0.5}, {26, 1}, {33, 0.5}, {38, 1.5}, {45, 0.5}, {38, 0.5},  {45, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_12({{999, 1}, {46, 1},              {999, 1},             {43, 1},      {999, 1},        {42, 2},              {45, 0.5},  {50, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_13({{999, 1}, {50, 1},              {999, 1},             {46, 1},      {999, 1},        {45, 2},              {51, 0.5}, {999, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_14({{999, 5},                                                                            {48, 2},              {999, 1}             }, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    // Second riff during Yan's break dance / rap solo
+    // G2 G2 Bb2 Bb2     G2    Gb2     Gb2 A2 A2     C3 Eb3 D3
+    TSequence Sequence_2({{43, 0.5}, {43, 0.5}, {46, 0.5}, {46, 0.5}, {999, 0.5}, {43, 0.5}, {999, 0.5}, {42, 0.5}, {999, 0.5}, {42, 0.5},  {45, 0.5}, {45, 0.5}, {999, 0.5}, {48, 0.5}, {51, 0.5}, {50, 0.5}}, Piano_ON, Piano_OFF, 12, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+
+    void Init(void)
+    {
+        Sequence_11.Init();
+        Sequence_12.Init();
+        Sequence_13.Init();
+        Sequence_14.Init();
+        Sequence_2.Init();
+
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 2); // Upright Piano
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(0);
+        // Get rid of any panning
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].TonePanKeyfollow.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].TonePanKeyfollow.Set(0);
+
+
+
+
+    }    
+
+    void PianoRiff_1(void)
+    {
+        Sequence_11.Start_PedalPressed();
+        Sequence_12.Start_PedalPressed();
+        Sequence_13.Start_PedalPressed();
+        Sequence_14.Start_PedalPressed();
+    }
+
+    void PianoRiff_2(void)
+    {
+        Sequence_2.Start_PedalPressed();
+    }
+
+    void StopAll(void)
+    {
+        Sequence_11.Stop_PedalPressed();
+        Sequence_12.Stop_PedalPressed();
+        Sequence_13.Stop_PedalPressed();
+        Sequence_14.Stop_PedalPressed();
+        Sequence_2.Stop_PedalPressed();
     }
 }
 
@@ -6056,6 +6678,136 @@ namespace Crazy
     }
 }
 
+namespace All_In_You
+{
+
+    void Init(void)
+    {
+        // Bass lead on part on part 1, midi channel 1
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 48); 
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+//        XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+/*        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].  ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+*/
+        // On this song, the bass lead is played from computer keyboard
+        MiniSynth::octave = 2;
+        MiniSynth::channel = 1;
+        XV5080.System.SystemCommon.SystemControl1Source.Set(1); // Use CC01 as SYS-CTRL1 (mod)
+        XV5080.System.SystemCommon.SystemControl2Source.Set(8); // Use CC08 as SYS-CTRL2 (filter cutoff)
+        XV5080.System.SystemCommon.SystemControl3Source.Set(9); // Use CC09 as SYS-CTRL3 (resonance)
+
+        // Our miniphaser (or whatever bass we use) tempo source should be the system tempo, not patch tempo
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchClockSource.Set(1);
+        // Switch to monophonic, much easier to play on a computer keyboard...
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.MonoPoly.Set(0);
+
+        // We are in the key of "D" - adjust so that azertyuiop corresponds to that scale
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchCoarseTune.Set(61); // -3 semitones = 64-3 = 61from C to A 
+
+        // Now takle the soaring lead
+        // On midi channel 2
+        // Tied to the second analog pedal
+//        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_F, 11); // Square Roots
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_B, 4); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(2);
+
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_G, 77); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(2);
+
+
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[4].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[5].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[6].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[7].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[8].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[9].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[10].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[11].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[12].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[13].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[14].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[15].ReceiveSwitch.Set(0);
+
+    }
+
+    void Filter(int Value)
+    {
+        using std::vector;
+        vector<double> In_Pedal = {0, 64, 127}; // position of the pedal, from 0 to 127
+        vector<double> Out_CC01 = {0, 0, 64}; // corresponding values of the control change event 99
+        vector<double> Out_CC08 = {127, 0, 0}; // corresponding values of the control change event 99
+        vector<double> Out_CC09 = {0, 32, 127}; // corresponding values of the control change event 99
+
+
+        MIDI_A.SendControlChange(1, 1, interpolate(In_Pedal, Out_CC01, Value, false));        
+        MIDI_A.SendControlChange(1, 8, interpolate(In_Pedal, Out_CC08, Value, false));        
+        MIDI_A.SendControlChange(1, 9, interpolate(In_Pedal, Out_CC09, Value, false));        
+    }
+
+    void SoaringLead(int Value)
+    {
+        static enum TSoaringLeadStateMachine {smInit,smWaitStart, smStartSound, smSoaring} SoaringLeadStateMachine = smInit;
+        // Callback from the second analog pedal
+        switch (SoaringLeadStateMachine)
+        {
+            case smInit:
+            // Wait until Value is less than 10
+            if (Value < 10)
+            {
+                SoaringLeadStateMachine = smWaitStart;
+            }
+            break;
+
+            case smWaitStart:
+            if (Value > 15)
+            {
+                // Ok - start
+                // Sound ON
+                MIDI_A.SendNoteOnEvent(2, 45, 127);
+                MIDI_A.SendNoteOnEvent(2, 57, 127);
+                MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
+                SoaringLeadStateMachine = smSoaring;
+            }
+            break;
+
+            case smSoaring:
+            if (Value <118 & Value >= 10)
+            {
+                MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
+            }
+            else
+            {
+                // Sound off
+                MIDI_A.SendNoteOffEvent(2, 45, 0);
+                MIDI_A.SendNoteOffEvent(2, 57, 0);
+                MIDI_A.SendControlChange(2, 7, 0); // CC07 is volume
+                // Reset state machine
+                SoaringLeadStateMachine = smInit;
+            }
+            break;
+
+            default:
+            SoaringLeadStateMachine = smInit;
+            break;
+        }
+    }
+}
+
+
 namespace ElevenRack
 {
 
@@ -6751,7 +7503,7 @@ void InitializePlaylist(void)
 
     cIFeelGood.Author = "James Brown";
     cIFeelGood.SongName = "I feel good";
-    cIFeelGood.BaseTempo = 140;
+    cIFeelGood.BaseTempo = 137;
 
     cPapasGotABrandNewBag.Author = "James Brown";
     cPapasGotABrandNewBag.SongName = "Papa's got a brand new bag";
@@ -6881,9 +7633,11 @@ void InitializePlaylist(void)
 
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
+    cCapitaineFlam.BaseTempo = 153;
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship1, NULL, "Starship Fx 1"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
+//    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
+    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
     cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
@@ -6956,6 +7710,11 @@ void InitializePlaylist(void)
 
     cAllInYou.Author = "Synapson";
     cAllInYou.SongName = "All In You";
+    cAllInYou.BaseTempo = 120;
+    cAllInYou.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
+    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, All_In_You::Filter,"Filter"));
+    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(2, All_In_You::SoaringLead,"Soaring Lead"));
+    cAllInYou.SetInitFunc(All_In_You::Init);
 
     cChandelier.Author = "Sia";
     cChandelier.SongName = "Chandelier";
@@ -6963,7 +7722,7 @@ void InitializePlaylist(void)
     cThisGirl.Author = "Kung";
     cThisGirl.SongName = "This Girl";
     cThisGirl.BaseTempo = 122;
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Kungs_This_Girl::TapTempo, NULL,"Tap tempo - 1 bar"));
+    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL,"Tap tempo"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2"));
     cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Kungs_This_Girl::Sequence_3_Start_PedalPressed, Kungs_This_Girl::Sequence_3_Start_PedalReleased,"Sequence 3"));
@@ -6985,8 +7744,8 @@ void InitializePlaylist(void)
 
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
-    cIFollowRivers.BaseTempo = 120;
-    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, I_Follow_Rivers::TapTempo, NULL, "Tap tempo"));
+    cIFollowRivers.BaseTempo = 118;
+    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
     cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
 
@@ -7067,6 +7826,26 @@ void InitializePlaylist(void)
     cLaGrenade.SongName = "La Grenade";
     cLaGrenade.BaseTempo = 120;
 
+    cLAmourALaPlage.Author = "Niagara";
+    cLAmourALaPlage.SongName = "L'amour a la plage";
+    cLAmourALaPlage.BaseTempo = 119;
+    cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq, NULL, "Synth Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline loop"));
+
+    cHavanna.Author = "Camila Cabello";
+    cHavanna.SongName = "Havanna";
+    cHavanna.BaseTempo = 112; // 105
+    cHavanna.SetInitFunc(Havanna::Init);
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(1,Havanna:: PianoRiff_1, NULL, "Piano Riff #1"));
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Havanna::PianoRiff_2, NULL, "Piano Riff #2"));
+    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Havanna::StopAll, NULL, "Stop All"));
+
+
 //   cILoveRocknRoll = "I love Rock'n'Roll";
     //  cIloveRocknRoll.BaseTempo = 91;
 
@@ -7076,6 +7855,14 @@ void InitializePlaylist(void)
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
+
+    PlaylistData.push_back(&cLaGrenade);
+    PlaylistData.push_back(&cThisGirl);
+    PlaylistData.push_back(&cIFollowRivers);
+    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
+    PlaylistData.push_back(&cHavanna);
+    PlaylistData.push_back(&cLaFoule);
+
 
     PlaylistData.push_back(&cIsntSheLovely);
     PlaylistData.push_back(&cJammin);
@@ -7089,7 +7876,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cILoveRockNRoll);
     PlaylistData.push_back(&cIsThisLove);
     PlaylistData.push_back(&cEncoreUnMatin);
-    PlaylistData.push_back(&cQuandLaMusiqueEstBonne);
     PlaylistData.push_back(&cMonAmantDeSaintJean);
     PlaylistData.push_back(&cIFeelGood);
     PlaylistData.push_back(&cRehab);
@@ -7100,7 +7886,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cMachistador);
     PlaylistData.push_back(&cAnotherOneBiteTheDust);
     PlaylistData.push_back(&cWot);
-    PlaylistData.push_back(&cThisGirl);
     PlaylistData.push_back(&cLongTrainRunning);
     PlaylistData.push_back(&cBackToBlack);
     PlaylistData.push_back(&cHuman);
@@ -7112,8 +7897,6 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cManDown);
     PlaylistData.push_back(&cUnchainMyHeart);
     PlaylistData.push_back(&c25years);
-    PlaylistData.push_back(&cLaFoule);
-    PlaylistData.push_back(&cLaGrenade);
     PlaylistData.push_back(&cIFollowRivers);
     PlaylistData.push_back(&cAmericanIdiot);
     PlaylistData.push_back(&cMixPolice);
@@ -7158,6 +7941,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cDjadja);
     PlaylistData.push_back(&cHabits);
     PlaylistData.push_back(&cCrazy);
+    PlaylistData.push_back(&cLAmourALaPlage);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
