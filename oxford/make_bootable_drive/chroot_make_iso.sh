@@ -128,7 +128,9 @@ make -B
 # Install Node-RED
 # But first ensure that ca-certificates is installed, to pull the script below from https
 apt-get install --no-install-recommends --assume-yes ca-certificates
-bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+#bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+apt-get install nodejs
+npm install -g --unsafe-perm node-red node-red-admin
 
 # Install node-red-dashboard
 pushd /root/.node-red
