@@ -50,6 +50,7 @@
 #include <ncurses.h>
 #include <list>
 #include <string>
+#include <cstring>
 #include <algorithm>
 #include <cdk.h>
 #include <panel.h>
@@ -66,6 +67,7 @@
 #include <ctime>
 #include <atomic>
 #include "mosquitto.h"
+#include "pthread.h"
 
 #define mqtt_host "localhost"
 #define mqtt_port 1883
@@ -234,6 +236,22 @@ TBoxedWindow win_context_usage; ///< Window that contains messages as to how to 
 TBoxedWindow win_context_user_specific; ///< Window that displays user-specific information
 TBoxedWindow win_context_select_menu;
 TBoxedWindow win_big_message; ///< Window that displays a scrolling banner with a message made with large characters
+
+
+/**
+ * Create a way to change a thread scheduling policy as well as priority
+ */
+void setScheduling_RealTime_TopPriority(pthread_t target_thread)
+{
+    struct sched_param param;
+    param.__sched_priority = sched_get_priority_max(SCHED_RR);
+    int s = pthread_setschedparam(target_thread, SCHED_RR, &param);
+    if (s != 0)
+    {
+        wprintw(win_debug_messages.GetRef(), "Failed to set thread scheduling : %s", std::strerror(errno));
+    }
+}
+
 
 
 /// Pause thread execution for "milliseconds" milliseconds, with a fairly high resolution.
@@ -656,6 +674,7 @@ void Initialize(void)
 
     // create separate thread for the keyboard scan
     std::thread t(KeyboardThread);
+    setScheduling_RealTime_TopPriority(t.native_handle());
     t.detach();
     // ok now KeyboardThread is running as a separate thread
 }
@@ -1196,6 +1215,7 @@ public:
             // but the native handle is the only one that will work for us here. This is why it
             // is "captured" in the member variable ThreadNativeHandle, for further use later on.
             ThreadNativeHandle = tmp_thread.native_handle();
+            setScheduling_RealTime_TopPriority(ThreadNativeHandle);
             tmp_thread.detach();
             // tmp_thread object is thrown away when going out of scope, but StateMachineThread() will carry on,
             // spinning as a separate thread.
@@ -1504,14 +1524,17 @@ private:
     {
         // Change priority to top-most realtime
 #ifdef REALTIME
+        setScheduling_RealTime_TopPriority(pthread_self());
+
+#if 0
         struct sched_param param;
         param.__sched_priority = sched_get_priority_max(SCHED_RR);
-        //https://linux.die.net/man/3/pthread_setschedparam
         int s = pthread_setschedparam(pthread_self(), SCHED_RR, &param);
         if (s != 0)
         {
             wprintw(win_debug_messages.GetRef(), "MIDI: error initializing thread priority, returned %i\n", s);
         }
+        #endif
 #endif
 
         wprintw(win_debug_messages.GetRef(), "MIDI A: device %s\n", name_midi_hw.c_str());
@@ -3627,6 +3650,7 @@ void PlayNote(unsigned char Channel_param, unsigned char NoteNumber_param, int D
     PlayNoteMsg.NoteNumber = NoteNumber_param;
     PlayNoteMsg.Velocity = Velocity_param;
     std::thread Thread(playNoteThread, PlayNoteMsg);
+    setScheduling_RealTime_TopPriority(Thread.native_handle());
     Thread.detach();
 }
 
@@ -4584,7 +4608,6 @@ private:
                 wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
                 if(RetriggerFlag == true)
                 {
-                    SequenceIsPlaying = true;
                     RetriggerFlag = false;
                 }
                 else
@@ -4592,7 +4615,6 @@ private:
                     SequenceIsPlaying = false;
                     if (MsgToPhraseSequencer.Wait_OR(msgBeatReceived, msgReset, 0) == msgReset)
                     {
-                        SequenceIsPlaying = true;
                         // Reset state machine
                         TurnPreviousNoteOff();
                         PhraseSequencerStateMachine = pssmNote1;
@@ -4601,6 +4623,7 @@ private:
                 }
                 
                 // First note
+                SequenceIsPlaying = true;
                 ForceBeatTime_seq_stop_flag = false;
                 TimeStart = std::chrono::system_clock::now();
                 it = MelodyNotes.begin();
@@ -4785,8 +4808,8 @@ private:
 
    void ResetSequencer(void)
     {
-        MsgToPhraseSequencer.Send(msgReset);
         ForceBeatTime_seq_stop_flag = true;
+        MsgToPhraseSequencer.Send(msgReset);
     }
 
     void SetBeatTime(void)
@@ -4837,8 +4860,11 @@ public:
         {
             ThreadsStartedFlag = true;
             std::thread th1(PhraseSequencerThreadStatic, this);
+            setScheduling_RealTime_TopPriority(th1.native_handle());
+
             th1.detach();
             std::thread th2(GetBeatTimeFromPedalThreadStatic, this);
+            setScheduling_RealTime_TopPriority(th2.native_handle());
             th2.detach();
         }
         else
@@ -4887,10 +4913,10 @@ public:
                     MsgToPhraseSequencer.Send(msgBeatReceived);
                 }
 
-                // If a phrase we being played, then stop the sequencer
+                // If a phrase is being played, then stop the sequencer
                 if (SequenceIsPlaying == true)
                 {
-                    Stop_PedalPressed();
+                    ResetSequencer();
                 }
             }
         }
