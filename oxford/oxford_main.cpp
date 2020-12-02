@@ -1233,6 +1233,7 @@ public:
     void SendNoteOnEvent(unsigned int Channel, unsigned int NoteNumber,
                          unsigned int Velocity)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         // This function sends a Note ON event
         // Example: SendNoteOnEvent(2, 60, 100);
         unsigned char NoteOnField = 9; // See MIDI specifications
@@ -1262,6 +1263,7 @@ public:
 
     void SendNoteOnEvent(TPlayNoteMsg * PlayNoteMsg)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         SendNoteOnEvent(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
     }
 
@@ -1286,6 +1288,7 @@ public:
 // you're better off using PlayNote(), rather than drilling down to the Note ON / OFF events...
     void SendNoteOffEvent(unsigned int Channel, unsigned int NoteNumber, unsigned int Velocity)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         // This function sends a Note OFF event
         // Example: SendNoteOffEvent(2, 60, 100);
         unsigned char NoteOffField = 8; // See MIDI specifications
@@ -1314,11 +1317,13 @@ public:
 
     void SendNoteOffEvent(TPlayNoteMsg * PlayNoteMsg)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         SendNoteOffEvent(PlayNoteMsg->Channel, PlayNoteMsg->NoteNumber, PlayNoteMsg->Velocity);
     }
 
     void SendProgramChange(unsigned char Channel, unsigned char Program)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         unsigned char MidiFunctionID = 0xC; // See MIDI specifications
         unsigned char charArray[2];
         if (Channel < 1)
@@ -1343,6 +1348,7 @@ public:
     void SendControlChange(unsigned char Channel, unsigned char ControlNumber,
                            unsigned char ControllerValue)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         unsigned char MidiFunctionID = 0xB;
         unsigned char charArray[3];
 
@@ -1371,6 +1377,7 @@ public:
     // Send out a PB (Pitch Bend Change) MIDI event.
     void SendPitchBendChange(unsigned char Channel, TInt_14bits PitchBendChangeValue)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         unsigned char MidiFunctionID = 0xE;
         unsigned char charArray[3];
 
@@ -1397,6 +1404,7 @@ public:
     // Send out raw midi data
     void SendRawData(std::vector<unsigned char> data)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         for (auto x : data)
         {
             wprintw(win_midi_out.GetRef(), "%02x\n", (int) x);
@@ -1412,9 +1420,10 @@ public:
     // (from this program, out of the computer, to the expander, to the Rack Eleven, etc.)
     void StartRawMidiOut(void)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         if (handle_midi_hw_out == 0)
         {
-            int err = snd_rawmidi_open(NULL, &handle_midi_hw_out, name_midi_hw.c_str(), 0);
+            int err = snd_rawmidi_open(NULL, &handle_midi_hw_out, name_midi_hw.c_str(), SND_RAWMIDI_SYNC);
             if (err)
             {
                 wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw.c_str(), err);
@@ -1425,6 +1434,7 @@ public:
     // Close the RAW midi OUT port, for port "portnum" (0 or 1)
     void StopRawMidiOut(void)
     {
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         if(handle_midi_hw_out != 0)
         {
             snd_rawmidi_drain(handle_midi_hw_out);
@@ -1434,7 +1444,7 @@ public:
     }
 
 private:
-    std::mutex MIDI_Port_Mutex;
+    std::recursive_mutex MIDI_Port_Mutex;
     std::string name_midi_hw;
     std::thread::native_handle_type ThreadNativeHandle = 0;
     int err;
@@ -1483,9 +1493,10 @@ private:
     // Within this program, only use the protected version.
     void snd_rawmidi_write_protected(snd_rawmidi_t * rmidi, const void *buffer, size_t size)
     {
-        std::lock_guard<std::mutex> lock(MIDI_Port_Mutex);
+        std::lock_guard<std::recursive_mutex> lock(MIDI_Port_Mutex);
         snd_rawmidi_write(rmidi, buffer, size);
-    }
+//        snd_rawmidi_drain(rmidi); Not needed if port is opened, for writing, with flag SND_RAWMIDI_SYNC 
+    }        
 
     // Talk to ALSA and open a midi port in RAW mode, for data going IN.
     // (into the computer, into this program, from the pedalboard, from the keyboard...)
@@ -1493,8 +1504,7 @@ private:
     {
         if (handle_midi_hw_in == 0)
         {
-            // SND_RAWMIDI_SYNC enforces that all calls to snd_rawmidi_write are atomic (i.e. automatically flushed)
-            int err = snd_rawmidi_open(&handle_midi_hw_in, NULL, name_midi_hw.c_str(), SND_RAWMIDI_SYNC);
+            int err = snd_rawmidi_open(&handle_midi_hw_in, NULL, name_midi_hw.c_str(), 0);
             if (err)
             {
                 wprintw(win_debug_messages.GetRef(), "snd_rawmidi_open %s failed: %d\n", name_midi_hw.c_str(), err);
@@ -4605,6 +4615,7 @@ private:
             switch(PhraseSequencerStateMachine)
             {
             case pssmNote1:
+                TurnPreviousNoteOff();
                 wprintw(win_debug_messages.GetRef(), "TSequence: STOP\n");
                 if(RetriggerFlag == true)
                 {
@@ -4893,7 +4904,7 @@ public:
             if (PhraseBehavior == pbOneShot)
             {
                 // Pedal controls the sequencer directly
-                if (PhraseSequencerStateMachine != pssmNote1 && (InferTempo == true || ForceBeatTime == true))
+                if (SequenceIsPlaying == true && (InferTempo == true || ForceBeatTime == true))
                 {
                     // We received a pedal down even while the sequence was being played (not wating on first note)
                     // => this is a sign we want to "retrigger", that is, trigger again at the end of the sequence
@@ -5685,36 +5696,43 @@ namespace I_Follow_Rivers
 
 namespace LAmourALaPlage
 {
+    std::mutex m;
     // Bell pads on MIDI channel 1
     void BellPad_ON(int NoteNumber)
     {
+        std::lock_guard<std::mutex> l(m);
         MIDI_A.SendNoteOnEvent(1, NoteNumber, 100);
     }
 
     void BellPad_OFF(int NoteNumber)
     {
-        MIDI_A.SendNoteOffEvent(1, NoteNumber, 0);
+        std::lock_guard<std::mutex> l(m);
+        MIDI_A.SendNoteOnEvent(1, NoteNumber, 0);
     }
 
     // Harpsichord on MIDI channel 4
     void Synth_ON(int NoteNumber)
     {
+        std::lock_guard<std::mutex> l(m);
         MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
     }
 
     void Synth_OFF(int NoteNumber)
     {
+        std::lock_guard<std::mutex> l(m);
         MIDI_A.SendNoteOffEvent(4, NoteNumber, 0);
     }
 
     // Bassline on MIDI channel 5
     void Bass_ON(int NoteNumber)
     {
+        std::lock_guard<std::mutex> l(m);
         MIDI_A.SendNoteOnEvent(5,NoteNumber,127);
     }
 
     void Bass_OFF(int NoteNumber)
     {
+        std::lock_guard<std::mutex> l(m);
         MIDI_A.SendNoteOffEvent(5,NoteNumber,0);
     }
 
