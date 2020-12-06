@@ -880,6 +880,7 @@ class TContext
 {
 private:
     void (*InitFunc)(void) = NULL;
+    void (*ResetMinisynthFunc)(void) = NULL;
 
 public:
     std::string Author; // used to search by Author
@@ -902,13 +903,40 @@ public:
             InitFunc();
         }
 
+        ResetMinisynth();
+
         // Tell the world which song we're playing now.
         mosquitto_publish(mosq, NULL, "song/name", SongName.size(), SongName.c_str(), 2, false);
         Banner.SetMessage(SongName);
     }
+
+    // Set the function that initializes the whole TContext
     void SetInitFunc( void (*InitFunc_param)(void))
     {
         InitFunc = InitFunc_param;
+    }
+
+    bool ResetMinisynth()
+    {
+        if(ResetMinisynthFunc != NULL)
+        {
+            // Call the minisynth reset function
+            ResetMinisynthFunc();
+            return true;
+        }
+        else
+        {
+            return false;
+        }        
+    }
+
+    // Set the function that calls a minisynth reset upon pressing the ESC key
+    // Some songs require the minisynth to be set up at specific midi channel and 
+    // specific transpose, etc. Other don't use the minisynth and don't need
+    // to set anything here.
+    void SetResetMinisynthFunc (void (*ResetMinisynthFunc_param)(void))
+    {
+        ResetMinisynthFunc = ResetMinisynthFunc_param;
     }
 };
 
@@ -3886,17 +3914,32 @@ char noteInScale;
 int octave = 2;
 int program = 1;
 int channel = 2;
+int transpose = 0;
 
 void StartNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    MIDI_A.SendNoteOnEvent(channel, octave *12 + noteInScale, 100);
+    MIDI_A.SendNoteOnEvent(channel, octave *12 + noteInScale + transpose, 100);
 }
 
 void StopNote(void * pVoid)
 {
     int noteInScale = (long int) pVoid;
-    MIDI_A.SendNoteOffEvent(channel, octave *12 + noteInScale, 0);
+    MIDI_A.SendNoteOffEvent(channel, octave *12 + noteInScale + transpose, 0);
+}
+
+void Reset(void * pVoid)
+{
+    TContext * pContext = PlaylistPosition;
+    if (!pContext->ResetMinisynth())
+    {
+        // This context did not hold any specific function to reset the minisynth
+        // So do a generic reset here.
+        octave = 2;
+        program = 1;
+        channel = 5;
+        transpose = 0;    
+    }
 }
 
 void OctaveLess(void * pVoid)
@@ -3941,6 +3984,18 @@ void ChannelMore(void * pVoid)
     channel++;
     wprintw(win_debug_messages.GetRef(), "Channel %i\n", channel);
 
+}
+
+void TransposeLess(void * pVoid)
+{
+    transpose--;
+    wprintw(win_debug_messages.GetRef(), "Transpose %i\n", transpose);
+}
+
+void TransposeMore(void * pVoid)
+{
+    transpose++;
+    wprintw(win_debug_messages.GetRef(), "Transpose %i\n", transpose);
 }
 
 void Space(void * pVoid)
@@ -4078,13 +4133,15 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_EQUAL, StopNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StopNote, (void *)19);
 
-
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_ESC, Reset, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F4, ProgramMore, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F5, ChannelLess, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F6, ChannelMore, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F7, TransposeLess, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F8, TransposeMore, 0);
 
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_SPACE, Space, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_B, B, 0);
@@ -4432,8 +4489,10 @@ class TSequence
 {
 public:
     enum TPedalBehavior {pbDownswingOnly, pbDownswingAndUpswing};
+    enum TPhraseBehavior {pbAutoLoop, pbOneShot};
 
 private:
+    TPhraseBehavior PhraseBehavior = pbOneShot;
     int AutoOff;
     enum TPedalPosition {ppUnknown, ppReleased, ppPressed} PedalPosition = ppUnknown;
     struct timeval tv1, tv2;
@@ -4842,7 +4901,6 @@ private:
 
 
 public:
-    enum TPhraseBehavior {pbAutoLoop, pbOneShot} PhraseBehavior = pbOneShot;
     TSequence(std::list<TNote> MelodyNotes_param,
               void (*pFuncNoteOn_param)(int NoteNumber),
               void (*pFuncNoteOff_param)(int NoteNumber),
@@ -5696,6 +5754,14 @@ namespace I_Follow_Rivers
 
 namespace LAmourALaPlage
 {
+
+    void SetupMinisynth(void)
+    {
+        MiniSynth::octave = 3;
+        MiniSynth::transpose = 0;
+        MiniSynth::channel = 6;
+    }
+
     std::mutex m;
     // Bell pads on MIDI channel 1
     void BellPad_ON(int NoteNumber)
@@ -5761,7 +5827,10 @@ namespace LAmourALaPlage
     TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
                                  {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
 
-    bool SynthSeq_toggle = false;
+    TSequence Sequence_Bassline2({{0, 0.5}, {999, 0.25}, {0, 0.25}, {999, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {12, 0.5}, {10, 0.5},
+                                {-4, 0.5}, {999, 0.25}, {-4, 0.25}, {999, 0.5}, {5, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {5, 0.5}}, Bass_ON, Bass_OFF, 28, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+
+    int SmallPhraseInterlude_statemachine = 0;
 
     void Init(void)
     {
@@ -5773,6 +5842,7 @@ namespace LAmourALaPlage
         Sequence_32.Init();
         Sequence_41.Init();
         Sequence_Bassline.Init();
+        Sequence_Bassline2.Init();
 
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 24); // 2.2 Bell Pad
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
@@ -5803,7 +5873,13 @@ namespace LAmourALaPlage
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
 
-        SynthSeq_toggle = false;
+        // For synth stack - target MIDI channel 6
+        XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_F,2); // Power Stack // Select a nice synth stack of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveMIDI1.Set(1);        
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveChannel.Set_1_16(6);
+
+        SmallPhraseInterlude_statemachine = 0;
     }    
 
     void BellPad_Seq1(void)
@@ -5817,38 +5893,56 @@ namespace LAmourALaPlage
         Sequence_21.Start_PedalPressed();
         Sequence_22.Start_PedalPressed();
     }
-    void Synth_Seq1(void)
+
+    void SmallPhraseInterlude1(void)
     {
         Sequence_31.Start_PedalPressed();
     }
 
-    void Synth_Seq2(void)
+    void SmallPhraseInterlude2(void)
     {
         Sequence_32.Start_PedalPressed();
     }
 
-    void Synth_Seq(void)
-    {
-        if (SynthSeq_toggle == false)
-        {
-            SynthSeq_toggle = true;
-            Synth_Seq1();
-        }
-        else
-        {
-            SynthSeq_toggle = false;
-            Synth_Seq2();
-        }
-    }
-
-    void BellPad_Seq3(void)
+    void SmallPhraseInterlude3(void)
     {
         Sequence_41.Start_PedalPressed();
     }
 
+    void SmallPhraseInterlude(void)
+    {
+        switch(SmallPhraseInterlude_statemachine)
+        {
+            case 0:
+            SmallPhraseInterlude1();
+            SmallPhraseInterlude_statemachine = 1;
+            break;
+
+            case 1:
+            SmallPhraseInterlude2();
+            SmallPhraseInterlude_statemachine = 2;
+            break;
+
+            case 2:
+            SmallPhraseInterlude3();
+            SmallPhraseInterlude_statemachine = 0;
+            break;
+
+            default:
+            SmallPhraseInterlude_statemachine = 0;
+            break;
+        }
+    }
+
+
     void Bassline_Sequence(void)
     {
         Sequence_Bassline.Start_PedalPressed();
+    }
+
+    void Bassline_Sequence2(void)
+    {
+        Sequence_Bassline2.Start_PedalPressed();
     }
 
     void StopAll(void)
@@ -5861,6 +5955,7 @@ namespace LAmourALaPlage
         Sequence_32.Stop_PedalPressed();
         Sequence_41.Stop_PedalPressed();
         Sequence_Bassline.Stop_PedalPressed();
+        Sequence_Bassline2.Stop_PedalPressed();
     }
 }
 
@@ -7876,10 +7971,11 @@ void InitializePlaylist(void)
     cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::Synth_Seq, NULL, "Synth Seq 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::BellPad_Seq3, NULL, "Bell Pad Seq 3"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::SmallPhraseInterlude, NULL, "Interlude (1/2/3)"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, NULL, "Bassline 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline loop"));
+    cLAmourALaPlage.SetResetMinisynthFunc(LAmourALaPlage::SetupMinisynth);
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
