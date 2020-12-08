@@ -4765,6 +4765,7 @@ private:
                 // Play it
                 TurnNoteOn(CurrentNote.NoteNumber + RootNoteNumber);
 
+
                 // One hit prior to (std::prev) MelodyNotes.end() actually points to the last
                 // valid entry in the melody, that is the last note.
                 if ( (it == std::prev(MelodyNotes.end()))  &&  (PedalPosition == ppReleased) )
@@ -4974,7 +4975,7 @@ public:
                 MsgToPhraseSequencer.Send(msgBeatReceived);
             }
 
-            if (PhraseBehavior == pbAutoLoop)
+            if (PhraseBehavior == pbAutoLoop && (InferTempo == true || ForceBeatTime == true))
             {
                 // If a phrase was not being played, then start the sequencer process
                 if (SequenceIsPlaying == false)
@@ -4988,6 +4989,12 @@ public:
                     ResetSequencer();
                 }
             }
+
+            if (PhraseBehavior == pbAutoLoop && InferTempo == false && ForceBeatTime == false)
+            {
+                MsgToPhraseSequencer.Send(msgBeatReceived);
+            }
+
         }
     }
 
@@ -5806,8 +5813,10 @@ namespace LAmourALaPlage
     // It's perhaps chords of 3 notes, or 2 notes; here it is done using two sequence objects.
     // G G G     B B G G G     A A    ) x3  sauf dernier G *B* G,    G G G A A A G G G F F F    (Midi notes 43  45  47)
     // E E E     G G E E E     EbEb   ) x3                           E E E G G G E E E EbEbEb   (Midi notes 51  52  55)
-    TSequence Sequence_11({{43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {47, 0.5}, {999, 0.5}, {47, 0.5}, {43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {45, 0.5}, {999, 0.5}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
-    TSequence Sequence_12({{52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {55, 0.5}, {999, 0.5}, {55, 0.5}, {52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {51, 0.5}, {999, 0.5}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+//    TSequence Sequence_11({{43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {47, 0.5}, {999, 0.5}, {47, 0.5}, {43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {45, 0.5}, {999, 0.5}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+//    TSequence Sequence_12({{52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {55, 0.5}, {999, 0.5}, {55, 0.5}, {52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {51, 0.5}, {999, 0.5}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_11({{43, 1}, {43, 1}, {43, 1}, {999, 1}, {999,1}, {47, 1}, {999, 1}, {47, 1}, {43, 1}, {43, 1}, {43, 1}, {999, 1}, {999, 1}, {45, 1}, {999, 1}, {45, 1}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
+    TSequence Sequence_12({{52, 1}, {52, 1}, {52, 1}, {999, 1}, {999,1}, {55, 1}, {999, 1}, {55, 1}, {52, 1}, {52, 1}, {52, 1}, {999, 1}, {999, 1}, {51, 1}, {999, 1}, {51, 1}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
     TSequence Sequence_21({ {43, 0.75}, {43, 0.75}, {43, 0.5}, \
                             {47, 0.75}, {47, 0.75}, {47, 0.5}, \
                             {43, 0.75}, {43, 0.75}, {43, 0.5}, \
@@ -5824,11 +5833,17 @@ namespace LAmourALaPlage
 
     TSequence Sequence_41({{54, 0.5},{55, 0.5}, {54, 0.5}, {50, 0.5}, {47, 0.5}, {50, 0.5}, {52, 0.5}},BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 
+//    TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
+//                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+
     TSequence Sequence_Bassline({{0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {-2, 0.5}, {0, 0.5}, {3, 0.5}, 
-                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+                                 {0, 0.5}, {5, 0.5}, {3, 0.5}, {5, 0.5}, {3, 0.5}, {0, 0.5}, {-2, 0.5}, {3, 0.5}}, Bass_ON, Bass_OFF, 47 -12, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
+
+//    TSequence Sequence_Bassline2({{0, 0.5}, {999, 0.25}, {0, 0.25}, {999, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {12, 0.5}, {10, 0.5},
+//                                {-4, 0.5}, {999, 0.25}, {-4, 0.25}, {999, 0.5}, {5, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {5, 0.5}}, Bass_ON, Bass_OFF, 28, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
 
     TSequence Sequence_Bassline2({{0, 0.5}, {999, 0.25}, {0, 0.25}, {999, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {12, 0.5}, {10, 0.5},
-                                {-4, 0.5}, {999, 0.25}, {-4, 0.25}, {999, 0.5}, {5, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {5, 0.5}}, Bass_ON, Bass_OFF, 28, false, 1.5, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+                                {-4, 0.5}, {999, 0.25}, {-4, 0.25}, {999, 0.5}, {5, 0.5}, {7, 0.5}, {10, 0.5}, {7, 0.5}, {5, 0.5}}, Bass_ON, Bass_OFF, 28, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
 
     int SmallPhraseInterlude_statemachine = 0;
 
@@ -7969,11 +7984,14 @@ void InitializePlaylist(void)
     cLAmourALaPlage.SongName = "L'amour a la plage";
     cLAmourALaPlage.BaseTempo = 119;
     cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
+//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, LAmourALaPlage::BellPad_Seq1, "Bell Pad Seq 1"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::SmallPhraseInterlude, NULL, "Interlude (1/2/3)"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, NULL, "Bassline 2"));
+//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline 1"));
+//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, NULL, "Bassline 2"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, LAmourALaPlage::Bassline_Sequence, "Bassline 1"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, LAmourALaPlage::Bassline_Sequence2, "Bassline 2"));
     cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
     cLAmourALaPlage.SetResetMinisynthFunc(LAmourALaPlage::SetupMinisynth);
 
