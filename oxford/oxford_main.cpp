@@ -5883,7 +5883,7 @@ namespace LAmourALaPlage
         XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(4);
 
         // For the synth bass - target MIDI channel 5
-        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_F,59); // Select a nice synth bass of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_F,61); // Select a nice synth bass of the 80's
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
