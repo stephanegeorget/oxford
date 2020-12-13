@@ -5815,16 +5815,22 @@ namespace LAmourALaPlage
     // E E E     G G E E E     EbEb   ) x3                           E E E G G G E E E EbEbEb   (Midi notes 51  52  55)
 //    TSequence Sequence_11({{43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {47, 0.5}, {999, 0.5}, {47, 0.5}, {43, 0.5}, {43, 0.5}, {43, 0.5}, {999, 1}, {45, 0.5}, {999, 0.5}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
 //    TSequence Sequence_12({{52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {55, 0.5}, {999, 0.5}, {55, 0.5}, {52, 0.5}, {52, 0.5}, {52, 0.5}, {999, 1}, {51, 0.5}, {999, 0.5}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
-    TSequence Sequence_11({{43, 1}, {43, 1}, {43, 1}, {999, 1}, {999,1}, {47, 1}, {999, 1}, {47, 1}, {43, 1}, {43, 1}, {43, 1}, {999, 1}, {999, 1}, {45, 1}, {999, 1}, {45, 1}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
-    TSequence Sequence_12({{52, 1}, {52, 1}, {52, 1}, {999, 1}, {999,1}, {55, 1}, {999, 1}, {55, 1}, {52, 1}, {52, 1}, {52, 1}, {999, 1}, {999, 1}, {51, 1}, {999, 1}, {51, 1}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
-    TSequence Sequence_21({ {43, 0.75}, {43, 0.75}, {43, 0.5}, \
-                            {47, 0.75}, {47, 0.75}, {47, 0.5}, \
-                            {43, 0.75}, {43, 0.75}, {43, 0.5}, \
-                            {45, 0.75}, {45, 0.75}, {45, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
-    TSequence Sequence_22({{52, 0.75}, {52, 0.75}, {52, 0.5},\
-                           {55, 0.75}, {55, 0.75}, {55, 0.5},\
-                           {52, 0.75}, {52, 0.75}, {52, 0.5},\
-                           {51, 0.75}, {51, 0.75}, {51, 0.5}}, BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
+    TSequence Sequence_11({{43, 1}, {43, 1}, {43, 1}, {999, 1}, {999, 1}, {47, 1}, {999, 1}, {47, 1},
+                           {43, 1}, {43, 1}, {43, 1}, {999, 1}, {999, 1}, {45, 1}, {999, 1}, {45, 1}},
+                           BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
+    TSequence Sequence_12({{52, 1}, {52, 1}, {52, 1}, {999, 1}, {999, 1}, {55, 1}, {999, 1}, {55, 1},
+                           {52, 1}, {52, 1}, {52, 1}, {999, 1}, {999, 1}, {51, 1}, {999, 1}, {51, 1}},
+                           BellPad_ON, BellPad_OFF, 0, false, 1.5, 0, false, TSequence::pbDownswingAndUpswing, TSequence::pbAutoLoop);
+    TSequence Sequence_21({ {43, 1}, {43, 1}, {43, 1}, \
+                            {47, 1}, {47, 1}, {47, 1}, \
+                            {43, 1}, {43, 1}, {43, 1}, \
+                            {45, 1}, {45, 1}, {45, 1}},
+                            BellPad_ON, BellPad_OFF, 0, false, 1.0, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_22({{52, 1}, {52, 1}, {52, 1},\
+                           {55, 1}, {55, 1}, {55, 1},\
+                           {52, 1}, {52, 1}, {52, 1},\
+                           {51, 1}, {51, 1}, {51, 1}},
+                           BellPad_ON, BellPad_OFF, 0, false, 1.0, 0, false, TSequence::pbDownswingOnly);
 
     TSequence Sequence_31({{79, 0.25}, {78, 0.25}, {74, 0.25}, {71, 0.25}, {67, 0.25}, {66, 3.5}},\
                              Synth_ON, Synth_OFF, 0, false, 1.5, 0, true, TSequence::pbDownswingOnly);
