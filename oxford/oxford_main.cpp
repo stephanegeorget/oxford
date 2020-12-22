@@ -66,6 +66,8 @@
 #include <chrono>
 #include <ctime>
 #include <atomic>
+#include <utility>
+#include <map>
 #include "mosquitto.h"
 #include "pthread.h"
 
@@ -716,22 +718,14 @@ void RegisterEventCallbackReleased(int key_value_param, TKeyboardCallbackFunctio
 class TPedalAnalog
 {
 private:
-    int ControllerNumber;
-    void (* OnChange)(int);
-    std::string Comment;
+    void (* OnChange)(int) = NULL;
+    std::string Comment = "DEFAULT";
 
 public:
-    TPedalAnalog(int ControllerNumber_param, void (*Function1_param)(int), std::string Comment_param)
-    {
-        ControllerNumber = 0;
-        OnChange = NULL;
-        if (ControllerNumber_param < 1 || ControllerNumber_param > 127)
-        {
+    TPedalAnalog() {}
 
-            wprintw(win_debug_messages.GetRef(), "TPedalAnalog: wrong parameter");
-            return;
-        }
-        ControllerNumber = ControllerNumber_param;
+    TPedalAnalog(void (*Function1_param)(int), const std::string Comment_param)
+    {
         OnChange = Function1_param;
         Comment = Comment_param;
     }
@@ -742,11 +736,6 @@ public:
         {
             OnChange(param);
         }
-    }
-
-    int GetControllerNumber(void)
-    {
-        return ControllerNumber;
     }
 
     std::string GetComment(void)
@@ -771,24 +760,15 @@ public:
 class TPedalDigital
 {
 private:
-    int Number;
-    void (* OnPress)(void);
-    void (* OnRelease)(void);
-    std::string Comment;
+    void (* OnPress)(void) = NULL;
+    void (* OnRelease)(void) = NULL;
+    std::string Comment = "DEFAULT";
 
 public:
-    TPedalDigital(int Number_param, void (*Function1_param)(void), void (*Function2_param)(void), std::string Comment_param)
-    {
-        Number = 0;
-        OnPress = NULL;
-        OnRelease = NULL;
-        if (Number_param < 1 || Number_param > 10)
-        {
+    TPedalDigital() {}
 
-            wprintw(win_debug_messages.GetRef(), "TPedalDigital: wrong parameter");
-            return;
-        }
-        Number = Number_param;
+    TPedalDigital(void (*Function1_param)(void), void (*Function2_param)(void), std::string Comment_param)
+    {
         OnPress = Function1_param;
         OnRelease = Function2_param;
         Comment = Comment_param;
@@ -808,11 +788,6 @@ public:
         {
             OnRelease();
         }
-    }
-
-    int GetNumber(void)
-    {
-        return Number;
     }
 
     std::string GetComment(void)
@@ -838,28 +813,30 @@ namespace BassSynth
 class TPedalboard
 {
 public:
-    std::list<TPedalDigital> PedalsDigital;
-    std::list<TPedalAnalog> PedalsAnalog;
+    std::map<int, TPedalDigital> PedalsDigital;
+    std::map<int, TPedalAnalog> PedalsAnalog;
     TPedalboard(void)
     {
         // By default: we reserve Digital pedals associated to Midi Note On 6 and 7 (so, if mapped one-to-one
         // with the FCB1010 numbers written on the pedals, the two pedals at the left of the top row), to
         // the context switch actions, i.e. move from one context to the following context, as listed in object
         // PlaylistData. In short, Pedal 6 goes back one song, Pedal 7 goes to the next song.
-        PedalsDigital.push_back(TPedalDigital(6, ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song"));
-        PedalsDigital.push_back(TPedalDigital(7, ContextNextPress, ContextNextRelease, "Playlist: next song"));
+     //   PedalsDigital.insert(std::pair<int, TPedalDigital>(6, TPedalDigital(ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song")));
+        
+        PedalsDigital[6] = TPedalDigital(ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song");
+        PedalsDigital[7] = TPedalDigital(ContextNextPress, ContextNextRelease, "Playlist: next song");
 
         // Let's also reserve more pedals to control the Rack Eleven:
         // Pedal 8 for FX loop, normally the B2M synth
         // Pedal 9 for FX1, normally a compressor
         // Pedal 10 for wah
         // Analog pedal 2 for wah value
-        // Analog pedal 1 for the B2M synth volume
-        PedalsDigital.push_back(TPedalDigital(8, ElevenRack::FXLoopToggle, NULL, "11R+XV5080 Synth"));
-        PedalsDigital.push_back(TPedalDigital(9, ElevenRack::FX1_Toggle, NULL, "11R COMP"));
-        PedalsDigital.push_back(TPedalDigital(10, ElevenRack::WahToggle, NULL, "11R WAH"));
-        PedalsAnalog.push_back(TPedalAnalog(2, ElevenRack::WahSetValue, "11R WAH VAL"));
-        PedalsAnalog.push_back(TPedalAnalog(1, BassSynth::SetVolume, "BASS SYNTH VOL"));
+        // Analog pedal 1 free for other uses, by default
+        // => but all these settings can be overriden on a per-context basis.
+        PedalsDigital[8] = TPedalDigital(ElevenRack::FXLoopToggle, NULL, "11R+XV5080 Synth");
+        PedalsDigital[9] = TPedalDigital(ElevenRack::FX1_Toggle, NULL, "11R COMP");
+        PedalsDigital[10] = TPedalDigital(ElevenRack::WahToggle, NULL, "11R WAH");
+        PedalsAnalog[2] = TPedalAnalog(ElevenRack::WahSetValue, "11R WAH VAL");
     }
 };
 
@@ -1834,13 +1811,10 @@ public:
     void PerformanceSelect(TXV5080::PerformanceGroup PerformanceGroup_param, TInt_1_128 const PatchNumber_param)
     {
         System.SystemCommon.SoundMode.Perform();
-//        System.SystemCommon.PerformanceControlChannel.Set(1);
         switch (PerformanceGroup_param)
         {
         case PerformanceGroup::USER:
             // From user's manual page 21
-//            pMIDI_Port.SendControlChange(1, 0, 85);
-//            pMIDI_Port.SendControlChange(1, 32, 0);
             System.SystemCommon.PerformanceBankSelectMSB.Set(85);
             System.SystemCommon.PerformanceBankSelectLSB.Set(0);
             System.SystemCommon.PerformanceProgramNumber.Set(PatchNumber_param);
@@ -3555,120 +3529,6 @@ void BassSynth::SetVolume(int Value)
 }
 
 
-/**
-Definition of the TScaleName type
-*/
-typedef std::string TScaleName;
-
-
-
-/**
-This class represents a music note
-*/
-class TNote__
-{
-public:
-    TNote__(std::string const NameUS_param,
-                std::string const NameEuropean_param,
-                float Frequency_param,
-                int MidiNote_param)
-    {
-        NameUS = NameUS_param;
-        NameEuropean = NameUS_param;
-        Frequency = Frequency_param;
-        MidiNote = MidiNote_param;
-    };
-
-    operator int()
-    {
-        return static_cast<int>(MidiNote);
-    }
-
-    operator std::string()
-    {
-        return "blah";
-    }
-
-    operator TInt_0_127()
-    {
-        return MidiNote;
-    }
-
-private:
-    static std::map<TScaleName, std::string[]> NoteNamesUS;
-//    static std::map<int,std::string> map_MidiNoteNumber__NameUS = {0, "C-2}
-
-    std::string NameUS;
-    std::string NameEuropean;
-    float Frequency;
-    TInt_0_127 MidiNote;
-
-    void Test(void)
-    {
-        TNote__ testNote("B", "Si", 1234, 20);
-    }
-
-};
-
-#if 0
-
-
-static std::map<TScaleName, std::vector<std::string>> NoteNamesUS =
-{
-    {"C", {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}},
-    {"Db", {"Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C"}},
-    {"Dmaj", {"D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"E", {"E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-    {"Eb", {"Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "Cb", "C", "Db", "D"}},
-};
-
-//static std::map<int,std::string> TNote__::map_MidiNoteNumber__NameUS = {0, "C-2}
-
-#endif // 0
-
-/**
-This class represent a musical chord
-*/
-class TChord
-{
-public:
-    TChord(void) {};
-    void Set(TNote__ Note) {};
-    void Set(std::vector<TNote__> v_Notes) {};
-
-};
-
-
-/**
-This class allows to filter notes outside a given key or set of allowed notes.
-*/
-class TNoteFilter
-{
-public:
-    TNoteFilter(void) {};
-
-    void Allow(TChord) {};
-//    void Allow(std::vector<TToneHeight> v_ToneHeight) {};
-
-
-};
-
-
-//XV5080.SetSoundMode(sm_perform);
-
-
-
-
 // Thread used by PlayNote() to keep track of time, for each note.
 void playNoteThread(TPlayNoteMsg msg)
 {
@@ -3700,24 +3560,9 @@ void midiPlay(int octave, unsigned char noteInScale)
 }
 
 
-/**
-Overload function for midiPlay, which takes a pointer to void parameter
-*/
-void midiPlay_wrapper(void * pVoid)
-{
-
-}
-
-
-
 void SelectContextInPlaylist(std::list<TContext*> &ContextList, bool);
 void SelectContextInPlaylist(std::list<TContext*> &ContextList);
 void SelectContextInPlaylist(std::list<TContext*> &ContextList);
-
-
-
-
-
 
 namespace MetronomeMaster
 {
@@ -4028,45 +3873,25 @@ void Z_p(void * pVoid)
     value = value -8;
     if (value < 0) value = 0;
 
-//    All_In_You::Filter(value);
     All_In_You::SoaringLead(value);
-        //system("aplay ./wav/FXCwarpenterLaserBig.wav &");
-    /*    XV5080.System.SystemCommon.PerformanceBankSelectMSB.Set(87);
-        XV5080.System.SystemCommon.PerformanceBankSelectLSB.Set(64);
-        XV5080.System.SystemCommon.PerformanceProgramNumber.Set(10);
-        XV5080.System.SystemCommon.SystemTempo.Set(130);*/
-    //Kungs_This_Girl::Sequence_1_Start_PedalPressed();
-    //People_Help_The_People::BellPedalPressed();
- //   Djadja::Sequence_1_Start_PedalPressed();
-
 }
 
 void Z_r(void * pVoid)
 {
-//    Kungs_This_Girl::Sequence_1_Start_PedalReleased();
-//    I_Follow_Rivers::Sequence_1_Start_PedalReleased();
-    //People_Help_The_People::BellPedalReleased();
-//    Djadja::Sequence_1_Start_PedalReleased();
     Crazy::Sax();
 }
 
 
 void X_p(void * pVoid)
 {
-    //Kungs_This_Girl::TapTempo();
-    //I_Follow_Rivers::Sequence_1_Start_PedalPressed();
     value = value +8;
     if (value > 127) value = 127;
-//    All_In_You::Filter(value);
     All_In_You::SoaringLead(value);
-//    Crazy::OpeningSequence();
-//    Crazy::Sax();
 }
 
 void X_r(void * pVoid)
 {
-    //Kungs_This_Girl::TapTempo();
-    //I_Follow_Rivers::Sequence_1_Start_PedalReleased();
+
 }
 
 
@@ -4153,26 +3978,26 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_C, C_p, 0);
 
     // The pedal board digital pedals can be activated here, with keys QSDFGHJKLM
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_A, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 1) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_S, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 2) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_D, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 3) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_F, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 4) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_G, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 5) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_H, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 6) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_J, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 7) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_K, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 8) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_L, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 9) i.Release();}, 0);
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Press();}, 0);
-    ComputerKeyboard::RegisterEventCallbackReleased(KEY_SEMICOLON, [](void * foo){TContext * pContext = PlaylistPosition; for (auto i : pContext->Pedalboard.PedalsDigital) if(i.GetNumber() == 10) i.Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_A, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[1].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_A, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[1].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_S, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[2].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_S, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[2].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_D, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[3].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_D, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[3].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_F, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[4].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_F, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[4].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_G, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[5].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_G, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[5].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_H, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[6].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_H, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[6].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_J, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[7].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_J, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[7].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_K, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[8].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_K, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[8].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_L, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[10].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_L, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[10].Release();}, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_SEMICOLON, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[11].Press();}, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_SEMICOLON, [](void * foo){PlaylistPosition->Pedalboard.PedalsDigital[11].Release();}, 0);
 
 
 //    kbd_callbacks[KEY_A] =
@@ -7137,7 +6962,7 @@ void Init(void)
     DistOFF(false);
     ModOFF(false);
     WahOFF(false);
-    FX1_OFF(false);
+    FX1_ON(false);
     FXLoopOFF(false);
 }
 
@@ -7164,18 +6989,16 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
             pContext = PlaylistPosition;
         }
 
-        for (auto PedalDigital : pContext->Pedalboard.PedalsDigital)
+        if (pContext->Pedalboard.PedalsDigital.count(rxNote) == 1)
         {
-            if (rxNote == PedalDigital.GetNumber())
+            // That specific pedal number exists
+            if (rxVolume > 0)
             {
-                if (rxVolume > 0)
-                {
-                    PedalDigital.Press();
-                }
-                if (rxVolume == 0)
-                {
-                    PedalDigital.Release();
-                }
+                pContext->Pedalboard.PedalsDigital[rxNote].Press();
+            }
+            if (rxVolume == 0)
+            {
+                pContext->Pedalboard.PedalsDigital[rxNote].Release();
             }
         }
     }
@@ -7240,67 +7063,12 @@ std::atomic<int> KeyboardNotesON_Count(0);
 // ************************************************************
 void MIDI_B_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
-    static int KeyboardNoteLow = 0;
-    static int KeyboardNoteHigh = 127;
-    static TInt_0_127 MasterVolume;
-    MasterVolume = 127;
     static TInt_1_16 KbdMidiChannelTx;
     KbdMidiChannelTx = MIDI_CHANNEL_MASTER_KBD_XV5080;
 
 
-    // Calibrate keyboard size
-    // User must hit once the lowest key and the highest key of the keyboard.
-    #if KBD_CALIBRATE
-    if ((KeyboardNoteLow == 0 || KeyboardNoteHigh == 127))
-    {
-        if (rxNote < 64)
-        {
-            KeyboardNoteLow = rxNote;
-        }
-
-        if (rxNote > 64)
-        {
-            KeyboardNoteHigh = rxNote;
-        }
-        return;
-    }
-    #endif
-
     if (rxNote >= 1 && rxNote <= 127)
     {
-        #if MIDI_KEYBOARD_CONTROLS_ON_KEYS
-        if (rxNote == KeyboardNoteHigh) // Last key of the keyboard
-        {
-            MasterVolume = MasterVolume + 5;
-            Banner.SetMessage("KBD VOL +");
-            XV5080.System.SystemCommon.MasterLevel.Set(MasterVolume);
-            return;
-        }
-
-        if (rxNote == KeyboardNoteHigh -1) // Last key -1
-        {
-            MasterVolume = MasterVolume + (0 - 5);
-            Banner.SetMessage("KBD VOL -");
-            XV5080.System.SystemCommon.MasterLevel.Set(MasterVolume);
-            return;
-        }
-
-        if (rxNote == KeyboardNoteHigh -2) // Last key -2
-        {
-            KbdMidiChannelTx = KbdMidiChannelTx + 1;
-            Banner.SetMessage("KBD CHN" + std::to_string(KbdMidiChannelTx));
-            return;
-        }
-
-        if (rxNote == KeyboardNoteHigh -4) // Last key -4
-        {
-            KbdMidiChannelTx = KbdMidiChannelTx - 1;
-            Banner.SetMessage("KBD CHN" + std::to_string(KbdMidiChannelTx));
-            return;
-        }
-
-        #endif // MIDI_KEYBOARD_CONTROLS_ON_KEYS
-
         // Keep tabs on how many notes are currently ON
         // That will be used to switch ON or OFF the MIDI Receive of specific parts, which
         // can be done only when all the notes are OFF (else, one part may receive more
@@ -7566,7 +7334,7 @@ void MIDI_B_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBend
 
 // This hook function is called whenever a Controller Change event is
 // received on MIDI A IN
-void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt_0_127 rxControllerValue)
+void MIDI_A_IN_CC_Event(TInt_1_16 const rxChannel, TInt_0_127 const rxControllerNumber, TInt_0_127 const rxControllerValue)
 {
     TContext * pContext;
     {
@@ -7574,12 +7342,11 @@ void MIDI_A_IN_CC_Event(TInt_1_16 rxChannel, TInt_0_127 rxControllerNumber, TInt
         std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
         pContext = PlaylistPosition;
     }
-    for (TPedalAnalog PedalAnalog : pContext->Pedalboard.PedalsAnalog)
+
+    if (pContext->Pedalboard.PedalsAnalog.count((int) rxControllerNumber) == 1)
     {
-        if (rxControllerNumber == PedalAnalog.GetControllerNumber())
-        {
-            PedalAnalog.Change(rxControllerValue);
-        }
+        // This analog pedal exists
+        pContext->Pedalboard.PedalsAnalog[rxControllerNumber].Change(rxControllerValue);
     }
 }
 
@@ -7597,11 +7364,11 @@ void InitializePlaylist(void)
     cRigUp.SetInitFunc(RigUp::Init);
     cRigUp.SongName = "OXFORD RIG UP";
     cRigUp.Comments = "Miscellaneous tools for band rigup";
-    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, RigUp::WhiteNoiseUniform, NULL, "White noise, uniform"));
-    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, RigUp::WhiteNoiseGaussian, NULL, "White noise, gaussian"));
-    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, RigUp::SineWaveOn, NULL, "Sine Wave ON"));
-    cRigUp.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, RigUp::SineWaveOff, NULL, "Sine Wave OFF"));
-    cRigUp.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, RigUp::SineWavePitch, "Adjust sine wave pitch"));
+    cRigUp.Pedalboard.PedalsDigital[1] = TPedalDigital(RigUp::WhiteNoiseUniform, NULL, "White noise, uniform");
+    cRigUp.Pedalboard.PedalsDigital[2] = TPedalDigital(RigUp::WhiteNoiseGaussian, NULL, "White noise, gaussian");
+    cRigUp.Pedalboard.PedalsDigital[3] = TPedalDigital(RigUp::SineWaveOn, NULL, "Sine Wave ON");
+    cRigUp.Pedalboard.PedalsDigital[4] = TPedalDigital(RigUp::SineWaveOff, NULL, "Sine Wave OFF");
+    cRigUp.Pedalboard.PedalsAnalog[1] = TPedalAnalog(RigUp::SineWavePitch, "Adjust sine wave pitch");
 
 
     cFlyMeToTheMoon.Author = "Count Basie";
@@ -7693,9 +7460,9 @@ void InitializePlaylist(void)
     cAroundTheWorld.Author = "Daft Punk";
     cAroundTheWorld.SongName = "Around The World";
     cAroundTheWorld.BaseTempo = 113;
-    cAroundTheWorld.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, DaftPunk::AroundTheWorld::LowPassFilter, "Low Pass Filter"));
-    cAroundTheWorld.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, DaftPunk::AroundTheWorld::LoPassFilterEnable, NULL, "LowPass ON"));
-    cAroundTheWorld.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, DaftPunk::AroundTheWorld::LoPassFilterDisable, NULL, "LowPass OFF"));
+    cAroundTheWorld.Pedalboard.PedalsAnalog[1] = TPedalAnalog(DaftPunk::AroundTheWorld::LowPassFilter, "Low Pass Filter");
+    cAroundTheWorld.Pedalboard.PedalsDigital[1] = TPedalDigital(DaftPunk::AroundTheWorld::LoPassFilterEnable, NULL, "LowPass ON");
+    cAroundTheWorld.Pedalboard.PedalsDigital[2] = TPedalDigital(DaftPunk::AroundTheWorld::LoPassFilterDisable, NULL, "LowPass OFF");
     cAroundTheWorld.SetInitFunc(DaftPunk::AroundTheWorld::LoPassFilterEnable);
 
     cGetLucky.Author = "Daft Punk";
@@ -7714,11 +7481,9 @@ void InitializePlaylist(void)
     cLockedOutOfHeaven.SongName = "Locked out of heaven";
     cLockedOutOfHeaven.BaseTempo = 140;
     cLockedOutOfHeaven.SetInitFunc(BrunoMars::LockedOutOfHeaven::Init);
-//    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, BrunoMars::LockedOutOfHeaven::Yeah, BrunoMars::LockedOutOfHeaven::Yeah, "Yeah x8 + Hooh"));
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, []{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalPressed();}, []{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalReleased();}, "Yeah/hooh"));
-//    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, BrunoMars::LockedOutOfHeaven::Hooh, NULL, "Hooh"));
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren"));
-    cLockedOutOfHeaven.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica"));
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital[1] = TPedalDigital([]{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalPressed();}, []{BrunoMars::LockedOutOfHeaven::Sequence.Start_PedalReleased();}, "Yeah/hooh");
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital[3] = TPedalDigital(BrunoMars::LockedOutOfHeaven::Siren, NULL, "Siren");
+    cLockedOutOfHeaven.Pedalboard.PedalsDigital[4] = TPedalDigital(BrunoMars::LockedOutOfHeaven::Cuica, NULL, "Cuica");
 
 
 
@@ -7775,7 +7540,7 @@ void InitializePlaylist(void)
     cManDown.Author = "Rihanna";
     cManDown.SongName = "Man Down";
     cManDown.BaseTempo = 145;
-    cManDown.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::ManDown::BoatSiren, NULL, "Boat Siren"));
+    cManDown.Pedalboard.PedalsDigital[1] = TPedalDigital(Rihanna::ManDown::BoatSiren, NULL, "Boat Siren");
 
     cShouldIStay.Author = "The Clash";
     cShouldIStay.SongName = "Should I stay";
@@ -7787,47 +7552,46 @@ void InitializePlaylist(void)
 
     cAveMaria.Author = "";
     cAveMaria.SongName = "Ave Maria";
-    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, AveMaria::AveMaria_Start, NULL, "MIDI sequencer start"));
-    cAveMaria.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, AveMaria::AveMaria_Stop, NULL, "MIDI sequencer stop"));
-    cAveMaria.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, AveMaria::ChangeTempo, "Adjust tempo"));
+    cAveMaria.Pedalboard.PedalsDigital[1] = TPedalDigital(AveMaria::AveMaria_Start, NULL, "MIDI sequencer start");
+    cAveMaria.Pedalboard.PedalsDigital[2] = TPedalDigital(AveMaria::AveMaria_Stop, NULL, "MIDI sequencer stop");
+    cAveMaria.Pedalboard.PedalsAnalog[1] = TPedalAnalog(AveMaria::ChangeTempo, "Adjust tempo");
 
     cCapitaineFlam.Author = "Jean-Jacques Debout";
     cCapitaineFlam.SongName = "Capitaine Flam";
     cCapitaineFlam.BaseTempo = 153;
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, CapitaineFlam::Starship1, NULL, "Starship Fx 1"));
-//    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Starship2, NULL, "Starship Fx 2"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo"));
-    cCapitaineFlam.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel"));
+    cCapitaineFlam.Pedalboard.PedalsDigital[1] = TPedalDigital(CapitaineFlam::Laser_On, CapitaineFlam::Laser_Off, "Laser pulses");
+    cCapitaineFlam.Pedalboard.PedalsDigital[2] = TPedalDigital(CapitaineFlam::Starship1, NULL, "Starship Fx 1");
+    cCapitaineFlam.Pedalboard.PedalsDigital[3] = TPedalDigital(CapitaineFlam::Sequence_1_Start_PedalDown, CapitaineFlam::Sequence_1_Start_PedalUp, "Trumpets - Down/Up=Tempo");
+    cCapitaineFlam.Pedalboard.PedalsDigital[4] = TPedalDigital(CapitaineFlam::Sequence_Start_PedalDown, CapitaineFlam::Sequence_Start_PedalUp, "Trumpets - Down/Up=Tempo");
+    cCapitaineFlam.Pedalboard.PedalsDigital[5] = TPedalDigital(CapitaineFlam::Sequence_Stop_PedalDown, NULL, "Trumpets - Stop/Cancel");
     cCapitaineFlam.SetInitFunc(CapitaineFlam::Init);
 
     cWildThoughts.Author = "Rihanna";
     cWildThoughts.SongName = "Wild Thoughts";
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off, "First chord"));
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off, "Second chord"));
-    cWildThoughts.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off, "Third chord"));
+    cWildThoughts.Pedalboard.PedalsDigital[1] = TPedalDigital(Rihanna::WildThoughts::Chord1_On, Rihanna::WildThoughts::Chord1_Off, "First chord");
+    cWildThoughts.Pedalboard.PedalsDigital[2] = TPedalDigital(Rihanna::WildThoughts::Chord2_On, Rihanna::WildThoughts::Chord2_Off, "Second chord");
+    cWildThoughts.Pedalboard.PedalsDigital[3] = TPedalDigital(Rihanna::WildThoughts::Chord3_On, Rihanna::WildThoughts::Chord3_Off, "Third chord");
 
     cGangstaParadise.Author = "Coolio";
     cGangstaParadise.SongName = "Gangsta's paradise";
-    cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Gansta_s_Paradise::Start_NoteOn, Gansta_s_Paradise::Start_NoteOff, "Sequence; Press: first note, Release: set tempo and loop"));
-    cGangstaParadise.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Gansta_s_Paradise::Stop, NULL, "Sequence; Press: first note, Release: set tempo and loop"));
+    cGangstaParadise.Pedalboard.PedalsDigital[1] = TPedalDigital(Gansta_s_Paradise::Start_NoteOn, Gansta_s_Paradise::Start_NoteOff, "Sequence; Press: first note, Release: set tempo and loop");
+    cGangstaParadise.Pedalboard.PedalsDigital[2] = TPedalDigital(Gansta_s_Paradise::Stop, NULL, "Sequence; Press: first note, Release: set tempo and loop");
 
     cBeatIt.Author = "Mickael Jackson";
     cBeatIt.SongName = "Beat It";
     cBeatIt.Comments = "In C# -- C#, B, C#, B, A, B, C#, B";
     cBeatIt.BaseTempo = 137;
     cBeatIt.SetInitFunc(MickaelJackson::BeatIt::Init);
-    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MickaelJackson::BeatIt::Chord1_On, MickaelJackson::BeatIt::Chord1_Off, "Chord 1"));
-    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MickaelJackson::BeatIt::Chord2_On, MickaelJackson::BeatIt::Chord2_Off, "Chord 2"));
-    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3"));
-    cBeatIt.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MickaelJackson::BeatIt::Chord4_On, MickaelJackson::BeatIt::Chord4_Off, "Chord 4"));
+    cBeatIt.Pedalboard.PedalsDigital[1] = TPedalDigital(MickaelJackson::BeatIt::Chord1_On, MickaelJackson::BeatIt::Chord1_Off, "Chord 1");
+    cBeatIt.Pedalboard.PedalsDigital[2] = TPedalDigital(MickaelJackson::BeatIt::Chord2_On, MickaelJackson::BeatIt::Chord2_Off, "Chord 2");
+    cBeatIt.Pedalboard.PedalsDigital[3] = TPedalDigital(MickaelJackson::BeatIt::Chord3_On, MickaelJackson::BeatIt::Chord3_Off, "Chord 3");
+    cBeatIt.Pedalboard.PedalsDigital[4] = TPedalDigital(MickaelJackson::BeatIt::Chord4_On, MickaelJackson::BeatIt::Chord4_Off, "Chord 4");
 
     cLady.Author = "Modjo";
     cLady.SongName = "Lady (Hear me tonight)";
     cLady.BaseTempo = 122;
     cLady.SetInitFunc(Modjo::Lady::Init);
-    cLady.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)"));
+    cLady.Pedalboard.PedalsDigital[1] = TPedalDigital(Modjo::Lady::Solo_On_Off, NULL, "Solo ON/OFF (Avid11)");
 
     cLesCitesDOr.Author = "Unknown";
     cLesCitesDOr.SongName = "Les mysterieuses cites d'or";
@@ -7837,13 +7601,13 @@ void InitializePlaylist(void)
     cHuman.Author = "Rag'n'Bone Man";
     cHuman.SongName = "Human (I'm only)";
     cHuman.SetInitFunc(Human::Init);
-    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Human::Strings_D, NULL, "Strings D"));
-    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Human::Strings_B, NULL, "Strings B"));
-    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Human::Strings_Asharp, NULL, "Strings A#"));
-    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Human::Strings_OFF, NULL, "Strings Off"));
-    cHuman.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Human::BreakingGlass, NULL, "Breaking Glass"));
+    cHuman.Pedalboard.PedalsDigital[1] = TPedalDigital(Human::Strings_D, NULL, "Strings D");
+    cHuman.Pedalboard.PedalsDigital[2] = TPedalDigital(Human::Strings_B, NULL, "Strings B");
+    cHuman.Pedalboard.PedalsDigital[3] = TPedalDigital(Human::Strings_Asharp, NULL, "Strings A#");
+    cHuman.Pedalboard.PedalsDigital[4] = TPedalDigital(Human::Strings_OFF, NULL, "Strings Off");
+    cHuman.Pedalboard.PedalsDigital[5] = TPedalDigital(Human::BreakingGlass, NULL, "Breaking Glass");
 
-    cHuman.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, Human::Strings_Volume, "Strings Vol"));
+    cHuman.Pedalboard.PedalsAnalog[1] = TPedalAnalog(Human::Strings_Volume, "Strings Vol");
 
 
     cNewYorkAvecToi.Author = "Telephone";
@@ -7871,9 +7635,9 @@ void InitializePlaylist(void)
     cAllInYou.Author = "Synapson";
     cAllInYou.SongName = "All In You";
     cAllInYou.BaseTempo = 120;
-    cAllInYou.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
-    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, All_In_You::Filter,"Filter"));
-    cAllInYou.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(2, All_In_You::SoaringLead,"Soaring Lead"));
+    cAllInYou.Pedalboard.PedalsDigital[1] = TPedalDigital(TapTempo, NULL, "Tap tempo");
+    cAllInYou.Pedalboard.PedalsAnalog[1] = TPedalAnalog(All_In_You::Filter,"Filter");
+    cAllInYou.Pedalboard.PedalsAnalog[2] = TPedalAnalog(All_In_You::SoaringLead,"Soaring Lead");
     cAllInYou.SetInitFunc(All_In_You::Init);
 
     cChandelier.Author = "Sia";
@@ -7882,11 +7646,11 @@ void InitializePlaylist(void)
     cThisGirl.Author = "Kung";
     cThisGirl.SongName = "This Girl";
     cThisGirl.BaseTempo = 122;
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL,"Tap tempo"));
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1"));
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2"));
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, Kungs_This_Girl::Sequence_3_Start_PedalPressed, Kungs_This_Girl::Sequence_3_Start_PedalReleased,"Sequence 3"));
-    cThisGirl.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Kungs_This_Girl::Sequences_Stop, NULL,"Seq STOP"));
+    cThisGirl.Pedalboard.PedalsDigital[1] = TPedalDigital(TapTempo, NULL,"Tap tempo");
+    cThisGirl.Pedalboard.PedalsDigital[2] = TPedalDigital(Kungs_This_Girl::Sequence_1_Start_PedalPressed, Kungs_This_Girl::Sequence_1_Start_PedalReleased,"Sequence 1");
+    cThisGirl.Pedalboard.PedalsDigital[3] = TPedalDigital(Kungs_This_Girl::Sequence_2_Start_PedalPressed, Kungs_This_Girl::Sequence_2_Start_PedalReleased,"Sequence 2");
+    cThisGirl.Pedalboard.PedalsDigital[4] = TPedalDigital(Kungs_This_Girl::Sequence_3_Start_PedalPressed, Kungs_This_Girl::Sequence_3_Start_PedalReleased,"Sequence 3");
+    cThisGirl.Pedalboard.PedalsDigital[5] = TPedalDigital(Kungs_This_Girl::Sequences_Stop, NULL,"Seq STOP");
     cThisGirl.SetInitFunc(Kungs_This_Girl::Init);
 
 
@@ -7905,8 +7669,8 @@ void InitializePlaylist(void)
     cIFollowRivers.Author = "Likke Li";
     cIFollowRivers.SongName = "I Follow Rivers";
     cIFollowRivers.BaseTempo = 118;
-    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, TapTempo, NULL, "Tap tempo"));
-    cIFollowRivers.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence"));
+    cIFollowRivers.Pedalboard.PedalsDigital[1] = TPedalDigital(TapTempo, NULL, "Tap tempo");
+    cIFollowRivers.Pedalboard.PedalsDigital[2] = TPedalDigital(I_Follow_Rivers::Sequence_1_Start_PedalPressed, I_Follow_Rivers::Sequence_1_Start_PedalReleased, "Synth tom sequence");
     cIFollowRivers.SetInitFunc(I_Follow_Rivers::Init);
 
     cIsThisLove.Author = "Bob Marley";
@@ -7916,12 +7680,12 @@ void InitializePlaylist(void)
     cPeople.Author = "Birdie";
     cPeople.SongName = "People Help The People";
     cPeople.SetInitFunc(People_Help_The_People::Init);
-    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, People_Help_The_People::Strings_F, NULL, "Strings F"));
-    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, People_Help_The_People::Strings_G, NULL, "Strings F"));
-    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, People_Help_The_People::Strings_A, NULL, "Strings F"));
-    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, People_Help_The_People::Strings_OFF, NULL, "Strings STOP"));
-    cPeople.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, People_Help_The_People::Strings_Volume, "Strings Volume"));
-    cPeople.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, People_Help_The_People::BellPedalPressed, People_Help_The_People::BellPedalReleased, "Bells"));
+    cPeople.Pedalboard.PedalsDigital[1] = TPedalDigital(People_Help_The_People::Strings_F, NULL, "Strings F");
+    cPeople.Pedalboard.PedalsDigital[2] = TPedalDigital(People_Help_The_People::Strings_G, NULL, "Strings F");
+    cPeople.Pedalboard.PedalsDigital[3] = TPedalDigital(People_Help_The_People::Strings_A, NULL, "Strings F");
+    cPeople.Pedalboard.PedalsDigital[4] = TPedalDigital(People_Help_The_People::Strings_OFF, NULL, "Strings STOP");
+    cPeople.Pedalboard.PedalsAnalog[1] = TPedalAnalog(People_Help_The_People::Strings_Volume, "Strings Volume");
+    cPeople.Pedalboard.PedalsDigital[5] = TPedalDigital(People_Help_The_People::BellPedalPressed, People_Help_The_People::BellPedalReleased, "Bells");
 
 
 
@@ -7933,15 +7697,15 @@ void InitializePlaylist(void)
     cMorrissonJig.SongName = "Morisson Jig";
     cMorrissonJig.BaseTempo = 135;
     cMorrissonJig.SetInitFunc(MorrissonJig::Init);
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MorrissonJig::BagpipeLow, NULL, "Bagpipe Low"));
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid"));
-    cMorrissonJig.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MorrissonJig::BagpipeHigh, NULL, "Bagpipe High"));
-    cMorrissonJig.Pedalboard.PedalsAnalog.push_back(TPedalAnalog(1, MorrissonJig::BagpipeVelocity, "Bagpipe Level"));
+    cMorrissonJig.Pedalboard.PedalsDigital[1] = TPedalDigital(MorrissonJig::BagpipeLow, NULL, "Bagpipe Low");
+    cMorrissonJig.Pedalboard.PedalsDigital[2] = TPedalDigital(MorrissonJig::BagpipeMid, NULL, "Bagpipe Mid");
+    cMorrissonJig.Pedalboard.PedalsDigital[3] = TPedalDigital(MorrissonJig::BagpipeHigh, NULL, "Bagpipe High");
+    cMorrissonJig.Pedalboard.PedalsAnalog[1] = TPedalAnalog(MorrissonJig::BagpipeVelocity, "Bagpipe Level");
 
     cDjadja.Author = "Aya Nakamura";
     cDjadja.SongName = "Djadja";
     cDjadja.SetInitFunc(Djadja::Init);
-    cDjadja.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Djadja::Sequence_1_Start_PedalPressed, Djadja::Sequence_1_Start_PedalReleased, "Marimba seq."));
+    cDjadja.Pedalboard.PedalsDigital[1] = TPedalDigital(Djadja::Sequence_1_Start_PedalPressed, Djadja::Sequence_1_Start_PedalReleased, "Marimba seq.");
 
 
     cCaCestVraimentToi.Author = "Telephone";
@@ -7951,10 +7715,10 @@ void InitializePlaylist(void)
     cMixPolice.Author = "Police";
     cMixPolice.SongName = "I can't stand../Message../Roxanne";
     cMixPolice.SetInitFunc(MixPolice::Init);
-    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, MixPolice::Chord_G, NULL, "Chord G"));
-    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, MixPolice::Chord_A, NULL, "Chord A"));
-    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, MixPolice::Chord_Bb, NULL, "Chord Bb"));
-    cMixPolice.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, MixPolice::Chord_C, NULL, "Chord C"));
+    cMixPolice.Pedalboard.PedalsDigital[1] = TPedalDigital(MixPolice::Chord_G, NULL, "Chord G");
+    cMixPolice.Pedalboard.PedalsDigital[2] = TPedalDigital(MixPolice::Chord_A, NULL, "Chord A");
+    cMixPolice.Pedalboard.PedalsDigital[3] = TPedalDigital(MixPolice::Chord_Bb, NULL, "Chord Bb");
+    cMixPolice.Pedalboard.PedalsDigital[4] = TPedalDigital(MixPolice::Chord_C, NULL, "Chord C");
     
     cHotStuff.Author = "Donna Summer";
     cHotStuff.SongName = "Hot stuff";
@@ -7968,14 +7732,14 @@ void InitializePlaylist(void)
     cHabits.SongName = "Habits";
     cHabits.BaseTempo = 120;
     cHabits.SetInitFunc(Habits::Init);
-    cHabits.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Habits::Uh_uh, NULL, "Sample UH-UH"));
+    cHabits.Pedalboard.PedalsDigital[1] = TPedalDigital(Habits::Uh_uh, NULL, "Sample UH-UH");
 
     cCrazy.Author = "Gnarls Barkley";
     cCrazy.SongName = "Crazy";
     cCrazy.BaseTempo = 120;
     cCrazy.SetInitFunc(Crazy::Init);
-    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, Crazy::OpeningSequence, NULL, "Opening"));
-    cCrazy.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Crazy::Sax, Crazy::Sax, "Sax"));
+    cCrazy.Pedalboard.PedalsDigital[1] = TPedalDigital(Crazy::OpeningSequence, NULL, "Opening");
+    cCrazy.Pedalboard.PedalsDigital[2] = TPedalDigital(Crazy::Sax, Crazy::Sax, "Sax");
  
 
     cLaFoule.Author = "Edith Piaf";
@@ -7990,30 +7754,21 @@ void InitializePlaylist(void)
     cLAmourALaPlage.SongName = "L'amour a la plage";
     cLAmourALaPlage.BaseTempo = 119;
     cLAmourALaPlage.SetInitFunc(LAmourALaPlage::Init);
-//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, NULL, "Bell Pad Seq 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(1, LAmourALaPlage::BellPad_Seq1, LAmourALaPlage::BellPad_Seq1, "Bell Pad Seq 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(3, LAmourALaPlage::SmallPhraseInterlude, NULL, "Interlude (1/2/3)"));
-//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, NULL, "Bassline 1"));
-//    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, NULL, "Bassline 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(4, LAmourALaPlage::Bassline_Sequence, LAmourALaPlage::Bassline_Sequence, "Bassline 1"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, LAmourALaPlage::Bassline_Sequence2, LAmourALaPlage::Bassline_Sequence2, "Bassline 2"));
-    cLAmourALaPlage.Pedalboard.PedalsDigital.push_back(TPedalDigital(8, LAmourALaPlage::StopAll, NULL, "Panic stop"));
+    cLAmourALaPlage.Pedalboard.PedalsDigital[1] = TPedalDigital(LAmourALaPlage::BellPad_Seq1, LAmourALaPlage::BellPad_Seq1, "Bell Pad Seq 1");
+    cLAmourALaPlage.Pedalboard.PedalsDigital[2] = TPedalDigital(LAmourALaPlage::BellPad_Seq2, NULL, "Bell Pad Seq 2");
+    cLAmourALaPlage.Pedalboard.PedalsDigital[3] = TPedalDigital(LAmourALaPlage::SmallPhraseInterlude, NULL, "Interlude (1/2/3)");
+    cLAmourALaPlage.Pedalboard.PedalsDigital[4] = TPedalDigital(LAmourALaPlage::Bassline_Sequence, LAmourALaPlage::Bassline_Sequence, "Bassline 1");
+    cLAmourALaPlage.Pedalboard.PedalsDigital[5] = TPedalDigital(LAmourALaPlage::Bassline_Sequence2, LAmourALaPlage::Bassline_Sequence2, "Bassline 2");
+    cLAmourALaPlage.Pedalboard.PedalsDigital[8] = TPedalDigital(LAmourALaPlage::StopAll, NULL, "Panic stop");
     cLAmourALaPlage.SetResetMinisynthFunc(LAmourALaPlage::SetupMinisynth);
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
     cHavanna.BaseTempo = 112; // 105
     cHavanna.SetInitFunc(Havanna::Init);
-    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(1,Havanna:: PianoRiff_1, NULL, "Piano Riff #1"));
-    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(2, Havanna::PianoRiff_2, NULL, "Piano Riff #2"));
-    cHavanna.Pedalboard.PedalsDigital.push_back(TPedalDigital(5, Havanna::StopAll, NULL, "Stop All"));
-
-
-//   cILoveRocknRoll = "I love Rock'n'Roll";
-    //  cIloveRocknRoll.BaseTempo = 91;
-
-    //cIWantAHighwayToHell = "I want a highway to hell"
+    cHavanna.Pedalboard.PedalsDigital[1] = TPedalDigital(Havanna:: PianoRiff_1, NULL, "Piano Riff #1");
+    cHavanna.Pedalboard.PedalsDigital[2] = TPedalDigital(Havanna::PianoRiff_2, NULL, "Piano Riff #2");
+    cHavanna.Pedalboard.PedalsDigital[5] = TPedalDigital(Havanna::StopAll, NULL, "Stop All");
 
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
@@ -8139,23 +7894,15 @@ void threadRedraw(void)
         mvwprintw(win_context_current.GetRef(), 0,0, pContext->SongName.c_str());
 
         win_context_usage.Erase();
+
+        for (auto element : pContext->Pedalboard.PedalsDigital)
         {
-            auto it = pContext->Pedalboard.PedalsDigital.begin();
-            while(it != pContext->Pedalboard.PedalsDigital.end())
-            {
-                TPedalDigital PedalDigital = *it;
-                wprintw(win_context_usage.GetRef(), "Digital Pedal %i: %s\n", PedalDigital.GetNumber(), PedalDigital.GetComment().c_str());
-                it++;
-            }
+            wprintw(win_context_usage.GetRef(), "Digital Pedal %i: %s\n", element.first, element.second.GetComment().c_str());
         }
+
+        for (auto element : pContext->Pedalboard.PedalsAnalog)
         {
-            auto it = pContext->Pedalboard.PedalsAnalog.begin();
-            while(it != pContext->Pedalboard.PedalsAnalog.end())
-            {
-                TPedalAnalog PedalAnalog = *it;
-                wprintw(win_context_usage.GetRef(), "Expression CC %i: %s\n", PedalAnalog.GetControllerNumber(), PedalAnalog.GetComment().c_str());
-                it++;
-            }
+            wprintw(win_context_usage.GetRef(), "Expression CC %i: %s\n", element.first, element.second.GetComment().c_str());
         }
 
         win_context_current.Refresh();
@@ -8278,8 +8025,6 @@ void SelectContextInPlaylist (std::list<TContext*> &ContextList, bool ShowAuthor
     }
     else if (scrollList->exitType == vNORMAL)
     {
-        //char *theItem = chtype2Char (scrollList->item[selection]);
-
         // Iterate through the list to set the correct Context.
         idx = 0;
         for (it = ContextList.begin(); it != ContextList.end(); it++)
@@ -8486,9 +8231,6 @@ int main(int argc, char** argv)
 
 #endif
 
-    extern int extract_tempo ();
-
-    //extract_tempo();
     // Do nothing
     while(1)
     {
