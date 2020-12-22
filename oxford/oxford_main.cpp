@@ -344,6 +344,12 @@ public:
         initialized = true;
     };
 
+    // Is this banner displaying something at this moment?
+    bool IsDisplayingSomething(void)
+    {
+        return !msg_queue.empty();
+    }
+
     void SetMessage(std::string message_param)
     {
         if (initialized == true)
@@ -820,9 +826,7 @@ public:
         // By default: we reserve Digital pedals associated to Midi Note On 6 and 7 (so, if mapped one-to-one
         // with the FCB1010 numbers written on the pedals, the two pedals at the left of the top row), to
         // the context switch actions, i.e. move from one context to the following context, as listed in object
-        // PlaylistData. In short, Pedal 6 goes back one song, Pedal 7 goes to the next song.
-     //   PedalsDigital.insert(std::pair<int, TPedalDigital>(6, TPedalDigital(ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song")));
-        
+        // PlaylistData. In short, Pedal 6 goes back one song, Pedal 7 goes to the next song.      
         PedalsDigital[6] = TPedalDigital(ContextPreviousPress, ContextPreviousRelease, "Playlist: previous song");
         PedalsDigital[7] = TPedalDigital(ContextNextPress, ContextNextRelease, "Playlist: next song");
 
@@ -5586,6 +5590,22 @@ namespace I_Follow_Rivers
 
 namespace LAmourALaPlage
 {
+bool AnalogPedal1InitFlag = false;
+bool AnalogPedal2InitFlag = false;
+
+   void CheckThatBothAnalogPedalsAreSetTo100Percent(void)
+    {
+        while((AnalogPedal1InitFlag || AnalogPedal2InitFlag) && (PlaylistPosition == &cLAmourALaPlage))
+        {
+            Banner.SetMessage("PUSH ANALOG PEDALS TO MAX");
+            while(Banner.IsDisplayingSomething())
+            {
+                waitMilliseconds(1000);
+            }
+        }
+        // Quit that thread
+    } 
+
 
     void SetupMinisynth(void)
     {
@@ -5720,14 +5740,20 @@ namespace LAmourALaPlage
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
 
         // For synth stack - target MIDI channel 6
-        XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_F,2); // Power Stack // Select a nice synth stack of the 80's
+        XV5080.TemporaryPerformance.PerformancePartl[3].SelectPatch(TXV5080::PatchGroup::PR_F,2); // Power Stack // Select a nice synth stack of the 80's
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveChannel.Set_1_16(6);
 
         SmallPhraseInterlude_statemachine = 0;
-    }    
 
+        // Make sure that both analog pedals are pushed all the way to 100%, prior to starting the live performance
+        AnalogPedal1InitFlag = true;
+        AnalogPedal2InitFlag = true;
+        std::thread PedalInit(CheckThatBothAnalogPedalsAreSetTo100Percent);
+    }
+
+ 
     void BellPad_Seq1(void)
     {
         Sequence_11.Start_PedalPressed();
@@ -5802,6 +5828,24 @@ namespace LAmourALaPlage
         Sequence_41.Stop_PedalPressed();
         Sequence_Bassline.Stop_PedalPressed();
         Sequence_Bassline2.Stop_PedalPressed();
+    }
+
+    void Volume_Bells(int Value)
+    {
+        MIDI_A.SendControlChange(1, 0x07, Value);
+        if (Value > 110)
+        {
+            AnalogPedal1InitFlag = false;
+        }
+    }
+
+    void Volume_Bass(int Value)
+    {
+        MIDI_A.SendControlChange(5,0x07, Value);
+        if (Value > 110)
+        {
+            AnalogPedal2InitFlag = false;
+        }
     }
 }
 
