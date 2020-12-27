@@ -102,11 +102,11 @@ const std::string midi_sequencer_name = "20:0";
 
 // String name of the hardware device for the first midi port (IN1/OUT1)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_A = "hw:1,0,0";
+const std::string name_midi_hw_MIDISPORT_A = "hw:2,0,0";
 
 // String name of the hardware device for the first midi port (IN2/OUT2)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_B = "hw:1,0,1";
+const std::string name_midi_hw_MIDISPORT_B = "hw:2,0,1";
 
 // String name of the hardware device for the first midi port (IN3/OUT3)
 // obtained with amidi -l
@@ -7833,6 +7833,9 @@ void InitializePlaylist(void)
     cLAmourALaPlage.Pedalboard.PedalsDigital[4] = TPedalDigital(LAmourALaPlage::Bassline_Sequence, LAmourALaPlage::Bassline_Sequence, "Bassline 1");
     cLAmourALaPlage.Pedalboard.PedalsDigital[5] = TPedalDigital(LAmourALaPlage::Bassline_Sequence2, LAmourALaPlage::Bassline_Sequence2, "Bassline 2");
     cLAmourALaPlage.Pedalboard.PedalsDigital[8] = TPedalDigital(LAmourALaPlage::StopAll, NULL, "Panic stop");
+    cLAmourALaPlage.Pedalboard.PedalsAnalog[1] = TPedalAnalog(LAmourALaPlage::Volume_Bells, "BELLS VOLUME");
+    cLAmourALaPlage.Pedalboard.PedalsAnalog[2] = TPedalAnalog(LAmourALaPlage::Volume_Bass, "BASS VOLUME");
+    
     cLAmourALaPlage.SetResetMinisynthFunc(LAmourALaPlage::SetupMinisynth);
 
     cHavanna.Author = "Camila Cabello";
