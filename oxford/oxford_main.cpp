@@ -6869,8 +6869,6 @@ namespace Rehab
 {
     void Init(void)
     {
-
-
         // Bells on part 1, midi channel 4
         XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_F, 70); // Chime bell
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
@@ -6915,6 +6913,66 @@ namespace Rehab
         PlayNote(4, 44, 1, 127);
         PlayNote(4, 44 +12, 1, 127);
     }
+}
+
+namespace BackToBlack
+{
+    void Bells_ON(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 127);
+    }
+
+    void Bells_OFF(int NoteNumber)
+    {
+        MIDI_A.SendNoteOnEvent(4, NoteNumber, 0);
+    }
+
+    TSequence Sequence_1({{50, 1}, {57, 1}, {55, 1}}, Bells_ON, Bells_OFF, 0, false, 6, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_2({{58, 1}, {57, 1}, {55, 1}, {53, 1}, {57, 1}, {55, 1}, {53, 1}, {52, 1}}, Bells_ON, Bells_OFF, 0, false, 3, 0, false, TSequence::pbDownswingOnly);
+    TSequence Sequence_3({{50, 1}, {46, 1}, {48, 1}, {49, 1}}, Bells_ON, Bells_OFF, 0, false, 6, 0, false, TSequence::pbDownswingOnly);
+
+    void Init(void)
+    {
+        // Bells on part 1, midi channel 4
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_F, 70); // Chime bell
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(4);
+        //XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+        // This bell is nice, but it has a randomized panoramic effect that does not work
+        // for us at all, since we're often in Mono, taking one single output (left or right)
+        // This means the overall volume, in our mix, is randomly too low.
+        // Change the pan radomization parameter for that patch, make it flat-center
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+
+        Sequence_1.Init();
+        Sequence_2.Init();
+        Sequence_3.Init();
+    }
+
+    void Bells_Seq1(void)
+    {
+        Sequence_1.Start_PedalPressed();
+    }
+
+    void Bells_Seq2(void)
+    {
+        Sequence_2.Start_PedalPressed();
+    }
+
+    void Bells_Seq3(void)
+    {
+        Sequence_3.Start_PedalPressed();
+    }
+
+
 }
 
 
@@ -7534,7 +7592,11 @@ void InitializePlaylist(void)
     cBackToBlack.Author = "Amy Winehouse";
     cBackToBlack.SongName = "Back to black";
     cBackToBlack.BaseTempo = 125;
-
+    cBackToBlack.SetInitFunc(BackToBlack::Init);
+    cBackToBlack.Pedalboard.PedalsDigital[1] = TPedalDigital(BackToBlack::Bells_Seq1, NULL, "Bells Seq 1");
+    cBackToBlack.Pedalboard.PedalsDigital[2] = TPedalDigital(BackToBlack::Bells_Seq2, NULL, "Bells Seq 2");
+    cBackToBlack.Pedalboard.PedalsDigital[3] = TPedalDigital(BackToBlack::Bells_Seq3, NULL, "Bells Seq 3");
+    
 
     cUnchainMyHeart.Author = "Joe Cooker";
     cUnchainMyHeart.SongName = "Unchain my heart";
