@@ -91,7 +91,8 @@ static int const MIDI_CHANNEL_BASS_SYNTH = 3;
 
 static int const BASS_SYNTH_PART_INDEX = 14; // Bass synth uses part 15 (of 1..16)
 
-
+// Global variable which tells if the ESC key was pressed
+bool ESC_Key_Pressed_Flag = false;
 
 int stop = 0;
 
@@ -251,6 +252,7 @@ void setScheduling_RealTime_TopPriority(pthread_t target_thread)
     if (s != 0)
     {
         wprintw(win_debug_messages.GetRef(), "Failed to set thread scheduling : %s", std::strerror(errno));
+        getchar();
     }
 }
 
@@ -3847,9 +3849,19 @@ void TransposeMore(void * pVoid)
     wprintw(win_debug_messages.GetRef(), "Transpose %i\n", transpose);
 }
 
+void donothing(void)
+{
+    int i;
+    i++;
+}
+
 void Space(void * pVoid)
 {
     ComputerKeyboard::DisableCallbacks();
+    while(getch() != ERR)
+    {
+        donothing();
+    }
     // The function below handles computer keyboard by itself, through ncurses lib
     SelectContextInPlaylist(PlaylistData, false);
     // Done getting keyboard information from ncurses - back to the raw keyboard routine
@@ -3909,6 +3921,17 @@ void C_p(void * pVoid)
     MetronomeMaster::ClickToggle();
 }
 
+void ESC_Key_Pressed(void * pVoid)
+{
+    Reset(NULL);
+    ESC_Key_Pressed_Flag = true;
+}
+
+void ESC_Key_Released(void * pVoid)
+{
+    ESC_Key_Pressed_Flag = false;
+}
+
 // Scan keyboard for events, and process keypresses accordingly.
 void threadKeyboard(void)
 {
@@ -3962,7 +3985,8 @@ void threadKeyboard(void)
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_EQUAL, StopNote, (void *)18);
     ComputerKeyboard::RegisterEventCallbackReleased(KEY_RIGHTBRACE, StopNote, (void *)19);
 
-    ComputerKeyboard::RegisterEventCallbackPressed(KEY_ESC, Reset, 0);
+    ComputerKeyboard::RegisterEventCallbackPressed(KEY_ESC, ESC_Key_Pressed, 0);
+    ComputerKeyboard::RegisterEventCallbackReleased(KEY_ESC, ESC_Key_Released, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F1, OctaveLess, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F2, OctaveMore, 0);
     ComputerKeyboard::RegisterEventCallbackPressed(KEY_F3, ProgramLess, 0);
@@ -5602,6 +5626,10 @@ bool AnalogPedal2InitFlag = false;
             {
                 waitMilliseconds(1000);
             }
+            if (ESC_Key_Pressed_Flag)
+            {
+                break;
+            }
         }
         // Quit that thread
     } 
@@ -5740,7 +5768,7 @@ bool AnalogPedal2InitFlag = false;
         XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(5);
 
         // For synth stack - target MIDI channel 6
-        XV5080.TemporaryPerformance.PerformancePartl[3].SelectPatch(TXV5080::PatchGroup::PR_F,2); // Power Stack // Select a nice synth stack of the 80's
+        XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_F,2); // Power Stack // Select a nice synth stack of the 80's
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveMIDI1.Set(1);        
         XV5080.TemporaryPerformance.PerformancePart[3].ReceiveChannel.Set_1_16(6);
@@ -5751,6 +5779,7 @@ bool AnalogPedal2InitFlag = false;
         AnalogPedal1InitFlag = true;
         AnalogPedal2InitFlag = true;
         std::thread PedalInit(CheckThatBothAnalogPedalsAreSetTo100Percent);
+        PedalInit.detach();
     }
 
  
@@ -8202,7 +8231,8 @@ int main(int argc, char** argv)
     }
     cbreak(); // Disable line buffering, pass on all data
     keypad(stdscr, TRUE); // support F- keys
-
+    nodelay(stdscr, TRUE); // ncurses handles the keyboard in a non-blocking manner
+    noecho();
 
 
     win_midi_in.Init("IN", term_lines -3, 6, 3, term_cols-6-6);
