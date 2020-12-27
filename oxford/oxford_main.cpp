@@ -6835,15 +6835,15 @@ namespace All_In_You
             {
                 // Ok - start
                 // Sound ON
-                MIDI_A.SendNoteOnEvent(2, 45, 127);
-                MIDI_A.SendNoteOnEvent(2, 57, 127);
+                MIDI_A.SendNoteOnEvent(2, 45, 127); // Send dyad - note 1
+                MIDI_A.SendNoteOnEvent(2, 57, 127); // Dyad - note 2, one octave higher
                 MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
                 SoaringLeadStateMachine = smSoaring;
             }
             break;
 
             case smSoaring:
-            if (Value <118 & Value >= 10)
+            if (Value <110 & Value >= 10)
             {
                 MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
             }
@@ -6864,6 +6864,59 @@ namespace All_In_You
         }
     }
 }
+
+namespace Rehab
+{
+    void Init(void)
+    {
+
+
+        // Bells on part 1, midi channel 4
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_F, 70); // Chime bell
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(4);
+        //XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+        // This bell is nice, but it has a randomized panoramic effect that does not work
+        // for us at all, since we're often in Mono, taking one single output (left or right)
+        // This means the overall volume, in our mix, is randomly too low.
+        // Change the pan radomization parameter for that patch, make it flat-center
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+    }
+
+    void Bells1(void)
+    {
+        PlayNote(4, 40, 1, 127);
+        PlayNote(4, 40 +12, 1, 127);
+        
+    }
+
+    void Bells2(void)
+    {
+        PlayNote(4, 45, 1, 127);
+        PlayNote(4, 45 +12, 1, 127);
+    }
+
+    void Bells3(void)
+    {
+        PlayNote(4, 41, 1, 127);
+        PlayNote(4, 41 +12, 1, 127);
+    }
+
+    void Bells4(void)
+    {
+        PlayNote(4, 44, 1, 127);
+        PlayNote(4, 44 +12, 1, 127);
+    }
+}
+
 
 
 namespace ElevenRack
@@ -7500,6 +7553,13 @@ void InitializePlaylist(void)
 
     cRehab.Author = "Amy Winehouse";
     cRehab.SongName = "Rehab";
+    cRehab.SetInitFunc(Rehab::Init);
+    cRehab.Pedalboard.PedalsDigital[1] = TPedalDigital(Rehab::Bells1, NULL, "Bells E");
+    cRehab.Pedalboard.PedalsDigital[2] = TPedalDigital(Rehab::Bells2, NULL, "Bells A");
+    cRehab.Pedalboard.PedalsDigital[3] = TPedalDigital(Rehab::Bells3, NULL, "Bells E#");
+    cRehab.Pedalboard.PedalsDigital[4] = TPedalDigital(Rehab::Bells4, NULL, "Bells Ab");
+    
+
 
     cIFeelGood.Author = "James Brown";
     cIFeelGood.SongName = "I feel good";
