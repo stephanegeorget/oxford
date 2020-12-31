@@ -14,29 +14,31 @@
 // requires midisport-firmware: install it with:
 // apt-get install midisport-firmware
 //
-// use amidi -l to list midi hardware devices
-// don't forget to link with asound, pthread, cdk (sometimes called libcdk), and panel
+// Note: you can use amidi -l to list MIDI hardware devices, to verify ALSA & MidiSport
+// firmware is install properly (after it's connected to USB).
+// You can use pmidi -l to list MIDI devices for pmidi, which is for MIDI file playback
+// (but this program does not use the ALSA MIDI sequencer anymore)
 //
-// use pmidi -l to list midi devices for pmidi, which is for midi file playback
+// Mosquitto
+// If running with Mosquitto features, build against mosquitto library -lmosquitto
+// apt-get install mosquitto libmosquitto-dev mqtt-tools
+//
+// Don't forget to link with asound, pthread, cdk (sometimes called libcdk),
+//                           ------  -------  ---
+// panel, mosquitto
+// -----  ---------
+
+//
 // you probably must build cdk locally, get in the cdk folder, ./configure, then make,
-// and make sure that code blocks links with the library generated in ???
+// and make sure to link with the library generated in ???
+//
+// More notes:
 // run ldconfig as root
-// you must also have the aubio library; go to aubio, then type make.
-// Navigate to the library (normally aubio-xxxx/build/src) and type ldconfig $(pwd)
-// to add that path to the library search.
-// [[OOLLDD: ./waf configure, ./waf build, ./waf install is not really needed,
-//  just have codeblocks link with the aubio library generated in: build/source/libaubio.so]]
 
 // If running into issues with missing libraries, 3 options:
 // 1/ make sure the library is in a "common" place with all other system libraries
 // 2/ /lib/ld-linux.so.2 --library-path PATH EXECUTABLE
 // 3/ export LD_LIBRARY_PATH=/usr/local/lib
-
-// Mosquitto
-// If running with Mosquitto features, build against mosquitto library -lmosquitto
-// apt-get install mosquitto libmosquitto-dev mqtt-tools
-
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,7 +123,6 @@ std::mutex ncurses_mutex;
 
 // Start threads with top priority
 #define REALTIME
-
 
 
 // Test XV5080 class
@@ -1967,13 +1968,20 @@ public:
     }
 
     enum class PatchGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G, PR_H,
-                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H,
-                        XP_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H};
+                        CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H};
+    // Note we should also add to this enum the expansion boards, but selecting them is a bit
+    // complicated because it depends on the type of expansion card used, plus I made the choice
+    // to no use the expansion boards directly because it would be unlikely that I have the same
+    // boards installed on two XV-5080 (one plus backup), so if needed I would copy the patches
+    // of an expansion board to the memory card or to user preset, but not directly access patches
+    // located on an extension board.
+    // But in a nutshell, we should also have in this enum:  XP_A, XP_B, XP_C, XP_D, XP_E, XP_F, XP_G, XP_H,
+    // and handle them properly in the corresponding switch/case. See Owner's Manual page 21.
 
     enum class RhythmSetGroup {USER, PR_A, PR_B, PR_C, PR_D, PR_E, PR_F, PR_G,
                         CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H};
+    // Same as for patches, I don't include the Rhythm Sets of the expansion boards. See OM page 22.
 
-//                        enum RythmSetGoup {USER, PR_A, PR_B, PR_C};
     enum class PerformanceGroup {USER, PR_A, PR_B,
                         CD_A, CD_B, CD_C, CD_D, CD_E, CD_F, CD_G, CD_H};
 
@@ -2855,6 +2863,12 @@ public:
             {
                 switch(PatchGroup_param)
                 {
+                    case PatchGroup::USER:
+                    PatchBankSelectMSB.Set(87);
+                    PatchBankSelectLSB.Set(0);
+                    PatchProgramNumber.Set(PatchNumber_param);
+                    break;
+
                     case PatchGroup::PR_A:
                     PatchBankSelectMSB.Set(87);
                     PatchBankSelectLSB.Set(64);
@@ -2970,6 +2984,14 @@ public:
             {
                 switch(RhythmSetGroup_param)
                 {
+                    // See XV-5080 Owner's Manual, page 22
+                    case RhythmSetGroup::USER:
+                    PatchBankSelectMSB.Set(86);
+                    PatchBankSelectLSB.Set(0);
+                    PatchProgramNumber.Set(RhythmSetNumber_param);
+                    break;
+
+
                     case RhythmSetGroup::PR_A:
                     PatchBankSelectMSB.Set(86);
                     PatchBankSelectLSB.Set(64);
@@ -4016,18 +4038,12 @@ void TransposeMore(void * pVoid)
     wprintw(win_debug_messages.GetRef(), "Transpose %i\n", transpose);
 }
 
-void donothing(void)
-{
-    int i;
-    i++;
-}
-
 void Space(void * pVoid)
 {
     ComputerKeyboard::DisableCallbacks();
     while(getch() != ERR)
     {
-        donothing();
+        // donothing();
     }
     // The function below handles computer keyboard by itself, through ncurses lib
     SelectContextInPlaylist(PlaylistData, false);
@@ -6523,7 +6539,6 @@ extern "C" int main_TODO(int argc, char const **argv, int Tempo);
 extern "C" void seq_midi_tempo_direct(int Tempo);
 extern "C" void pmidiStop(void);
 
-static int Tempo = 120;
 unsigned int SequencerRunning = 0;
 
 pthread_t thread_sequencer = 0;
@@ -6892,7 +6907,7 @@ namespace All_In_You
             break;
 
             case smSoaring:
-            if (Value <110 & Value >= 10)
+            if ((Value <110) && (Value >= 10))
             {
                 MIDI_A.SendControlChange(2, 7, Value); // CC07 is volume
             }
