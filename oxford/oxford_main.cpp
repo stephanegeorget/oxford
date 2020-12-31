@@ -10,7 +10,8 @@
 // Make sure you have installed libasound2-dev, to get the headers
 // Make sure you also have ncurses: libncurses5-dev libncursesw5-dev
 //
-// The USB midiman MidiSport 2x2 hardware requires midisport-firmware: install it with
+// The USB midiman MidiSport 2x2 (or the MidiSport 4x4 Anniversary Edition) hardware
+// requires midisport-firmware: install it with:
 // apt-get install midisport-firmware
 //
 // use amidi -l to list midi hardware devices
@@ -68,6 +69,7 @@
 #include <atomic>
 #include <utility>
 #include <map>
+#include <algorithm>
 #include "mosquitto.h"
 #include "pthread.h"
 
@@ -96,25 +98,22 @@ bool ESC_Key_Pressed_Flag = false;
 
 int stop = 0;
 
-// midi sequencer name
-// obtained with pmidi -l
-const std::string midi_sequencer_name = "20:0";
-
 // String name of the hardware device for the first midi port (IN1/OUT1)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_A = "hw:2,0,0";
+// Will probably evaluate to something like "hw:1,0,0" later on
+std::string name_midi_hw_MIDISPORT_A = ""; 
 
 // String name of the hardware device for the first midi port (IN2/OUT2)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_B = "hw:2,0,1";
+std::string name_midi_hw_MIDISPORT_B = "";
 
 // String name of the hardware device for the first midi port (IN3/OUT3)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_C = "hw:1,0,2";
+std::string name_midi_hw_MIDISPORT_C = "";
 
 // String name of the hardware device for the first midi port (IN4/OUT4)
 // obtained with amidi -l
-const std::string name_midi_hw_MIDISPORT_D = "hw:1,0,3";
+std::string name_midi_hw_MIDISPORT_D = "";
 
 // Mutex used to prevent ncurses refresh routines from being called from
 // concurrent threads.
@@ -1177,6 +1176,175 @@ typedef struct
     unsigned char Channel;
     int DurationMS;
 } TPlayNoteMsg;
+
+
+// Provision for name_midi_hw_MIDISPORT_A, name_midi_hw_MIDISPORT_B, name_midi_hw_MIDISPORT_C, name_midi_hw_MIDISPORT_D
+void ProvisionNextMIDI_Port(const std::string StringValue)
+{
+    if (name_midi_hw_MIDISPORT_A.empty())
+    {
+        name_midi_hw_MIDISPORT_A = StringValue;
+        wprintw(win_debug_messages.GetRef(), "name_midi_hw_MIDISPORT_A=%s\n", StringValue.c_str());
+        return;
+    }
+
+    if (name_midi_hw_MIDISPORT_B.empty())
+    {
+        name_midi_hw_MIDISPORT_B = StringValue;
+        wprintw(win_debug_messages.GetRef(), "name_midi_hw_MIDISPORT_B=%s\n", StringValue.c_str());
+        return;
+    }
+
+    if (name_midi_hw_MIDISPORT_C.empty())
+    {
+        name_midi_hw_MIDISPORT_C = StringValue;
+        wprintw(win_debug_messages.GetRef(), "name_midi_hw_MIDISPORT_C=%s\n", StringValue.c_str());
+        return;
+    }
+
+    if (name_midi_hw_MIDISPORT_D.empty())
+    {
+        name_midi_hw_MIDISPORT_D = StringValue;
+        wprintw(win_debug_messages.GetRef(), "name_midi_hw_MIDISPORT_D=%s\n", StringValue.c_str());
+        return;
+    }
+}
+
+/// Straight from amidi.c
+/// E.g. https://github.com/alsa-project/alsa-utils/blob/master/amidi/amidi.c
+static void list_device(snd_ctl_t *ctl, int card, int device)
+{
+	snd_rawmidi_info_t *info;
+	const char *name;
+	const char *sub_name;
+	int subs, subs_in, subs_out;
+	int sub;
+	int err;
+
+	snd_rawmidi_info_alloca(&info);
+	snd_rawmidi_info_set_device(info, device);
+
+    // Count RAW MIDI INputs
+	snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_INPUT);
+	err = snd_ctl_rawmidi_info(ctl, info);
+	if (err >= 0)
+		subs_in = snd_rawmidi_info_get_subdevices_count(info);
+	else
+		subs_in = 0;
+
+    // Count RAW MIDI OUTputs
+	snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_OUTPUT);
+	err = snd_ctl_rawmidi_info(ctl, info);
+	if (err >= 0)
+		subs_out = snd_rawmidi_info_get_subdevices_count(info);
+	else
+		subs_out = 0;
+
+	subs = std::max(subs_in, subs_out);
+	if (!subs)
+    {
+        // Neither MIDI INs nor MIDI OUTs - nothing to list within that specific combination of card/device
+		return;
+    }
+
+	for (sub = 0; sub < subs; ++sub) {
+		snd_rawmidi_info_set_stream(info, sub < subs_in ?
+					    SND_RAWMIDI_STREAM_INPUT :
+					    SND_RAWMIDI_STREAM_OUTPUT);
+		snd_rawmidi_info_set_subdevice(info, sub);
+		err = snd_ctl_rawmidi_info(ctl, info);
+		if (err < 0) {
+            wprintw(win_debug_messages.GetRef(), "cannot get rawmidi information %d:%d:%d: %s\n", card, device, sub, snd_strerror(err));
+			return;
+		}
+		name = snd_rawmidi_info_get_name(info);
+		sub_name = snd_rawmidi_info_get_subdevice_name(info);
+		if (sub == 0 && sub_name[0] == '\0')
+        {
+            // Card, Device, Sub-devices, one generic Name which applies to all sub-devices
+			wprintw(win_debug_messages.GetRef(), "MIDI devices: %c%c  hw:%d,%d    %s",
+			       sub < subs_in ? 'I' : ' ',
+			       sub < subs_out ? 'O' : ' ',
+			       card, device, name);
+            ProvisionNextMIDI_Port("hw:" + std::to_string(card) + "," + std::to_string(device));
+			if (subs > 1)
+            {
+                // Let user know the number of implied sub-devices
+				wprintw(win_debug_messages.GetRef(), " (%d subdevices)", subs);
+            }
+			wprintw(win_debug_messages.GetRef(), "\n");
+			break;
+		}
+        else
+        {
+            // Card, Device, Sub-device, and Names that specifically designates each Sub-device
+			wprintw(win_debug_messages.GetRef(), "%c%c  hw:%d,%d,%d  %s\n",
+			       sub < subs_in ? 'I' : ' ',
+			       sub < subs_out ? 'O' : ' ',
+			       card, device, sub, sub_name);
+            ProvisionNextMIDI_Port("hw:" + std::to_string(card) + "," + std::to_string(device) + "," + std::to_string(sub));
+		}
+	}
+}
+
+
+static void list_card_devices(int card)
+{
+	snd_ctl_t *ctl;
+	std::string name;
+	int device;
+	int err;
+
+    name = "hw:" + std::to_string(card);
+	if ((err = snd_ctl_open(&ctl, name.c_str(), 0)) < 0)
+    {
+		wprintw(win_debug_messages.GetRef(), "cannot open control for card %d: %s", card, snd_strerror(err));
+		return;
+	}
+	device = -1;
+	while (1)
+    {
+		if ((err = snd_ctl_rawmidi_next_device(ctl, &device)) < 0) {
+			wprintw(win_debug_messages.GetRef(), "cannot determine device number: %s", snd_strerror(err));
+			break;
+		}
+		if (device < 0)
+        {
+			break;
+        }
+		list_device(ctl, card, device);
+	}
+	snd_ctl_close(ctl);
+}
+
+static void device_list(void)
+{
+	int card, err;
+
+	card = -1;
+    wprintw(win_debug_messages.GetRef(), "Listing MIDI devices...\n");
+	if ((err = snd_card_next(&card)) < 0)
+    {
+		wprintw(win_debug_messages.GetRef(), "Cannot determine card number: %s", snd_strerror(err));
+		return;
+	}
+	if (card < 0)
+    {
+		wprintw(win_debug_messages.GetRef(), "No sound card found");
+		return;
+	}
+	wprintw(win_debug_messages.GetRef(), "Dir Device    Name\n");
+	do
+    {
+		list_card_devices(card);
+		if ((err = snd_card_next(&card)) < 0) {
+			wprintw(win_debug_messages.GetRef(), "cannot determine card number: %s", snd_strerror(err));
+			break;
+		}
+	} while (card >= 0);
+}
+
+
 
 
 /**
@@ -8267,6 +8435,9 @@ int main(int argc, char** argv)
     // Initialize this banner at the full terminal width
     Banner.Init(term_cols, term_lines/2 -4, 0, 800);
     Banner.SetMessage("OXFORD - LE GROUPE");
+
+    // Query ALSA for the MIDI names (identifiers) of MIDI hardware
+    device_list();
 
     // Create thread that scans midi messages
     // Initialize MIDI port A - this will spawn a new thread that parses MIDI IN
