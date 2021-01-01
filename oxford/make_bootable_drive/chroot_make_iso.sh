@@ -110,7 +110,8 @@ apt-get install --no-install-recommends --assume-yes \
     libncursesw5-dev \
     mosquitto \
     mosquitto-clients \
-    libmosquitto-dev
+    libmosquitto-dev \
+    libcdk5-dev
 
 
 apt-get clean
@@ -122,11 +123,7 @@ git config --global http.sslVerify false
 git clone https://www.github.com/stephanegeorget/oxford
 
 # Build the Curses Development Kit (cdk)
-cd oxford/oxford/cdk-5.0-20171209
-./configure
-make -B
-make -B install
-cd ..
+cd oxford/oxford
 # Build oxford
 make -B
 # No need to install, we'll call the binary from its build folder directly

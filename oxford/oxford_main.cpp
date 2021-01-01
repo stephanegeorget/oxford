@@ -9,28 +9,27 @@
 // Assuming that ALSA is used throughout.
 // Make sure you have installed libasound2-dev, to get the headers
 // Make sure you also have ncurses: libncurses5-dev libncursesw5-dev
+// Make sure you have libcdk version 5: libcdk5-dev
 //
 // The USB midiman MidiSport 2x2 (or the MidiSport 4x4 Anniversary Edition) hardware
 // requires midisport-firmware: install it with:
 // apt-get install midisport-firmware
 //
 // Note: you can use amidi -l to list MIDI hardware devices, to verify ALSA & MidiSport
-// firmware is install properly (after it's connected to USB).
+// firmware is installed properly (after it's connected to USB).
 // You can use pmidi -l to list MIDI devices for pmidi, which is for MIDI file playback
 // (but this program does not use the ALSA MIDI sequencer anymore)
 //
 // Mosquitto
 // If running with Mosquitto features, build against mosquitto library -lmosquitto
 // apt-get install mosquitto libmosquitto-dev mqtt-tools
+// Ensure the mosquitto server runs with 
 //
-// Don't forget to link with asound, pthread, cdk (sometimes called libcdk),
+// Don't forget to link with asound, pthread, cdk
 //                           ------  -------  ---
 // panel, mosquitto
 // -----  ---------
 
-//
-// you probably must build cdk locally, get in the cdk folder, ./configure, then make,
-// and make sure to link with the library generated in ???
 //
 // More notes:
 // run ldconfig as root
