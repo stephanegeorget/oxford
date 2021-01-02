@@ -54,7 +54,7 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
-#include <cdk.h>
+#include <cdk/cdk.h>
 #include <panel.h>
 #include <array>
 #include <thread>
