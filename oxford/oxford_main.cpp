@@ -3953,7 +3953,7 @@ char noteInScale;
 int octave = 2;
 int program = 1;
 int channel = 2;
-int transpose = 0;
+int transpose = 5;
 
 void StartNote(void * pVoid)
 {
