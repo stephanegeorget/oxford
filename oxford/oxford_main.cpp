@@ -1036,7 +1036,7 @@ TContext cLaFoule;
 TContext cLaGrenade;
 TContext cLAmourALaPlage;
 TContext cHavanna;
-
+TContext cOhNo;
 
 /**
  * This function is needed to sort lists of elements.
@@ -7039,6 +7039,32 @@ namespace BackToBlack
 }
 
 
+namespace OhNo
+{
+    TSequence Sequence_1({{35, 2}, {35, 2}, {36, 4}}, [](int NoteNumber){PlayNote(16, NoteNumber, 100, 127);}, [](int){/*do nothing*/}, 0, false, 1, 0, true, TSequence::pbDownswingOnly, TSequence::pbAutoLoop);
+    void Init(void)
+    {
+        Sequence_1.Init();
+        // Enforce tempo
+        PlaylistPosition->BaseTempo = 86;
+    }
+
+    void Intro_Press(void)
+    {
+        MIDI_A.SendNoteOnEvent(16, 34, 127); // Oxford samples as drumkit on channel 16, note 33 should be the intro sample
+    }
+
+    void Intro_Release(void)
+    {
+        waitMilliseconds(500);
+        MIDI_A.SendNoteOffEvent(16, 34, 0);
+    }
+
+    void OhNoRiff_Press(void)
+    {
+        Sequence_1.Start_PedalPressed();
+    }
+}
 
 namespace ElevenRack
 {
@@ -8014,17 +8040,23 @@ void InitializePlaylist(void)
     cLAmourALaPlage.Pedalboard.PedalsDigital[8] = TPedalDigital(LAmourALaPlage::StopAll, NULL, "Panic stop");
     cLAmourALaPlage.Pedalboard.PedalsAnalog[1] = TPedalAnalog(LAmourALaPlage::Volume_Bells, "BELLS VOLUME");
     cLAmourALaPlage.Pedalboard.PedalsAnalog[2] = TPedalAnalog(LAmourALaPlage::Volume_Bass, "BASS VOLUME");
-    
     cLAmourALaPlage.SetResetMinisynthFunc(LAmourALaPlage::SetupMinisynth);
 
     cHavanna.Author = "Camila Cabello";
     cHavanna.SongName = "Havanna";
     cHavanna.BaseTempo = 112; // 105
     cHavanna.SetInitFunc(Havanna::Init);
-    cHavanna.Pedalboard.PedalsDigital[1] = TPedalDigital(Havanna:: PianoRiff_1, NULL, "Piano Riff #1");
+    cHavanna.Pedalboard.PedalsDigital[1] = TPedalDigital(Havanna::PianoRiff_1, NULL, "Piano Riff #1");
     cHavanna.Pedalboard.PedalsDigital[2] = TPedalDigital(Havanna::PianoRiff_2, NULL, "Piano Riff #2");
     cHavanna.Pedalboard.PedalsDigital[5] = TPedalDigital(Havanna::StopAll, NULL, "Stop All");
 
+    cOhNo.Author = "Changri-Las";
+    cOhNo.SongName = "Remember";
+    cOhNo.BaseTempo = 120;
+    cOhNo.SetInitFunc(OhNo::Init);
+    cOhNo.Pedalboard.PedalsDigital[1] = TPedalDigital(OhNo::Intro_Press, OhNo::Intro_Release, "Intro");
+    cOhNo.Pedalboard.PedalsDigital[2] = TPedalDigital(OhNo::OhNoRiff_Press, NULL, "Oh No riff");
+    
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
@@ -8115,6 +8147,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cHabits);
     PlaylistData.push_back(&cCrazy);
     PlaylistData.push_back(&cLAmourALaPlage);
+    PlaylistData.push_back(&cOhNo);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
