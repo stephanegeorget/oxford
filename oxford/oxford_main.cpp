@@ -7060,7 +7060,7 @@ namespace OhNo
 
     void SetupMinisynth(void)
     {
-        MiniSynth::octave = 1;
+        MiniSynth::octave = 3;
         MiniSynth::transpose = 0;
         MiniSynth::channel = 1;
     }
