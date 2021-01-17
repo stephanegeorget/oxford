@@ -7047,6 +7047,13 @@ namespace OhNo
         Sequence_1.Init();
         // Enforce tempo
         PlaylistPosition->BaseTempo = 86;
+        // Select a drum kit on the minisynth
+        // On Part #1 (numbered 0 below), Midi Rx channel 1, put some lavish strings
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectRhythmSet(TXV5080::RhythmSetGroup::PR_F, 2);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(0);
     }
 
     void Intro_Press(void)
