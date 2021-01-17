@@ -7054,6 +7054,15 @@ namespace OhNo
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
         XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
         XV5080.TemporaryPerformance.PerformancePart[0].PartOctaveShift.Set(0);
+
+    }
+
+
+    void SetupMinisynth(void)
+    {
+        MiniSynth::octave = 1;
+        MiniSynth::transpose = 0;
+        MiniSynth::channel = 1;
     }
 
     void Intro_Press(void)
@@ -7063,7 +7072,6 @@ namespace OhNo
 
     void Intro_Release(void)
     {
-        waitMilliseconds(500);
         MIDI_A.SendNoteOffEvent(16, 34, 0);
     }
 
@@ -8063,6 +8071,7 @@ void InitializePlaylist(void)
     cOhNo.SetInitFunc(OhNo::Init);
     cOhNo.Pedalboard.PedalsDigital[1] = TPedalDigital(OhNo::Intro_Press, OhNo::Intro_Release, "Intro");
     cOhNo.Pedalboard.PedalsDigital[2] = TPedalDigital(OhNo::OhNoRiff_Press, NULL, "Oh No riff");
+    cOhNo.SetResetMinisynthFunc(OhNo::SetupMinisynth);
     
     // PLAYLIST ORDER IS DEFINED HERE:
     PlaylistData.clear();
