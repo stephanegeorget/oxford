@@ -963,6 +963,7 @@ std::mutex PlaylistPosition_mtx;
 TContext cFirstContext;
 TContext cRigUp;
 TContext cAveMaria;
+TContext cLeSecret;
 TContext cCapitaineFlam;
 TContext cWildThoughts;
 TContext cGangstaParadise;
@@ -6539,7 +6540,7 @@ namespace Human
 
 
 extern "C" void showlist(void);
-extern "C" int main_TODO(int argc, char const **argv, int Tempo);
+extern "C" int main_TODO(int argc, char const **argv, int Tempo, int note_transpose);
 extern "C" void seq_midi_tempo_direct(int Tempo);
 extern "C" void pmidiStop(void);
 
@@ -6583,7 +6584,6 @@ void * ThreadSequencerFunction (void * params)
     int argc = 4;
     char str10[] = "fakename";
     char str11[] = "-p";
-    char const * str12 = midi_sequencer_name.c_str();
     char * str13 = (char*) params;
     char const * (argv1[4]) =
     { str10, str11, str12, str13 };
@@ -6594,7 +6594,7 @@ void * ThreadSequencerFunction (void * params)
         pContext = PlaylistPosition;
         Tempo = PlaylistPosition->BaseTempo;
     }
-    main_TODO(argc, argv1, Tempo);
+    main_TODO(argc, argv1, Tempo, MiniSynth::transpose);
     MIDI_A.StartRawMidiOut();
 
     thread_sequencer = 0;
@@ -6667,13 +6667,73 @@ void AveMaria_Stop(void)
     StopSequencer();
 }
 
+void Init(void)
+{
+    MiniSynth::octave = 2;
+    MiniSynth::channel = 1;
+    MiniSynth::transpose = 0;
+}
 
 void ChangeTempo(int Value)
 {
 //    waitMilliseconds(10);
-    ChangeTempoSequencer(Value, 60, 100);
+    ChangeTempoSequencer(Value, 30, 70);
 }
 }
+
+namespace LeSecret
+{
+
+char LeSecret_MidiName[] = "ls.mid";
+
+
+
+
+void Init(void)
+{
+    MiniSynth::octave = 2;
+    MiniSynth::channel = 1;
+    MiniSynth::transpose = 0;
+
+    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[4].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[5].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[6].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[7].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[8].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[9].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[10].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[11].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[12].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+    XV5080.TemporaryPerformance.PerformancePart[13].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
+
+
+}
+
+
+void LeSecret_Start(void)
+{
+    StartSequencer(LeSecret_MidiName);
+}
+
+
+void LeSecret_Stop(void)
+{
+    StopSequencer();
+}
+
+
+void ChangeTempo(int Value)
+{
+//    waitMilliseconds(10);
+    ChangeTempoSequencer(Value, 20, 40);
+}
+}
+
+
 
 
 namespace RigUp
@@ -7798,8 +7858,14 @@ void InitializePlaylist(void)
     cAveMaria.Pedalboard.PedalsDigital[1] = TPedalDigital(AveMaria::AveMaria_Start, NULL, "MIDI sequencer start");
     cAveMaria.Pedalboard.PedalsDigital[2] = TPedalDigital(AveMaria::AveMaria_Stop, NULL, "MIDI sequencer stop");
     cAveMaria.Pedalboard.PedalsAnalog[1] = TPedalAnalog(AveMaria::ChangeTempo, "Adjust tempo");
+    cAveMaria.SetInitFunc(AveMaria::Init);
 
-
+    cLeSecret.Author = "Faure";
+    cLeSecret.SongName = "Le Secret";
+    cLeSecret.Pedalboard.PedalsDigital[1] = TPedalDigital(LeSecret::LeSecret_Start, NULL, "MIDI sequencer start");
+    cLeSecret.Pedalboard.PedalsDigital[2] = TPedalDigital(LeSecret::LeSecret_Stop, NULL, "MIDI sequencer stop");
+    cLeSecret.Pedalboard.PedalsAnalog[1] = TPedalAnalog(LeSecret::ChangeTempo, "Adjust tempo");
+    cLeSecret.SetInitFunc(LeSecret::Init);
 
     cFlyMeToTheMoon.Author = "Count Basie";
     cFlyMeToTheMoon.SongName = "Fly me to the moon";
@@ -8221,6 +8287,7 @@ void InitializePlaylist(void)
     PlaylistData.push_back(&cRigUp);
 
     PlaylistData.push_back(&cAveMaria);
+    PlaylistData.push_back(&cLeSecret);
 
     PlaylistData.push_back(&cLaGrenade);
     PlaylistData.push_back(&cThisGirl);

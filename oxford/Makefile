@@ -62,6 +62,10 @@ out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 $(OBJDIR_DEBUG)/oxford_main.o: oxford_main.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c oxford_main.cpp -o $(OBJDIR_DEBUG)/oxford_main.o
 
+$(OBJDIR_DEBUG)/pmidi.o: pmidi.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c pmidi.c -o $(OBJDIR_DEBUG)/pmidi.o
+
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
@@ -80,6 +84,10 @@ out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 
 $(OBJDIR_RELEASE)/oxford_main.o: oxford_main.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c oxford_main.cpp -o $(OBJDIR_RELEASE)/oxford_main.o
+
+$(OBJDIR_RELEASE)/pmidi.o: pmidi.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c pmidi.c -o $(OBJDIR_RELEASE)/pmidi.o
+
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)

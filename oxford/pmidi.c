@@ -1,3 +1,5 @@
+int note_transpose = 0;
+
 /*
  *
  * -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\"
@@ -3730,7 +3732,7 @@ seq_context_t * ctxp;
  *    argv      - arg vector
  */
 int
-main_TODO(int argc, char **argv, int Tempo) /* TODO */
+main_TODO(int argc, char **argv, int Tempo, int note_transpose_param) /* TODO */
 {
 	char opts[NELEM(long_opts) * 2 + 1];
 	char *portdesc;
@@ -3739,6 +3741,7 @@ main_TODO(int argc, char **argv, int Tempo) /* TODO */
 	int  c;
 	struct option *op;
 
+	note_transpose = note_transpose_param;
 	memset(opts, 0, sizeof(opts));
 
 	/* Build up the short option string */
@@ -4042,7 +4045,7 @@ play(void *arg, struct element *el)
 		seq_start_timer(ctxp);
 		break;
 	case MD_TYPE_NOTE:
-		seq_midi_note(ctxp, &ev, el->device_channel, MD_NOTE(el)->note, MD_NOTE(el)->vel,
+		seq_midi_note(ctxp, &ev, el->device_channel, MD_NOTE(el)->note + note_transpose, MD_NOTE(el)->vel,
 			MD_NOTE(el)->length);
 		break;
 	case MD_TYPE_CONTROL:
@@ -4062,7 +4065,7 @@ play(void *arg, struct element *el)
 		seq_midi_chanpress(ctxp, &ev, el->device_channel, MD_PRESSURE(el)->velocity);
 		break;
 	case MD_TYPE_KEYTOUCH:
-		seq_midi_keypress(ctxp, &ev, el->device_channel, MD_KEYTOUCH(el)->note,
+		seq_midi_keypress(ctxp, &ev, el->device_channel, MD_KEYTOUCH(el)->note + note_transpose,
 			MD_KEYTOUCH(el)->velocity);
 		break;
 	case MD_TYPE_SYSEX:
