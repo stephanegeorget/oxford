@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/oxford
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/oxford_main.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/oxford_main.o $(OBJDIR_DEBUG)/pmidi.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/oxford_main.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/oxford_main.o $(OBJDIR_RELEASE)/pmidi.o
 
 all: debug release
 

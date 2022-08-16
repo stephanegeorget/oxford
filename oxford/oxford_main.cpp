@@ -80,6 +80,10 @@
 struct mosquitto *mosq = NULL;
 
 
+const std::string midi_sequencer_name = "20:0";
+char const * str12 = midi_sequencer_name.c_str();
+
+
 static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 and up on XV5080
 
 // Midi Channel, on XV5080, that receives MIDI traffic from the master keyboard
@@ -958,6 +962,7 @@ std::mutex PlaylistPosition_mtx;
  */
 TContext cFirstContext;
 TContext cRigUp;
+TContext cAveMaria;
 TContext cCapitaineFlam;
 TContext cWildThoughts;
 TContext cGangstaParadise;
@@ -6542,6 +6547,135 @@ unsigned int SequencerRunning = 0;
 
 pthread_t thread_sequencer = 0;
 
+
+// Stop the pmidi sequencer.
+
+// Stop the pmidi sequencer.
+void StopSequencer(void)
+{
+    if (thread_sequencer != 0)
+    {
+
+        pmidiStop();
+
+        pthread_cancel(thread_sequencer);
+        thread_sequencer = 0;
+
+        sleep(1);
+
+        MIDI_A.StartRawMidiOut();
+        AllSoundsOff();
+    }
+}
+
+int Tempo = 30;
+
+// Run the pmidi sequencer in its own thread.
+void * ThreadSequencerFunction (void * params)
+{
+
+
+    MIDI_A.StopRawMidiOut();
+
+    SequencerRunning = 1;
+    showlist();
+
+    int argc = 4;
+    char str10[] = "fakename";
+    char str11[] = "-p";
+    char const * str12 = midi_sequencer_name.c_str();
+    char * str13 = (char*) params;
+    char const * (argv1[4]) =
+    { str10, str11, str12, str13 };
+    TContext * pContext;
+    {
+        // Protect PlaylistPosition from concurrent access
+        std::lock_guard<std::mutex> lock(PlaylistPosition_mtx);
+        pContext = PlaylistPosition;
+        Tempo = PlaylistPosition->BaseTempo;
+    }
+    main_TODO(argc, argv1, Tempo);
+    MIDI_A.StartRawMidiOut();
+
+    thread_sequencer = 0;
+
+    return 0;
+}
+
+// Start the full-fledged pmidi sequencer for file MidiFilename
+void StartSequencer(char * MidiFilename)
+{
+    int iret1;
+    if(thread_sequencer == 0)
+    {
+        iret1 = pthread_create(&thread_sequencer, 0, ThreadSequencerFunction, (void*) MidiFilename);
+        if (iret1)
+        {
+            fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1);
+            exit(EXIT_FAILURE);
+        }
+
+    }
+    else
+    {
+        wprintw(win_debug_messages.GetRef(), "StartSequencer called twice\n");
+    }
+
+}
+
+
+// Validate the tempo passed on to the pmidi sequencer by ChangeTempoSequencer.
+// First call ChangeTempoSequencer, then call SetTempoSequencer.
+void SetTempoSequencer(void)
+{
+    if (thread_sequencer != 0)
+    {
+        seq_midi_tempo_direct(Tempo);
+    }
+}
+
+
+// Pass new tempo to pmidi sequencer, based on the analog pedal controller value
+// which is usually from 0 to 127.
+void ChangeTempoSequencer(float controllerValue, float bpm_min, float bpm_max)
+{
+    float bpm_average = (bpm_min + bpm_max)/2;
+    float skew = (controllerValue- 60)/60;
+    Tempo = (bpm_average + skew * (bpm_average - bpm_min));
+    SetTempoSequencer();
+}
+
+
+namespace AveMaria
+{
+
+char AveMaria_MidiName[] = "am.mid";
+
+
+
+
+
+
+void AveMaria_Start(void)
+{
+    StartSequencer(AveMaria_MidiName);
+}
+
+
+void AveMaria_Stop(void)
+{
+    StopSequencer();
+}
+
+
+void ChangeTempo(int Value)
+{
+//    waitMilliseconds(10);
+    ChangeTempoSequencer(Value, 60, 100);
+}
+}
+
+
 namespace RigUp
 {
 
@@ -7659,6 +7793,14 @@ void InitializePlaylist(void)
     cRigUp.Pedalboard.PedalsAnalog[1] = TPedalAnalog(RigUp::SineWavePitch, "Adjust sine wave pitch");
 
 
+    cAveMaria.Author = "";
+    cAveMaria.SongName = "Ave Maria";
+    cAveMaria.Pedalboard.PedalsDigital[1] = TPedalDigital(AveMaria::AveMaria_Start, NULL, "MIDI sequencer start");
+    cAveMaria.Pedalboard.PedalsDigital[2] = TPedalDigital(AveMaria::AveMaria_Stop, NULL, "MIDI sequencer stop");
+    cAveMaria.Pedalboard.PedalsAnalog[1] = TPedalAnalog(AveMaria::ChangeTempo, "Adjust tempo");
+
+
+
     cFlyMeToTheMoon.Author = "Count Basie";
     cFlyMeToTheMoon.SongName = "Fly me to the moon";
     cRigUp.BaseTempo = 0;
@@ -8077,6 +8219,8 @@ void InitializePlaylist(void)
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
+
+    PlaylistData.push_back(&cAveMaria);
 
     PlaylistData.push_back(&cLaGrenade);
     PlaylistData.push_back(&cThisGirl);
