@@ -6693,24 +6693,16 @@ void Init(void)
 {
     MiniSynth::octave = 2;
     MiniSynth::channel = 1;
-    MiniSynth::transpose = 0;
+    MiniSynth::transpose = 2;
 
-    XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[4].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[5].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[6].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[7].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[8].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[9].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[10].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[11].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[12].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-    XV5080.TemporaryPerformance.PerformancePart[13].SelectPatch(TXV5080::PatchGroup::PR_A, 3); // Piano Classic
-
-
+    for (int i = 0; i<16; i++)
+    {
+        XV5080.TemporaryPerformance.PerformancePart[i].SelectPatch(TXV5080::PatchGroup::PR_E, 2); // Piano contemplate
+        XV5080.TemporaryPerformance.PerformancePart[i].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[i].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[i].ReceiveChannel.Set_1_16(i);
+        XV5080.TemporaryPerformance.PerformancePart[i].PartOctaveShift.Set(0);
+    }
 }
 
 
