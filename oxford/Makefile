@@ -15,7 +15,7 @@ INC =
 CFLAGS = -Wall -fexceptions
 RESINC =
 LIBDIR =
-LIB = -lpthread -lasound -lncurses -lcdk -lpanel -lmosquitto
+LIB = -lpthread -lasound -lncurses -lcdk -lpanel
 LDFLAGS = 
 
 INC_DEBUG = $(INC)

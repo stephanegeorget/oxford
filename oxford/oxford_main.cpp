@@ -1,8 +1,8 @@
 // Hardware:
 // Behringer FCB1010 Midi Out       == connected to ==   MidiSport port A In
 // Roland XV5080 Midi In 1          == connected to ==   MidiSport port A Out
-// Thomann Master Keyboard Midi Out == connected to ==   MidiSport port B In
-// Arturia Master Keyboard Midi Out == connected to ==   MidiSport port C In
+// Arturia Master Keyboard Midi Out == connected to ==   MidiSport port B In
+// Thomann Master Keyboard Midi Out == connected to ==   MidiSport port C In
 // MidiSport USB                    == connected to ==   Raspberry Pi USB
 
 // Assuming that ALSA is used throughout.
@@ -78,7 +78,7 @@ static int const MASTER_KBD_PART_INDEX = 3; // Master Keybard talks to parts 4 a
 // all listen to channel 2.
 static int const MIDI_CHANNEL_MASTER_KBD_XV5080 = 2;
 
-static int const MIDI_CHANNEL_ARTURIA = 3;
+static int const MIDI_CHANNEL_THOMANN = 3;
 
 // Global variable which tells if the ESC key was pressed
 bool ESC_Key_Pressed_Flag = false;
@@ -1550,6 +1550,61 @@ private:
         }
     }
 
+    char char_array[1001];
+    int char_array_pointer = -1;
+    ssize_t char_array_pointer_max = -1;
+    // This is a local version of the raw midi read where we filter out
+    // unwanted MIDI data, like the clock master.
+    void get_one_midi_byte(unsigned char &Byte)
+    {
+        bool loop1 = true;
+        bool loop2 = true;
+        bool loop3 = true;
+        while(loop1)
+        {
+            if (char_array_pointer == -1)
+            {
+                while(loop2)
+                {
+                    char_array_pointer_max = snd_rawmidi_read(handle_midi_hw_in, char_array, 1000);
+                    if (char_array_pointer_max > 0)
+                    {
+                        char_array_pointer = 0;
+                        break;
+                    }
+                }
+            }
+
+            while (loop3)
+            {
+                if (char_array_pointer < char_array_pointer_max)
+                {
+                    if (char_array[char_array_pointer] == 0xF8)
+                    {
+                        char_array_pointer ++;
+                        continue;
+                    }
+                    else
+                    {
+                        Byte = char_array[char_array_pointer];
+                        char_array_pointer ++;
+                        return;
+                    }
+                }
+                else
+                {
+                    char_array_pointer = -1;
+                    break;
+                }
+            }
+        }
+        // Note about 0xF8: the Timing Clock message - as of today it's not supported
+        // or anyway I don't know what to do with it, so I drop it.
+        // It is sent 24 times per quarter note when a MIDI device is operating
+        // as a clock master.
+        // All other real-time messages are dropped equally.
+    }
+
 
     // This thread runs the main MIDI IN state machine
     static void StateMachineThread(TMIDI_Port * pSelf)
@@ -1581,7 +1636,7 @@ private:
                     break;
 
                 case smWaitMidiChar1:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if ( ( (ch) & 0xF0 ) == 0x90 && HookProcessNoteONEvent)
                     {
@@ -1612,8 +1667,9 @@ private:
 
 
                 case smWaitPitchBendChar2:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
+
                     if (ch >= 0 && ch <= 127)
                     {
                         stateMachine = smWaitPitchBendChar3;
@@ -1627,7 +1683,7 @@ private:
                     break;
 
                 case smWaitPitchBendChar3:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1647,7 +1703,7 @@ private:
                     break;
 
                 case smWaitMidiNoteOffChar2:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1662,7 +1718,7 @@ private:
                     break;
 
                     case smWaitMidiNoteChar2:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1677,7 +1733,7 @@ private:
                     break;
 
                 case smWaitMidiNoteOffChar3:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1693,7 +1749,7 @@ private:
 
 
                 case smWaitMidiNoteChar3:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1708,7 +1764,7 @@ private:
                     break;
 
                 case smWaitMidiControllerChangeChar2:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     if (ch >= 0 && ch <= 127)
                     {
@@ -1724,7 +1780,7 @@ private:
                     break;
 
                 case smWaitMidiControllerChangeChar3:
-                    snd_rawmidi_read(handle_midi_hw_in, &ch, 1);
+                    get_one_midi_byte(ch);
                     wprintw(win_midi_in.GetRef(), "%02x\n", ch);
                     stateMachine = smProcessControllerChange;
                     rxControllerValue = ch;
@@ -4358,6 +4414,94 @@ void SineWavePitch(int ccValue)
 
 }
 
+
+namespace Synth
+{
+    void Init(void)
+    {
+        // Bass lead on part on part 1, midi channel 1
+        XV5080.TemporaryPerformance.PerformancePart[0].SelectPatch(TXV5080::PatchGroup::PR_D, 48); 
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[0].ReceiveChannel.Set_1_16(1);
+//        XV5080.TemporaryPerformance.PerformancePart[1].PartOutputAssign.ToOutput1();
+/*        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchTone[0].  ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneRandomPanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[0].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[1].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[2].ToneAlternatePanDepth.Set(0);
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[1].TemporaryPatch.PatchTone[3].ToneAlternatePanDepth.Set(0);
+*/
+        // On this song, the bass lead is played from computer keyboard
+//        MiniSynth::octave = 2;
+//        MiniSynth::channel = 1;
+        XV5080.System.SystemCommon.SystemControl1Source.Set(1); // Use CC01 as SYS-CTRL1 (mod)
+        XV5080.System.SystemCommon.SystemControl2Source.Set(8); // Use CC08 as SYS-CTRL2 (filter cutoff)
+        XV5080.System.SystemCommon.SystemControl3Source.Set(9); // Use CC09 as SYS-CTRL3 (resonance)
+
+        // Our miniphaser (or whatever bass we use) tempo source should be the system tempo, not patch tempo
+//        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchClockSource.Set(1);
+        // Switch to monophonic, much easier to play on a computer keyboard...
+//        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.MonoPoly.Set(0);
+
+        // We are in the key of "D" - adjust so that azertyuiop corresponds to that scale
+        XV5080.TemporaryPatchRhythm_InPerformanceMode[0].TemporaryPatch.PatchCommon.PatchCoarseTune.Set(61); // -3 semitones = 64-3 = 61from C to A 
+
+        // Now takle the soaring lead
+        // On midi channel 2
+        // Tied to the second analog pedal
+//        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_F, 11); // Square Roots
+        XV5080.TemporaryPerformance.PerformancePart[1].SelectPatch(TXV5080::PatchGroup::PR_B, 4); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[1].ReceiveChannel.Set_1_16(2);
+
+        XV5080.TemporaryPerformance.PerformancePart[2].SelectPatch(TXV5080::PatchGroup::PR_G, 77); // guitar
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[2].ReceiveChannel.Set_1_16(2);
+
+
+        XV5080.TemporaryPerformance.PerformancePart[3].SelectPatch(TXV5080::PatchGroup::PR_A, 1);
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveSwitch.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveMIDI1.Set(1);
+        XV5080.TemporaryPerformance.PerformancePart[3].ReceiveChannel.Set_1_16(3);
+
+
+        XV5080.TemporaryPerformance.PerformancePart[4].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[5].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[6].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[7].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[8].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[9].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[10].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[11].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[12].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[13].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[14].ReceiveSwitch.Set(0);
+        XV5080.TemporaryPerformance.PerformancePart[15].ReceiveSwitch.Set(0);
+
+
+    }
+
+    void Modulation(int value)
+    {
+        
+    }
+
+    void Record_press(void)
+    {
+
+    }
+
+    void Record_release(void)
+    {
+
+    }
+}
+
 #if 0
 namespace All_In_You
 {
@@ -4585,7 +4729,7 @@ void MIDI_A_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rx
 void MIDI_C_IN_NoteOnEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 rxVolume)
 {
     // Forward notes to XV5080 Midi IN, plugged on MidiSport Midi OUT A
-    MIDI_A.SendNoteOnEvent(MIDI_CHANNEL_ARTURIA, rxNote, rxVolume);
+    MIDI_A.SendNoteOnEvent(MIDI_CHANNEL_THOMANN, rxNote, rxVolume);
 }
 
 
@@ -4596,15 +4740,24 @@ void MIDI_C_IN_NoteOffEvent(TInt_1_16 rxChannel, TInt_0_127 rxNote, TInt_0_127 r
     // rxVolume is probably already equal to zero. But we override this here to make
     // sure the note is turned OFF.
     //   rxVolume = 0;
-    MIDI_A.SendNoteOffEvent(MIDI_CHANNEL_ARTURIA, rxNote, rxVolume);
+    MIDI_A.SendNoteOffEvent(MIDI_CHANNEL_THOMANN, rxNote, rxVolume);
 }
 
 // This hook function is called whenever a Pitch Bend event was received on
 // MIDI C IN.
 void MIDI_C_IN_PB_Event(TInt_1_16 const rxChannel, TInt_14bits const rxPitchBendChangeValue_param)
 {
-    MIDI_A.SendPitchBendChange(MIDI_CHANNEL_ARTURIA, rxPitchBendChangeValue_param);
+    MIDI_A.SendPitchBendChange(MIDI_CHANNEL_THOMANN, rxPitchBendChangeValue_param);
 }
+
+// This hook function is called whenever the master keyboard sends a Controller Change event
+void MIDI_C_IN_CC_EVent(TInt_1_16 const rxChannel, TInt_0_127 const rxControllerNumber, TInt_0_127 const rxControllerValue)
+{
+    // Put here code to handle CC events
+    MIDI_A.SendControlChange(rxChannel, rxControllerNumber, rxControllerValue);
+}
+
+
 
 
 /**
@@ -4937,12 +5090,20 @@ void InitializePlaylist(void)
     cRigUp.Pedalboard.PedalsDigital[4] = TPedalDigital(RigUp::SineWaveOff, NULL, "Sine Wave OFF");
     cRigUp.Pedalboard.PedalsAnalog[1] = TPedalAnalog(RigUp::SineWavePitch, "Adjust sine wave pitch");
 
+    cSynth.Author = "_";
+    cSynth.SetInitFunc(Synth::Init);
+    cSynth.SongName = "Some synth 001";
+    cSynth.Comments = "Synth logic";
+    cRigUp.Pedalboard.PedalsDigital[1] = TPedalDigital(Synth::Record_press, Synth::Record_release, "Record");
+    cRigUp.Pedalboard.PedalsAnalog[1] = TPedalAnalog(Synth::Modulation, "Modulation");
+    
+
 
     // PLAYLIST ORDER IS DEFINED HERE:
-    // SETLIST BLANGY-SUR-BRESLE 19-JUN-2921
     PlaylistData.clear();
     PlaylistData.push_back(&cFirstContext); // Always keep that one in first
     PlaylistData.push_back(&cRigUp);
+    PlaylistData.push_back(&cSynth);
 
     // Set the current active context here.
     // By default: that would be PlaylistData.begin()...
@@ -5289,7 +5450,7 @@ int main(int argc, char** argv)
     MIDI_B.Init(name_midi_hw_MIDISPORT_B, MIDI_B_IN_NoteOnEvent, MIDI_B_IN_NoteOffEvent, MIDI_B_IN_CC_Event, MIDI_B_IN_PB_Event);
 
     // Same for MIDI port C
-    MIDI_C.Init(name_midi_hw_MIDISPORT_C, MIDI_C_IN_NoteOnEvent, MIDI_C_IN_NoteOffEvent, NULL, MIDI_C_IN_PB_Event);
+    MIDI_C.Init(name_midi_hw_MIDISPORT_C, MIDI_C_IN_NoteOnEvent, MIDI_C_IN_NoteOffEvent, MIDI_C_IN_CC_EVent, MIDI_C_IN_PB_Event);
 
     // Create task that redraws screen at fixed intervals
     std::thread thread2(threadRedraw);
